@@ -7,20 +7,48 @@ on:
     branches: [main]
 
 jobs:
-  check:
-    name: make check
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Install tools
+      - name: Run tests
+        run: go test -race -count=1 ./...
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install dev tools
         run: make install-tools
 
-      - name: make check
-        run: make check
+      - name: fix + fmt
+        run: make fix fmt
+
+      - name: vet
+        run: make vet
+
+      - name: golangci-lint
+        run: make lint
+
+      - name: gosec
+        run: make sec
+
+      - name: govulncheck
+        run: make vulncheck
+
+      - name: build
+        run: make build
