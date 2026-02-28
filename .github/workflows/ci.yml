@@ -19,23 +19,8 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          install-mode: binary
-          skip-cache: false
-          skip-pkg-cache: false
-          skip-build-cache: false
-          # only install, run via make
-          args: --help
-        continue-on-error: true
-
       - name: Install tools
-        run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-            | sh -s -- -b $(go env GOPATH)/bin latest
+        run: make install-tools
 
       - name: make check
         run: make check
