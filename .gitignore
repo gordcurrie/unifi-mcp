@@ -1,3 +1,18 @@
+# Binary output
 bin/
-*.env
+
+# Environment / secrets — never commit these
 .env
+.env.*
+!.env.example
+
+# Go toolchain
+vendor/
+*.test
+*.out
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

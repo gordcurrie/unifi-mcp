@@ -276,3 +276,135 @@ Both annotated with `DestructiveHint: true`.
 - `make test` → `httptest`-based client unit tests pass
 - Manual: configure `.vscode/mcp.json` with real env vars, test `list_sites` and
   `list_active_clients` in Copilot Agent mode against the live UCG-Max
+
+---
+
+## Phase 2 — v1-Only Rewrite
+
+### Decision: Drop legacy API support (Option A)
+
+Live testing against UCG-Max running Network 10.1.85 revealed that the v1 API path
+prefix is `/integration/v1/` (not `/v1/`), and the v1 API surface is comprehensive
+enough for all read and most action use cases. Rather than maintain dual-mode routing
+(UUID site IDs for v1, slug site IDs for legacy), we drop all legacy API usage entirely.
+
+**Tools dropped** (no v1 equivalent):
+- `locate_device`, `unlocate_device` — devmgr `set-locate`
+- `run_speed_test`, `get_speed_test_status` — devmgr `speedtest`
+- `block_client`, `unblock_client`, `kick_client` — stamgr (v1 client actions limited to guest auth)
+- `forget_client`, `force_reprovision_device` — devmgr / stamgr destructive
+- `list_known_clients` — `stat/alluser`
+- `list_events`, `list_alarms` — `stat/event`, `stat/alarm`
+- `get_site_stats`, `get_client_stats` — no v1 stats equivalent
+- `set_wlan_enabled` — v1 WiFi Broadcasts update is complex; deferred to Phase 3
+
+**Tools renamed/replaced:**
+- `list_wlans` → `list_wifi_broadcasts` (path: `/v1/sites/{id}/wifi/broadcasts`)
+- `list_firewall_rules` → `list_firewall_policies` + `list_firewall_zones` (path: `/v1/sites/{id}/firewall/...`)
+- `list_port_forwards` — removed (no v1 equivalent; deferred)
+- `get_device_stats` — re-pointed at `/v1/sites/{id}/devices/{deviceId}/statistics/latest`
+
+**New tool added:**
+- `list_acl_rules` → `GET /v1/sites/{id}/acl-rules`
+
+### Discoveries
+
+| Area | Assumed | Actual |
+|---|---|---|
+| v1 path prefix | `/proxy/network/v1/...` | `/proxy/network/integration/v1/...` |
+| Site ID format | slug `"default"` | UUID only |
+| `GET /v1/info` response | `{"data": {...}}` | raw `{"applicationVersion": "..."}` |
+| `GET /v1/sites/{id}` | exists | **404** — list+filter only |
+| Device fields | snake_case | camelCase (`macAddress`, `ipAddress`, `firmwareVersion`) |
+| Device `state` | `int` | `string` (`"ONLINE"`, `"OFFLINE"`) |
+| Active clients | `/clients/active` | `/clients` (all connected) |
+
+All phases must pass `make check` before committing.
+
+---
+
+### Phase 2a — client.go: path prefix + site ID simplification ✅
+
+Remove `decodeV1Single` envelope wrapper (GetInfo returns raw object now).
+Remove `decodeLegacy`, `checkLegacyRC`, `legacyMeta`, `legacyResponse` — no legacy calls remain.
+Rename internal v1 route prefix to `/integration/v1`.
+`UNIFI_SITE_ID` must now be the UUID from the console. Document in `.env.example`.
+
+---
+
+### Phase 2b — sites.go + types ✅
+
+- `GetInfo` — decode raw JSON (not `{"data":…}` envelope)
+- `ListSites` — path `/integration/v1/sites`; `Site` struct gains `InternalReference`
+- `GetSite` — implement as `ListSites` + filter by ID (no single-get endpoint exists)
+
+---
+
+### Phase 2c — devices.go + types ✅
+
+- `ListDevices` / `GetDevice` — path `/integration/v1/sites/{id}/...`
+- `GetDeviceStats` — new method: `GET /integration/v1/sites/{id}/devices/{deviceId}/statistics/latest`
+- `RestartDevice` — re-point to `POST /integration/v1/sites/{id}/devices/{deviceId}/actions` body `{"action":"RESTART"}`
+- Remove: `LocateDevice`, `UnlocateDevice`, `UpgradeDevice`, `ForceReprovisionDevice`, `RunSpeedTest`, `GetSpeedTestStatus`
+- `Device` struct: camelCase JSON tags, `State string`, `FirmwareUpdatable bool`
+- New `DeviceStats` struct matching `/statistics/latest` response
+
+---
+
+### Phase 2d — clients.go + types ✅
+
+- `ListClients` — path `/integration/v1/sites/{id}/clients` (rename from `ListActiveClients`)
+- Remove `ListKnownClients`
+- `Client` struct (rename from `ActiveClient`): camelCase fields — `macAddress`, `ipAddress`, `connectedAt`, `type`, `uplinkDeviceId`
+
+---
+
+### Phase 2e — network.go + types ✅
+
+Remove `SetWLANEnabled`, `ListFirewallRules`, `ListPortForwards`.
+- `ListWiFiBroadcasts` — `GET /integration/v1/sites/{id}/wifi/broadcasts`
+- `ListNetworks` — `GET /integration/v1/sites/{id}/networks` (camelCase: `vlanId`, `enabled`)
+- `ListFirewallPolicies` — `GET /integration/v1/sites/{id}/firewall/policies`
+- `ListFirewallZones` — `GET /integration/v1/sites/{id}/firewall/zones`
+- `ListACLRules` — `GET /integration/v1/sites/{id}/acl-rules`
+- Update `WiFiBroadcast`, `NetworkConf`, new `FirewallPolicy`, `FirewallZone`, `ACLRule` structs
+
+---
+
+### Phase 2f — statistics.go ✅
+
+Remove `GetSiteStats`, `GetClientStats`, `ListEvents`, `ListAlarms` (all legacy).
+Keep only `GetDeviceStats` (v1, moved to devices.go).
+Delete `statistics.go` entirely (or repurpose in a later phase).
+
+---
+
+### Phase 2g — tools/ layer ✅
+
+Remove tool registrations for all dropped methods.
+Rename/update tool registrations to match new method names.
+Add `list_wifi_broadcasts`, `list_firewall_policies`, `list_firewall_zones`, `list_acl_rules`.
+Remove `destructive.go` tools that have no v1 equivalent.
+Update `client_iface.go`.
+
+---
+
+### Phase 2h — tests + make check + commit ✅
+
+Update all test path assertions and fixture JSON to match new paths and camelCase fields.
+`make check` must be clean.
+Rebuild binary, restart VS Code MCP server, smoke-test each tool live.
+Commit + tag `v0.2.0`.
+
+---
+
+## Phase 3 — Legacy Action Tools (deferred)
+
+Re-add legacy-only tools behind a compile tag or `UNIFI_ALLOW_LEGACY=true`:
+- `locate_device`, `unlocate_device`
+- `run_speed_test`, `get_speed_test_status`
+- `block_client`, `unblock_client`, `kick_client`, `forget_client`
+- `list_events`, `list_alarms`
+- `set_wlan_enabled`
+
+Requires dual site ID routing (UUID for v1, slug for legacy) implemented cleanly.

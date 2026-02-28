@@ -17,33 +17,16 @@ type unifiClient interface {
 	// Devices
 	ListDevices(ctx context.Context, siteID string) ([]unifi.Device, error)
 	GetDevice(ctx context.Context, siteID, deviceID string) (unifi.Device, error)
-	RestartDevice(ctx context.Context, site, mac string) error
-	LocateDevice(ctx context.Context, site, mac string) error
-	UnlocateDevice(ctx context.Context, site, mac string) error
-	UpgradeDevice(ctx context.Context, site, mac string) error
-	ForceReprovisionDevice(ctx context.Context, site, mac string) error
-	RunSpeedTest(ctx context.Context, site string) error
-	GetSpeedTestStatus(ctx context.Context, site string) (unifi.SpeedTestStatus, error)
+	RestartDevice(ctx context.Context, siteID, deviceID string) error
+	GetDeviceStats(ctx context.Context, siteID, deviceID string) (unifi.DeviceStats, error)
 
 	// Clients
-	ListActiveClients(ctx context.Context, siteID string) ([]unifi.ActiveClient, error)
-	ListKnownClients(ctx context.Context, siteID string) ([]unifi.KnownClient, error)
-	BlockClient(ctx context.Context, site, mac string) error
-	UnblockClient(ctx context.Context, site, mac string) error
-	KickClient(ctx context.Context, site, mac string) error
-	ForgetClient(ctx context.Context, site, mac string) error
-
-	// Statistics
-	GetSiteStats(ctx context.Context, siteID string) (unifi.SiteStats, error)
-	GetDeviceStats(ctx context.Context, siteID, deviceID string) (unifi.Device, error)
-	GetClientStats(ctx context.Context, siteID, clientID string) (unifi.ActiveClient, error)
-	ListEvents(ctx context.Context, site string, limit int) ([]unifi.Event, error)
-	ListAlarms(ctx context.Context, site string, archivedOnly bool) ([]unifi.Alarm, error)
+	ListClients(ctx context.Context, siteID string) ([]unifi.NetworkClient, error)
 
 	// Network
-	ListWLANs(ctx context.Context, site string) ([]unifi.WLAN, error)
-	SetWLANEnabled(ctx context.Context, site, wlanID string, enabled bool) error
-	ListNetworks(ctx context.Context, site string) ([]unifi.NetworkConf, error)
-	ListFirewallRules(ctx context.Context, site string) ([]unifi.FirewallRule, error)
-	ListPortForwards(ctx context.Context, site string) ([]unifi.PortForward, error)
+	ListWiFiBroadcasts(ctx context.Context, siteID string) ([]unifi.WiFiBroadcast, error)
+	ListNetworks(ctx context.Context, siteID string) ([]unifi.NetworkConf, error)
+	ListFirewallPolicies(ctx context.Context, siteID string) ([]unifi.FirewallPolicy, error)
+	ListFirewallZones(ctx context.Context, siteID string) ([]unifi.FirewallZone, error)
+	ListACLRules(ctx context.Context, siteID string) ([]unifi.ACLRule, error)
 }

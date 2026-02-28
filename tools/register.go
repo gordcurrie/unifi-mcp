@@ -8,8 +8,7 @@ import (
 
 // Config controls optional tool categories.
 type Config struct {
-	// AllowDestructive enables tools that permanently modify or delete data.
-	// Controlled by the UNIFI_ALLOW_DESTRUCTIVE env var.
+	// AllowDestructive is reserved for future destructive tool support.
 	AllowDestructive bool
 }
 
@@ -18,9 +17,5 @@ func RegisterAll(s *mcp.Server, client *unifi.Client, cfg Config) {
 	registerSiteTools(s, client)
 	registerDeviceTools(s, client)
 	registerClientTools(s, client)
-	registerStatisticsTools(s, client)
 	registerNetworkTools(s, client)
-	if cfg.AllowDestructive {
-		registerDestructiveTools(s, client)
-	}
 }

@@ -31,7 +31,6 @@ go build -o bin/unifi-mcp ./cmd/unifi-mcp
 | `UNIFI_API_KEY` | Yes | UniFi API key |
 | `UNIFI_SITE_ID` | Yes | Default site UUID — find it with `list_sites` |
 | `UNIFI_INSECURE` | No | Set `true` to skip TLS verification (self-signed certs) |
-| `UNIFI_ALLOW_DESTRUCTIVE` | No | Set `true` to enable `forget_client` and `force_reprovision_device` |
 
 ---
 
@@ -116,52 +115,24 @@ export UNIFI_SITE_ID=your-site-uuid
 |---|---|
 | `list_devices` | All managed devices (APs, switches, gateways) |
 | `get_device` | Details for a single device by ID |
-| `restart_device` | Restart a device |
-| `locate_device` | Flash device LEDs to locate it |
-| `unlocate_device` | Stop LED location flash |
-| `upgrade_device` | Trigger a firmware upgrade |
-| `run_speed_test` | Start an internet speed test |
-| `get_speed_test_status` | Poll speed test progress and results |
+| `restart_device` | Restart a device by ID |
+| `get_device_stats` | Latest CPU, memory, and uptime stats for a device |
 
 ### Clients
 
 | Tool | Description |
 |---|---|
-| `list_active_clients` | Currently connected clients |
-| `list_known_clients` | All ever-seen clients |
-| `block_client` | Block a client by MAC address |
-| `unblock_client` | Unblock a client by MAC address |
-| `kick_client` | Disconnect a client (they can reconnect) |
-
-### Statistics
-
-| Tool | Description |
-|---|---|
-| `get_site_stats` | Aggregate traffic and client counts for the site |
-| `get_device_stats` | Per-device traffic statistics |
-| `get_client_stats` | Per-client traffic statistics |
-| `list_events` | Recent UniFi events |
-| `list_alarms` | Active (or archived) alarms |
+| `list_clients` | All currently connected clients |
 
 ### Network
 
 | Tool | Description |
 |---|---|
-| `list_wlans` | All WLAN configurations |
-| `enable_wlan` | Enable a WLAN by ID |
-| `disable_wlan` | Disable a WLAN by ID |
+| `list_wifi_broadcasts` | All WiFi broadcast (SSID) configurations |
 | `list_networks` | LAN/VLAN network configurations |
-| `list_firewall_rules` | All firewall rules |
-| `list_port_forwards` | All port-forward rules |
-
-### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
-
-All destructive tools require `"confirmed": true` in the call.
-
-| Tool | Description |
-|---|---|
-| `forget_client` | Permanently remove a client from history |
-| `force_reprovision_device` | Force-reprovision a device (disrupts traffic) |
+| `list_firewall_policies` | All firewall policies |
+| `list_firewall_zones` | All firewall zones |
+| `list_acl_rules` | All ACL rules |
 
 ---
 

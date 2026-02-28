@@ -5,11 +5,11 @@ import (
 	"fmt"
 )
 
-// ListDevices returns all adopted devices from GET /v1/sites/{siteID}/devices.
+// ListDevices returns all adopted devices from GET /integration/v1/sites/{siteID}/devices.
 // Pass an empty siteID to use the client default.
 func (c *Client) ListDevices(ctx context.Context, siteID string) ([]Device, error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/v1/sites/%s/devices", id))
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices", id))
 	if err != nil {
 		return nil, fmt.Errorf("ListDevices %s: %w", id, err)
 	}
@@ -20,94 +20,47 @@ func (c *Client) ListDevices(ctx context.Context, siteID string) ([]Device, erro
 	return devices, nil
 }
 
-// GetDevice returns a single device from GET /v1/sites/{siteID}/devices/{deviceID}.
+// GetDevice returns a single device from GET /integration/v1/sites/{siteID}/devices/{deviceID}.
 // Pass an empty siteID to use the client default.
 func (c *Client) GetDevice(ctx context.Context, siteID, deviceID string) (Device, error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/v1/sites/%s/devices/%s", id, deviceID))
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s", id, deviceID))
 	if err != nil {
 		return Device{}, fmt.Errorf("GetDevice %s %s: %w", id, deviceID, err)
 	}
-	dev, err := decodeV1Single[Device](data)
+	dev, err := decodeV1[Device](data)
 	if err != nil {
 		return Device{}, fmt.Errorf("GetDevice %s %s: %w", id, deviceID, err)
 	}
 	return dev, nil
 }
 
-// RestartDevice sends a restart command via POST /api/s/{site}/cmd/devmgr.
-func (c *Client) RestartDevice(ctx context.Context, site, mac string) error {
-	s := c.site(site)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "restart", MAC: mac})
+// RestartDevice sends a RESTART action via POST /integration/v1/sites/{siteID}/devices/{deviceID}/actions.
+// Pass an empty siteID to use the client default.
+func (c *Client) RestartDevice(ctx context.Context, siteID, deviceID string) error {
+	id := c.site(siteID)
+	_, err := c.postWithBody(ctx,
+		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/actions", id, deviceID),
+		deviceActionRequest{Action: "RESTART"},
+	)
 	if err != nil {
-		return fmt.Errorf("RestartDevice %s: %w", mac, err)
+		return fmt.Errorf("RestartDevice %s %s: %w", id, deviceID, err)
 	}
-	return checkLegacyRC(data)
+	return nil
 }
 
-// LocateDevice enables the locate/blink LED on a device.
-func (c *Client) LocateDevice(ctx context.Context, site, mac string) error {
-	s := c.site(site)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "set-locate", MAC: mac})
+// GetDeviceStats returns the latest statistics for a device from
+// GET /integration/v1/sites/{siteID}/devices/{deviceID}/statistics/latest.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetDeviceStats(ctx context.Context, siteID, deviceID string) (DeviceStats, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s/statistics/latest", id, deviceID))
 	if err != nil {
-		return fmt.Errorf("LocateDevice %s: %w", mac, err)
+		return DeviceStats{}, fmt.Errorf("GetDeviceStats %s %s: %w", id, deviceID, err)
 	}
-	return checkLegacyRC(data)
-}
-
-// UnlocateDevice disables the locate/blink LED on a device.
-func (c *Client) UnlocateDevice(ctx context.Context, site, mac string) error {
-	s := c.site(site)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "unset-locate", MAC: mac})
+	stats, err := decodeV1[DeviceStats](data)
 	if err != nil {
-		return fmt.Errorf("UnlocateDevice %s: %w", mac, err)
+		return DeviceStats{}, fmt.Errorf("GetDeviceStats %s %s: %w", id, deviceID, err)
 	}
-	return checkLegacyRC(data)
-}
-
-// UpgradeDevice triggers a firmware upgrade on the device.
-func (c *Client) UpgradeDevice(ctx context.Context, site, mac string) error {
-	s := c.site(site)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "upgrade", MAC: mac})
-	if err != nil {
-		return fmt.Errorf("UpgradeDevice %s: %w", mac, err)
-	}
-	return checkLegacyRC(data)
-}
-
-// ForceReprovisionDevice forces reprovisioning of the device config.
-func (c *Client) ForceReprovisionDevice(ctx context.Context, site, mac string) error {
-	s := c.site(site)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "force-reprovision", MAC: mac})
-	if err != nil {
-		return fmt.Errorf("ForceReprovisionDevice %s: %w", mac, err)
-	}
-	return checkLegacyRC(data)
-}
-
-// RunSpeedTest initiates a speed test from the USG/UCG.
-func (c *Client) RunSpeedTest(ctx context.Context, site string) error {
-	s := c.site(site)
-	data, err := c.post(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr/speedtest", s))
-	if err != nil {
-		return fmt.Errorf("RunSpeedTest %s: %w", s, err)
-	}
-	return checkLegacyRC(data)
-}
-
-// GetSpeedTestStatus returns the most recent speed test result.
-func (c *Client) GetSpeedTestStatus(ctx context.Context, site string) (SpeedTestStatus, error) {
-	s := c.site(site)
-	data, err := c.get(ctx, fmt.Sprintf("/api/s/%s/stat/speedtest-status", s))
-	if err != nil {
-		return SpeedTestStatus{}, fmt.Errorf("GetSpeedTestStatus %s: %w", s, err)
-	}
-	results, err := decodeLegacy[SpeedTestStatus](data)
-	if err != nil {
-		return SpeedTestStatus{}, fmt.Errorf("GetSpeedTestStatus %s: %w", s, err)
-	}
-	if len(results) == 0 {
-		return SpeedTestStatus{}, fmt.Errorf("GetSpeedTestStatus %s: empty response", s)
-	}
-	return results[0], nil
+	return stats, nil
 }
