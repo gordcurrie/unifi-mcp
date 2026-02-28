@@ -19,7 +19,7 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
 		info, err := client.GetInfo(ctx)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_application_info: %w", err)
+			return errorResult(fmt.Errorf("get_application_info: %w", err))
 		}
 		return jsonResult(info)
 	})
@@ -31,7 +31,7 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
 		sites, err := client.ListSites(ctx)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_sites: %w", err)
+			return errorResult(fmt.Errorf("list_sites: %w", err))
 		}
 		return jsonResult(sites)
 	})
@@ -43,7 +43,7 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		site, err := client.GetSite(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_site: %w", err)
+			return errorResult(fmt.Errorf("get_site: %w", err))
 		}
 		return jsonResult(site)
 	})

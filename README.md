@@ -115,7 +115,7 @@ export UNIFI_SITE_ID=your-site-uuid
 |---|---|
 | `list_devices` | All managed devices (APs, switches, gateways) |
 | `get_device` | Details for a single device by ID |
-| `restart_device` | Restart a device by ID |
+| `restart_device` | Restart a device by ID — requires `confirmed: true` |
 | `get_device_stats` | Latest CPU, memory, and uptime stats for a device |
 
 ### Clients

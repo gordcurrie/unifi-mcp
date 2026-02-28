@@ -46,7 +46,7 @@ func run() error {
 
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "unifi-mcp",
-		Version: "0.2.0",
+		Version: "0.3.0",
 	}, nil)
 
 	tools.RegisterAll(s, client)
@@ -76,6 +76,7 @@ func run() error {
 				slog.Error("http server shutdown", "err", err)
 			}
 		}()
+		slog.Warn("HTTP transport has no authentication — restrict network access to trusted hosts only")
 		slog.Info("unifi-mcp listening", "addr", addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("http server: %w", err)
