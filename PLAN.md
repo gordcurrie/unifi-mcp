@@ -100,34 +100,107 @@ port can invoke `restart_device`. Add a visible runtime warning.
 Candidates in rough priority order. Each item requires `make check` + README/PLAN.md
 updates before merging.
 
+> **API path note:** All `/v1/...` paths below are relative to the client's `baseURL`,
+> which is `https://<console>/proxy/network/integration`. The full resolved path is
+> `https://<console>/proxy/network/integration/v1/...` — identical to the existing tools.
+
 ### 4a — WiFi broadcast mutation
 
 Enable/disable a WiFi broadcast (WLAN on/off for a given SSID).
-- `PUT /integration/v1/sites/{id}/wifi/broadcasts/{broadcastId}` — partial update with `enabled` field
-- New tool: `set_wifi_broadcast_enabled` (mutating, `confirmed bool`)
+- `PUT /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — full update; set `enabled` field
+- New tools: `get_wifi_broadcast` (read-only), `set_wifi_broadcast_enabled` (mutating, `confirmed bool`)
 
-### 4b — Device statistics history
+### 4b — Client lookup by ID
 
-Time-range queries on device stats instead of just `statistics/latest`.
-- `GET /integration/v1/sites/{id}/devices/{deviceId}/statistics` with start/end params
-- New tool: `get_device_stats_history`
+Direct single-client lookup is confirmed in the API (`GET /v1/sites/{id}/clients/{clientId}`).
+The v1 filtering syntax also supports querying by property (e.g. `macAddress.eq(...)`).
+- New tool: `get_client` (read-only, `client_id` required)
 
-### 4c — Client lookup by MAC / IP
+### 4c — Port power cycle (PoE reboot)
 
-Allow looking up a specific connected client without listing all of them.
-- Explore if `GET /integration/v1/sites/{id}/clients?mac=...` filtering is supported
-- New tool: `get_client` (read-only)
+Power-cycle a single PoE port on a switch without restarting the whole device.
+Very useful for rebooting cameras, APs, or other PoE devices.
+- `POST /v1/sites/{id}/devices/{deviceId}/interfaces/ports/{portIdx}/actions` body `{"action":"POWER_CYCLE"}`
+- New tool: `power_cycle_port` (mutating, `confirmed bool`, `device_id`, `port_idx`)
 
-### 4d — FirewallPolicy mutation
+### 4d — Pending device discovery
 
-Enable/disable a firewall policy rule.
-- `PUT /integration/v1/sites/{id}/firewall/policies/{id}` — partial update with `enabled`
-- New tool: `set_firewall_policy_enabled` (mutating, `confirmed bool`)
+List devices visible on the network but not yet adopted.
+- `GET /v1/pending-devices`
+- New tool: `list_pending_devices` (read-only)
 
-### 4e — ACL rule mutation
+### 4e — DNS policies
 
-Enable/disable an ACL rule.
-- `PUT /integration/v1/sites/{id}/acl-rules/{id}` — partial update with `enabled`
-- New tool: `set_acl_rule_enabled` (mutating, `confirmed bool`)
+Local DNS A-record management — map hostnames to IPs on the site (e.g. `nas.home → 192.168.1.100`).
+High value for home lab.
+- `GET /v1/sites/{id}/dns/policies` — list
+- `GET /v1/sites/{id}/dns/policies/{id}` — get single
+- `POST /v1/sites/{id}/dns/policies` — create (`type`, `domain`, `ipv4Address`, `ttlSeconds`, `enabled`)
+- `PUT /v1/sites/{id}/dns/policies/{id}` — update
+- `DELETE /v1/sites/{id}/dns/policies/{id}` — delete (destructive, `confirmed bool`)
+- New tools: `list_dns_policies`, `get_dns_policy`, `create_dns_policy`, `update_dns_policy`, `delete_dns_policy`
+
+### 4f — Firewall policy & zone CRUD
+
+Extend beyond read-only to full create/enable-disable/delete.
+The API also provides `PATCH` for just `loggingEnabled` and a dedicated ordering endpoint.
+- `POST /v1/sites/{id}/firewall/policies` — create
+- `PATCH /v1/sites/{id}/firewall/policies/{id}` — partial update (`loggingEnabled`)
+- `PUT /v1/sites/{id}/firewall/policies/{id}` — full update (includes `enabled`)
+- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies (source+dest zone pair)
+- `POST /v1/sites/{id}/firewall/zones` — create custom zone
+- `PUT /v1/sites/{id}/firewall/zones/{id}` — update zone (`name`, `networkIds`)
+- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- New tools: `get_firewall_policy`, `create_firewall_policy`, `update_firewall_policy`, `delete_firewall_policy`, `reorder_firewall_policies`, `set_firewall_policy_enabled`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
+
+### 4g — ACL rule CRUD
+
+Extend beyond read-only to full create/enable-disable/delete/reorder.
+- `POST /v1/sites/{id}/acl-rules` — create
+- `PUT /v1/sites/{id}/acl-rules/{id}` — full update (includes `enabled`)
+- `DELETE /v1/sites/{id}/acl-rules/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- `GET/PUT /v1/sites/{id}/acl-rules/ordering` — reorder
+- New tools: `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule`
+
+### 4h — Traffic matching lists (read-only)
+
+Port/IP address lists referenced by firewall policies. Read-only surface is enough to
+let the AI understand existing policy configurations.
+- `GET /v1/sites/{id}/traffic-matching-lists` — list
+- `GET /v1/sites/{id}/traffic-matching-lists/{id}` — get single
+- New tools: `list_traffic_matching_lists`, `get_traffic_matching_list`
+
+### 4i — WAN interfaces & VPN (read-only)
+
+Useful for context when reasoning about firewall rules and routing.
+- `GET /v1/sites/{id}/wans` — list WAN interface definitions
+- `GET /v1/sites/{id}/vpn/site-to-site-tunnels` — list S2S tunnels
+- `GET /v1/sites/{id}/vpn/servers` — list VPN servers
+- New tools: `list_wans`, `list_vpn_tunnels`, `list_vpn_servers`
+
+### 4j — Hotspot vouchers
+
+Full CRUD for guest Hotspot vouchers (time/data-limited access codes).
+Useful if running a guest or hotspot network.
+- `GET /v1/sites/{id}/hotspot/vouchers` — list
+- `GET /v1/sites/{id}/hotspot/vouchers/{id}` — get single
+- `POST /v1/sites/{id}/hotspot/vouchers` — generate (`count`, `name`, `timeLimitMinutes`, optional limits)
+- `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
+
+### 4k — Guest client authorization
+
+Authorize or revoke guest network access for a connected client.
+- `POST /v1/sites/{id}/clients/{clientId}/actions` body `{"action":"AUTHORIZE_GUEST_ACCESS", ...}`
+- New tool: `authorize_guest_client` (mutating, `confirmed bool`, optional time/data/rate limits)
+
+### 4l — Supporting reference data (read-only)
+
+Low-priority but useful for firewall policy creation context.
+- `GET /v1/sites/{id}/device-tags` — device tags (used in WiFi broadcast device filters)
+- `GET /v1/dpi/categories` + `/v1/dpi/applications` — DPI app categories (firewall matching)
+- `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
+- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`
 
 
