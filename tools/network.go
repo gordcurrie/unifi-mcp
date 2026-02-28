@@ -91,7 +91,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		return jsonResult(rules)
 	})
 
-	type listInput struct {
+	type trafficMatchingListInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		ListID string `json:"list_id"           jsonschema:"traffic matching list ID"`
 	}
@@ -112,7 +112,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		Name:        "get_traffic_matching_list",
 		Description: "Get details for a specific traffic matching list by ID.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, input listInput) (*mcp.CallToolResult, any, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input trafficMatchingListInput) (*mcp.CallToolResult, any, error) {
 		if input.ListID == "" {
 			return errorResult(fmt.Errorf("get_traffic_matching_list: list_id is required"))
 		}
