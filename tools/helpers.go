@@ -11,7 +11,7 @@ import (
 func jsonResult(v any) (*mcp.CallToolResult, any, error) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return nil, nil, fmt.Errorf("marshal result: %w", err)
+		return errorResult(fmt.Errorf("marshal result: %w", err))
 	}
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
@@ -33,9 +33,13 @@ func textResult(s string) (*mcp.CallToolResult, any, error) {
 // Per MCP spec §6, API/business failures must be reported this way rather
 // than as protocol-level Go errors so the client can distinguish them.
 func errorResult(err error) (*mcp.CallToolResult, any, error) {
+	msg := "unknown error"
+	if err != nil {
+		msg = err.Error()
+	}
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
-			&mcp.TextContent{Text: err.Error()},
+			&mcp.TextContent{Text: msg},
 		},
 		IsError: true,
 	}, nil, nil

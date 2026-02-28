@@ -81,7 +81,7 @@ URLs (`.../devices//statistics/latest`) and confusing downstream errors.
 `DestructiveHint` as the mechanism for MCP clients to trigger a confirmation step
 ("human in the loop") before invocation.
 
-- Change `restart_device` annotation to `Annotations: &mcp.ToolAnnotations{DestructiveHint: true}`
+- Change `restart_device` annotation to `Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue}`
 
 ### 3d — HTTP transport auth warning ✅
 
@@ -130,12 +130,4 @@ Enable/disable an ACL rule.
 - `PUT /integration/v1/sites/{id}/acl-rules/{id}` — partial update with `enabled`
 - New tool: `set_acl_rule_enabled` (mutating, `confirmed bool`)
 
-### 4f — Legacy action tools (UNIFI_ALLOW_LEGACY)
-
-Re-add legacy-only tools behind `UNIFI_ALLOW_LEGACY=true` env var. Requires dual site
-ID routing (UUID for v1, slug for legacy) implemented cleanly.
-- `locate_device`, `unlocate_device`
-- `run_speed_test`, `get_speed_test_status`
-- `block_client`, `unblock_client`, `kick_client`, `forget_client`
-- `list_events`, `list_alarms`
 

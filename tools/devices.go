@@ -17,6 +17,11 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		SiteID   string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		DeviceID string `json:"device_id"         jsonschema:"device ID"`
 	}
+	type restartDeviceInput struct {
+		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		DeviceID  string `json:"device_id"          jsonschema:"device ID"`
+		Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the restart"`
+	}
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_devices",
@@ -47,9 +52,12 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "restart_device",
-		Description: "Restart a UniFi device by device ID.",
+		Description: "Restart a UniFi device by device ID. Set confirmed=true to proceed.",
 		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceInput) (*mcp.CallToolResult, any, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input restartDeviceInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("restart_device: set confirmed=true to confirm the restart"))
+		}
 		if input.DeviceID == "" {
 			return errorResult(fmt.Errorf("restart_device: device_id is required"))
 		}
