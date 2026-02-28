@@ -26,16 +26,13 @@ func TestGetInfo(t *testing.T) {
 				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
 			}
-			if r.URL.Path != "/v1/info" {
+			if r.URL.Path != "/integration/v1/info" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"data": map[string]any{
-					"applicationVersion": "9.0.92",
-					"controllerType":     "UCG",
-				},
+				"applicationVersion": "9.0.92",
 			})
 		})
 
@@ -45,9 +42,6 @@ func TestGetInfo(t *testing.T) {
 		}
 		if info.ApplicationVersion != "9.0.92" {
 			t.Errorf("got version %q, want %q", info.ApplicationVersion, "9.0.92")
-		}
-		if info.ControllerType != "UCG" {
-			t.Errorf("got type %q, want %q", info.ControllerType, "UCG")
 		}
 	})
 
@@ -60,7 +54,7 @@ func TestGetInfo(t *testing.T) {
 				t.Errorf("X-API-Key header: got %q, want %q", got, "test-api-key")
 			}
 			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{}})
+			_ = json.NewEncoder(w).Encode(map[string]any{"applicationVersion": ""})
 		})
 		_, _ = client.GetInfo(context.Background())
 		if !called {

@@ -5,76 +5,78 @@ import (
 	"fmt"
 )
 
-// ListWLANs returns all configured WLANs from GET /api/s/{site}/rest/wlanconf.
-// Pass an empty site to use the client default.
-func (c *Client) ListWLANs(ctx context.Context, site string) ([]WLAN, error) {
-	s := c.site(site)
-	data, err := c.get(ctx, fmt.Sprintf("/api/s/%s/rest/wlanconf", s))
+// ListWiFiBroadcasts returns all WiFi broadcast (SSID) configurations from
+// GET /integration/v1/sites/{siteID}/wifi/broadcasts.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string) ([]WiFiBroadcast, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts", id))
 	if err != nil {
-		return nil, fmt.Errorf("ListWLANs %s: %w", s, err)
+		return nil, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
 	}
-	wlans, err := decodeLegacy[WLAN](data)
+	broadcasts, err := decodeV1List[WiFiBroadcast](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListWLANs %s: %w", s, err)
+		return nil, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
 	}
-	return wlans, nil
+	return broadcasts, nil
 }
 
-// SetWLANEnabled enables or disables the WLAN with the given ID.
-// Pass an empty site to use the client default.
-func (c *Client) SetWLANEnabled(ctx context.Context, site, wlanID string, enabled bool) error {
-	s := c.site(site)
-	data, err := c.put(ctx, fmt.Sprintf("/api/s/%s/rest/wlanconf/%s", s, wlanID), wlanEnabledRequest{Enabled: enabled})
+// ListNetworks returns all configured networks from GET /integration/v1/sites/{siteID}/networks.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListNetworks(ctx context.Context, siteID string) ([]NetworkConf, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/networks", id))
 	if err != nil {
-		return fmt.Errorf("SetWLANEnabled %s enabled=%v: %w", wlanID, enabled, err)
+		return nil, fmt.Errorf("ListNetworks %s: %w", id, err)
 	}
-	if _, err := decodeLegacy[struct{}](data); err != nil {
-		return fmt.Errorf("SetWLANEnabled %s enabled=%v: %w", wlanID, enabled, err)
-	}
-	return nil
-}
-
-// ListNetworks returns all configured networks from GET /api/s/{site}/rest/networkconf.
-// Pass an empty site to use the client default.
-func (c *Client) ListNetworks(ctx context.Context, site string) ([]NetworkConf, error) {
-	s := c.site(site)
-	data, err := c.get(ctx, fmt.Sprintf("/api/s/%s/rest/networkconf", s))
+	networks, err := decodeV1List[NetworkConf](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListNetworks %s: %w", s, err)
-	}
-	networks, err := decodeLegacy[NetworkConf](data)
-	if err != nil {
-		return nil, fmt.Errorf("ListNetworks %s: %w", s, err)
+		return nil, fmt.Errorf("ListNetworks %s: %w", id, err)
 	}
 	return networks, nil
 }
 
-// ListFirewallRules returns user-defined firewall rules from GET /api/s/{site}/rest/firewallrule.
-// Pass an empty site to use the client default.
-func (c *Client) ListFirewallRules(ctx context.Context, site string) ([]FirewallRule, error) {
-	s := c.site(site)
-	data, err := c.get(ctx, fmt.Sprintf("/api/s/%s/rest/firewallrule", s))
+// ListFirewallPolicies returns all firewall policies from GET /integration/v1/sites/{siteID}/firewall/policies.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string) ([]FirewallPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies", id))
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallRules %s: %w", s, err)
+		return nil, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
 	}
-	rules, err := decodeLegacy[FirewallRule](data)
+	policies, err := decodeV1List[FirewallPolicy](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallRules %s: %w", s, err)
+		return nil, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
 	}
-	return rules, nil
+	return policies, nil
 }
 
-// ListPortForwards returns configured port forwarding rules from GET /api/s/{site}/rest/portforward.
-// Pass an empty site to use the client default.
-func (c *Client) ListPortForwards(ctx context.Context, site string) ([]PortForward, error) {
-	s := c.site(site)
-	data, err := c.get(ctx, fmt.Sprintf("/api/s/%s/rest/portforward", s))
+// ListFirewallZones returns all firewall zones from GET /integration/v1/sites/{siteID}/firewall/zones.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListFirewallZones(ctx context.Context, siteID string) ([]FirewallZone, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", id))
 	if err != nil {
-		return nil, fmt.Errorf("ListPortForwards %s: %w", s, err)
+		return nil, fmt.Errorf("ListFirewallZones %s: %w", id, err)
 	}
-	rules, err := decodeLegacy[PortForward](data)
+	zones, err := decodeV1List[FirewallZone](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListPortForwards %s: %w", s, err)
+		return nil, fmt.Errorf("ListFirewallZones %s: %w", id, err)
+	}
+	return zones, nil
+}
+
+// ListACLRules returns all ACL rules from GET /integration/v1/sites/{siteID}/acl-rules.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListACLRules %s: %w", id, err)
+	}
+	rules, err := decodeV1List[ACLRule](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListACLRules %s: %w", id, err)
 	}
 	return rules, nil
 }

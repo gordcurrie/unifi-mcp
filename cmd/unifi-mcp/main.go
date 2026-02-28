@@ -38,7 +38,6 @@ func run() error {
 	apiKey := os.Getenv("UNIFI_API_KEY")
 	siteID := os.Getenv("UNIFI_SITE_ID")
 	insecure := os.Getenv("UNIFI_INSECURE") == "true"
-	allowDestructive := os.Getenv("UNIFI_ALLOW_DESTRUCTIVE") == "true"
 
 	client, err := unifi.NewClient(baseURL, apiKey, siteID, insecure)
 	if err != nil {
@@ -47,10 +46,10 @@ func run() error {
 
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "unifi-mcp",
-		Version: "0.1.0",
+		Version: "0.2.0",
 	}, nil)
 
-	tools.RegisterAll(s, client, tools.Config{AllowDestructive: allowDestructive})
+	tools.RegisterAll(s, client)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

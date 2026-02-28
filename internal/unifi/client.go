@@ -1,6 +1,5 @@
-// Package unifi provides a client for the UniFi Network API running on a UCG-Max.
-// It supports both the v1 REST API (/v1/sites/{siteID}/...) and the
-// legacy local API (/api/s/{site}/...), authenticated via X-API-Key.
+// Package unifi provides a client for the UniFi Network Integration API running on a UCG-Max.
+// It targets the v1 REST API at /proxy/network/integration/v1/..., authenticated via X-API-Key.
 package unifi
 
 import (
@@ -29,12 +28,7 @@ type Client struct {
 	httpClient *http.Client
 }
 
-// v1SingleResponse wraps the v1 API single-object envelope: {"data": T}.
-type v1SingleResponse[T any] struct {
-	Data T `json:"data"`
-}
-
-// v1ListResponse wraps the v1 API list envelope: {"data": [T], "totalCount": N}.
+// v1ListResponse wraps the integration v1 API paginated list envelope.
 type v1ListResponse[T any] struct {
 	Data       []T `json:"data"`
 	TotalCount int `json:"totalCount"`
@@ -43,21 +37,9 @@ type v1ListResponse[T any] struct {
 	Count      int `json:"count"`
 }
 
-// legacyMeta is the meta field in legacy API responses.
-type legacyMeta struct {
-	RC  string `json:"rc"`
-	Msg string `json:"msg,omitempty"`
-}
-
-// legacyResponse wraps legacy API list envelopes: {"data": [T], "meta": {...}}.
-type legacyResponse[T any] struct {
-	Data []T        `json:"data"`
-	Meta legacyMeta `json:"meta"`
-}
-
-// NewClient creates a UniFi API client.
+// NewClient creates a UniFi Integration API client.
 // baseURL should be the full proxy/network base, e.g. "https://192.168.1.1/proxy/network".
-// siteID is the default site UUID used when tools omit the site_id parameter.
+// siteID is the site UUID (from Settings → Sites) used when tools omit the site_id parameter.
 // Set insecure to true to skip TLS verification for self-signed certificates (UCG-Max default).
 func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 	if baseURL == "" {
@@ -177,49 +159,20 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 	return data, nil
 }
 
-// decodeV1Single decodes a v1 single-object response envelope.
-func decodeV1Single[T any](data []byte) (T, error) {
-	var resp v1SingleResponse[T]
-	if err := json.Unmarshal(data, &resp); err != nil {
-		var zero T
-		return zero, fmt.Errorf("decode v1 response: %w", err)
+// decodeV1 unmarshals a raw integration v1 response (no envelope) directly into T.
+func decodeV1[T any](data []byte) (T, error) {
+	var result T
+	if err := json.Unmarshal(data, &result); err != nil {
+		return result, fmt.Errorf("decode v1 response: %w", err)
 	}
-	return resp.Data, nil
+	return result, nil
 }
 
-// decodeV1List decodes a v1 list response envelope.
+// decodeV1List decodes an integration v1 paginated list envelope.
 func decodeV1List[T any](data []byte) ([]T, error) {
 	var resp v1ListResponse[T]
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, fmt.Errorf("decode v1 list response: %w", err)
 	}
 	return resp.Data, nil
-}
-
-// decodeLegacy decodes a legacy API list response envelope and validates meta.rc.
-func decodeLegacy[T any](data []byte) ([]T, error) {
-	var resp legacyResponse[T]
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return nil, fmt.Errorf("decode legacy response: %w", err)
-	}
-	if resp.Meta.RC != "" && resp.Meta.RC != "ok" {
-		return nil, fmt.Errorf("controller error: rc=%s msg=%s", resp.Meta.RC, resp.Meta.Msg)
-	}
-	return resp.Data, nil
-}
-
-// checkLegacyRC decodes just the meta envelope from a legacy command response
-// and returns an error when meta.rc is not "ok".
-func checkLegacyRC(data []byte) error {
-	type envelope struct {
-		Meta legacyMeta `json:"meta"`
-	}
-	var resp envelope
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return fmt.Errorf("decode legacy response: %w", err)
-	}
-	if resp.Meta.RC != "" && resp.Meta.RC != "ok" {
-		return fmt.Errorf("controller error: rc=%s msg=%s", resp.Meta.RC, resp.Meta.Msg)
-	}
-	return nil
 }
