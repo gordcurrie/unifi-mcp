@@ -17,6 +17,10 @@ import (
 	"time"
 )
 
+// maxResponseBytes caps how much data we read from any single API response.
+// 10 MiB is well above any realistic UniFi response payload.
+const maxResponseBytes = 10 << 20 // 10 MiB
+
 // Client is a UniFi Network API client.
 type Client struct {
 	baseURL    string
@@ -80,7 +84,10 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 			// Fallback if DefaultTransport has been replaced by something other than *http.Transport.
 			//nolint:gosec // G402: InsecureSkipVerify is only set when UNIFI_INSECURE=true, explicit user opt-in
 			transport = &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true, // #nosec G402
+					MinVersion:         tls.VersionTLS12,
+				},
 			}
 		}
 	}
@@ -159,7 +166,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 		}
 	}()
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}

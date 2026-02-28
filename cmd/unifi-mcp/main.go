@@ -71,7 +71,11 @@ func run() error {
 		}
 		go func() {
 			<-ctx.Done()
-			_ = httpServer.Shutdown(context.Background())
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := httpServer.Shutdown(shutdownCtx); err != nil {
+				slog.Error("http server shutdown", "err", err)
+			}
 		}()
 		slog.Info("unifi-mcp listening", "addr", addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

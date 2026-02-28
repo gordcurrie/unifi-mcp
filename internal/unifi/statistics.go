@@ -3,6 +3,7 @@ package unifi
 import (
 	"context"
 	"fmt"
+	"net/url"
 )
 
 // GetSiteStats returns aggregate statistics for the site.
@@ -54,9 +55,11 @@ func (c *Client) GetClientStats(ctx context.Context, siteID, clientID string) (A
 // Pass limit=0 to use the server default (typically 200).
 func (c *Client) ListEvents(ctx context.Context, site string, limit int) ([]Event, error) {
 	s := c.site(site)
-	path := fmt.Sprintf("/api/s/%s/stat/event", s)
+	base := fmt.Sprintf("/api/s/%s/stat/event", s)
+	path := base
 	if limit > 0 {
-		path = fmt.Sprintf("%s?_limit=%d", path, limit)
+		q := url.Values{"_limit": {fmt.Sprintf("%d", limit)}}
+		path = base + "?" + q.Encode()
 	}
 	data, err := c.get(ctx, path)
 	if err != nil {
@@ -73,9 +76,11 @@ func (c *Client) ListEvents(ctx context.Context, site string, limit int) ([]Even
 // Pass archivedOnly=true to return only archived alarms.
 func (c *Client) ListAlarms(ctx context.Context, site string, archivedOnly bool) ([]Alarm, error) {
 	s := c.site(site)
-	path := fmt.Sprintf("/api/s/%s/stat/alarm", s)
+	base := fmt.Sprintf("/api/s/%s/stat/alarm", s)
+	path := base
 	if archivedOnly {
-		path += "?archived=true"
+		q := url.Values{"archived": {"true"}}
+		path = base + "?" + q.Encode()
 	}
 	data, err := c.get(ctx, path)
 	if err != nil {
