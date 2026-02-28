@@ -90,4 +90,72 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		}
 		return jsonResult(rules)
 	})
+
+	type listInput struct {
+		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ListID string `json:"list_id"           jsonschema:"traffic matching list ID"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_traffic_matching_lists",
+		Description: "List all traffic matching lists (IP/port sets used by firewall policies).",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		lists, err := client.ListTrafficMatchingLists(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_traffic_matching_lists: %w", err))
+		}
+		return jsonResult(lists)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_traffic_matching_list",
+		Description: "Get details for a specific traffic matching list by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input listInput) (*mcp.CallToolResult, any, error) {
+		if input.ListID == "" {
+			return errorResult(fmt.Errorf("get_traffic_matching_list: list_id is required"))
+		}
+		list, err := client.GetTrafficMatchingList(ctx, input.SiteID, input.ListID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_traffic_matching_list: %w", err))
+		}
+		return jsonResult(list)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_wans",
+		Description: "List all WAN interface definitions for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		wans, err := client.ListWANs(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_wans: %w", err))
+		}
+		return jsonResult(wans)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_vpn_tunnels",
+		Description: "List all site-to-site VPN tunnels for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		tunnels, err := client.ListVPNTunnels(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_vpn_tunnels: %w", err))
+		}
+		return jsonResult(tunnels)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_vpn_servers",
+		Description: "List all VPN server configurations for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		servers, err := client.ListVPNServers(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_vpn_servers: %w", err))
+		}
+		return jsonResult(servers)
+	})
 }

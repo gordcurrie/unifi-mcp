@@ -164,7 +164,7 @@ Extend beyond read-only to full create/enable-disable/delete/reorder.
 - `GET/PUT /v1/sites/{id}/acl-rules/ordering` — reorder
 - New tools: `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule`
 
-### 4h — Traffic matching lists (read-only)
+### ✅ 4h — Traffic matching lists (read-only)
 
 Port/IP address lists referenced by firewall policies. Read-only surface is enough to
 let the AI understand existing policy configurations.
@@ -172,7 +172,7 @@ let the AI understand existing policy configurations.
 - `GET /v1/sites/{id}/traffic-matching-lists/{id}` — get single
 - New tools: `list_traffic_matching_lists`, `get_traffic_matching_list`
 
-### 4i — WAN interfaces & VPN (read-only)
+### ✅ 4i — WAN interfaces & VPN (read-only)
 
 Useful for context when reasoning about firewall rules and routing.
 - `GET /v1/sites/{id}/wans` — list WAN interface definitions

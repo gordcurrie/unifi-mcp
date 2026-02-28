@@ -190,3 +190,158 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		}
 	})
 }
+
+func TestListTrafficMatchingLists(t *testing.T) {
+	t.Run("decodes list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/traffic-matching-lists" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "tml-1", "name": "BlockedIPs", "type": "IP", "entries": []string{"10.0.0.1", "10.0.0.2"}},
+					{"id": "tml-2", "name": "TrustedPorts", "type": "PORT"},
+				},
+				"totalCount": 2,
+			})
+		})
+		lists, err := client.ListTrafficMatchingLists(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListTrafficMatchingLists: %v", err)
+		}
+		if len(lists) != 2 {
+			t.Fatalf("got %d lists, want 2", len(lists))
+		}
+		if lists[0].Name != "BlockedIPs" {
+			t.Errorf("got Name %q, want BlockedIPs", lists[0].Name)
+		}
+		if len(lists[0].Entries) != 2 {
+			t.Errorf("got %d entries, want 2", len(lists[0].Entries))
+		}
+	})
+}
+
+func TestGetTrafficMatchingList(t *testing.T) {
+	t.Run("decodes single list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/traffic-matching-lists/tml-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "tml-1", "name": "BlockedIPs", "type": "IP",
+				"entries": []string{"10.0.0.1"},
+			})
+		})
+		list, err := client.GetTrafficMatchingList(context.Background(), "", "tml-1")
+		if err != nil {
+			t.Fatalf("GetTrafficMatchingList: %v", err)
+		}
+		if list.ID != "tml-1" {
+			t.Errorf("got ID %q, want tml-1", list.ID)
+		}
+		if list.Type != "IP" {
+			t.Errorf("got Type %q, want IP", list.Type)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.GetTrafficMatchingList(context.Background(), "", "tml-1")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestListWANs(t *testing.T) {
+	t.Run("decodes WAN list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/wans" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "wan-1", "name": "WAN1", "type": "DHCP", "enabled": true, "ipAddress": "203.0.113.10", "state": "CONNECTED"},
+				},
+				"totalCount": 1,
+			})
+		})
+		wans, err := client.ListWANs(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListWANs: %v", err)
+		}
+		if len(wans) != 1 {
+			t.Fatalf("got %d WANs, want 1", len(wans))
+		}
+		if wans[0].Name != "WAN1" {
+			t.Errorf("got Name %q, want WAN1", wans[0].Name)
+		}
+		if wans[0].State != "CONNECTED" {
+			t.Errorf("got State %q, want CONNECTED", wans[0].State)
+		}
+	})
+}
+
+func TestListVPNTunnels(t *testing.T) {
+	t.Run("decodes tunnel list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/vpn/site-to-site-tunnels" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "tun-1", "name": "OfficeVPN", "type": "IPSEC", "enabled": true, "state": "ACTIVE"},
+				},
+				"totalCount": 1,
+			})
+		})
+		tunnels, err := client.ListVPNTunnels(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListVPNTunnels: %v", err)
+		}
+		if len(tunnels) != 1 {
+			t.Fatalf("got %d tunnels, want 1", len(tunnels))
+		}
+		if tunnels[0].Name != "OfficeVPN" {
+			t.Errorf("got Name %q, want OfficeVPN", tunnels[0].Name)
+		}
+	})
+}
+
+func TestListVPNServers(t *testing.T) {
+	t.Run("decodes server list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/vpn/servers" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "srv-1", "name": "HomeVPN", "type": "WIREGUARD", "enabled": true},
+				},
+				"totalCount": 1,
+			})
+		})
+		servers, err := client.ListVPNServers(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListVPNServers: %v", err)
+		}
+		if len(servers) != 1 {
+			t.Fatalf("got %d servers, want 1", len(servers))
+		}
+		if servers[0].Type != "WIREGUARD" {
+			t.Errorf("got Type %q, want WIREGUARD", servers[0].Type)
+		}
+	})
+}
