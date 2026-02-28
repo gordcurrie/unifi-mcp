@@ -71,7 +71,7 @@ URLs (`.../devices//statistics/latest`) and confusing downstream errors.
 - In `get_device`, `restart_device`, `get_device_stats` handlers, guard:
   ```go
   if input.DeviceID == "" {
-      return errorResult(fmt.Errorf("device_id is required"))
+      return errorResult(fmt.Errorf("get_device: device_id is required"))
   }
   ```
 
