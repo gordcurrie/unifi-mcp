@@ -100,6 +100,10 @@ port can invoke `restart_device`. Add a visible runtime warning.
 Candidates in rough priority order. Each item requires `make check` + README/PLAN.md
 updates before merging.
 
+> **API path note:** All `/v1/...` paths below are relative to the client's `baseURL`,
+> which is `https://<console>/proxy/network/integration`. The full resolved path is
+> `https://<console>/proxy/network/integration/v1/...` — identical to the existing tools.
+
 ### 4a — WiFi broadcast mutation
 
 Enable/disable a WiFi broadcast (WLAN on/off for a given SSID).
@@ -143,21 +147,21 @@ The API also provides `PATCH` for just `loggingEnabled` and a dedicated ordering
 - `POST /v1/sites/{id}/firewall/policies` — create
 - `PATCH /v1/sites/{id}/firewall/policies/{id}` — partial update (`loggingEnabled`)
 - `PUT /v1/sites/{id}/firewall/policies/{id}` — full update (includes `enabled`)
-- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive)
+- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies (source+dest zone pair)
 - `POST /v1/sites/{id}/firewall/zones` — create custom zone
 - `PUT /v1/sites/{id}/firewall/zones/{id}` — update zone (`name`, `networkIds`)
-- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive)
-- New tools: `set_firewall_policy_enabled`, `get_firewall_policy`, `get_firewall_zone`
+- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- New tools: `get_firewall_policy`, `create_firewall_policy`, `update_firewall_policy`, `delete_firewall_policy`, `reorder_firewall_policies`, `set_firewall_policy_enabled`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
 
 ### 4g — ACL rule CRUD
 
 Extend beyond read-only to full create/enable-disable/delete/reorder.
 - `POST /v1/sites/{id}/acl-rules` — create
 - `PUT /v1/sites/{id}/acl-rules/{id}` — full update (includes `enabled`)
-- `DELETE /v1/sites/{id}/acl-rules/{id}` — delete (destructive)
+- `DELETE /v1/sites/{id}/acl-rules/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - `GET/PUT /v1/sites/{id}/acl-rules/ordering` — reorder
-- New tools: `set_acl_rule_enabled`, `get_acl_rule`
+- New tools: `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule`
 
 ### 4h — Traffic matching lists (read-only)
 
@@ -182,8 +186,8 @@ Useful if running a guest or hotspot network.
 - `GET /v1/sites/{id}/hotspot/vouchers` — list
 - `GET /v1/sites/{id}/hotspot/vouchers/{id}` — get single
 - `POST /v1/sites/{id}/hotspot/vouchers` — generate (`count`, `name`, `timeLimitMinutes`, optional limits)
-- `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive)
-- New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher`
+- `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
+- New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
 
 ### 4k — Guest client authorization
 
