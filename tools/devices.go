@@ -8,6 +8,8 @@ import (
 )
 
 func registerDeviceTools(s *mcp.Server, client unifiClient) {
+	destructiveTrue := true
+
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 	}
@@ -23,7 +25,7 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		devices, err := client.ListDevices(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_devices: %w", err)
+			return errorResult(fmt.Errorf("list_devices: %w", err))
 		}
 		return jsonResult(devices)
 	})
@@ -33,9 +35,12 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		Description: "Get details for a specific device by ID.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceInput) (*mcp.CallToolResult, any, error) {
+		if input.DeviceID == "" {
+			return errorResult(fmt.Errorf("get_device: device_id is required"))
+		}
 		dev, err := client.GetDevice(ctx, input.SiteID, input.DeviceID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_device: %w", err)
+			return errorResult(fmt.Errorf("get_device: %w", err))
 		}
 		return jsonResult(dev)
 	})
@@ -43,10 +48,13 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "restart_device",
 		Description: "Restart a UniFi device by device ID.",
-		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false},
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceInput) (*mcp.CallToolResult, any, error) {
+		if input.DeviceID == "" {
+			return errorResult(fmt.Errorf("restart_device: device_id is required"))
+		}
 		if err := client.RestartDevice(ctx, input.SiteID, input.DeviceID); err != nil {
-			return nil, nil, fmt.Errorf("restart_device: %w", err)
+			return errorResult(fmt.Errorf("restart_device: %w", err))
 		}
 		return textResult("restart command sent to " + input.DeviceID)
 	})
@@ -56,9 +64,12 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		Description: "Get the latest statistics (CPU, memory, uptime) for a specific device.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceInput) (*mcp.CallToolResult, any, error) {
+		if input.DeviceID == "" {
+			return errorResult(fmt.Errorf("get_device_stats: device_id is required"))
+		}
 		stats, err := client.GetDeviceStats(ctx, input.SiteID, input.DeviceID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_device_stats: %w", err)
+			return errorResult(fmt.Errorf("get_device_stats: %w", err))
 		}
 		return jsonResult(stats)
 	})

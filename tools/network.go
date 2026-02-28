@@ -19,7 +19,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		broadcasts, err := client.ListWiFiBroadcasts(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_wifi_broadcasts: %w", err)
+			return errorResult(fmt.Errorf("list_wifi_broadcasts: %w", err))
 		}
 		return jsonResult(broadcasts)
 	})
@@ -31,7 +31,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		nets, err := client.ListNetworks(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_networks: %w", err)
+			return errorResult(fmt.Errorf("list_networks: %w", err))
 		}
 		return jsonResult(nets)
 	})
@@ -43,7 +43,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		policies, err := client.ListFirewallPolicies(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_firewall_policies: %w", err)
+			return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
 		}
 		return jsonResult(policies)
 	})
@@ -55,7 +55,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		zones, err := client.ListFirewallZones(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_firewall_zones: %w", err)
+			return errorResult(fmt.Errorf("list_firewall_zones: %w", err))
 		}
 		return jsonResult(zones)
 	})
@@ -67,7 +67,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		rules, err := client.ListACLRules(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_acl_rules: %w", err)
+			return errorResult(fmt.Errorf("list_acl_rules: %w", err))
 		}
 		return jsonResult(rules)
 	})

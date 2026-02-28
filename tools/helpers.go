@@ -28,3 +28,15 @@ func textResult(s string) (*mcp.CallToolResult, any, error) {
 		},
 	}, nil, nil
 }
+
+// errorResult returns a tool-execution error as an isError:true result.
+// Per MCP spec §6, API/business failures must be reported this way rather
+// than as protocol-level Go errors so the client can distinguish them.
+func errorResult(err error) (*mcp.CallToolResult, any, error) {
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{Text: err.Error()},
+		},
+		IsError: true,
+	}, nil, nil
+}

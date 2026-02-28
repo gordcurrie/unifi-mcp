@@ -47,12 +47,12 @@ Stack: `modelcontextprotocol/go-sdk`, custom UniFi HTTP client, API key auth, `g
 
 ---
 
-## Phase 3 — MCP Correctness & Security Hardening
+## ✅ Phase 3 — MCP Correctness & Security Hardening
 
 Findings from MCP spec review (2025-06-18). Must pass `make check` before committing.
 Target tag: `v0.3.0`.
 
-### 3a — isError semantics (spec §6) — CRITICAL
+### 3a — isError semantics (spec §6) ✅
 
 MCP spec distinguishes protocol errors (unknown tool, bad schema) from tool execution
 errors. API/business failures must be returned as `isError: true` results, not as Go
@@ -63,7 +63,7 @@ errors that bubble up as protocol-level failures.
   `return errorResult(fmt.Errorf("tool: %w", err))`
 - Files: `tools/devices.go`, `tools/sites.go`, `tools/clients.go`, `tools/network.go`
 
-### 3b — Required input validation (spec §7) — HIGH
+### 3b — Required input validation (spec §7) ✅
 
 Spec §7: servers MUST validate all tool inputs. Empty `device_id` produces malformed
 URLs (`.../devices//statistics/latest`) and confusing downstream errors.
@@ -75,7 +75,7 @@ URLs (`.../devices//statistics/latest`) and confusing downstream errors.
   }
   ```
 
-### 3c — `DestructiveHint` on `restart_device` (spec §5) — HIGH
+### 3c — `DestructiveHint` on `restart_device` ✅
 
 `ReadOnlyHint: false` is not the same as `DestructiveHint: true`. The spec uses
 `DestructiveHint` as the mechanism for MCP clients to trigger a confirmation step
@@ -83,7 +83,7 @@ URLs (`.../devices//statistics/latest`) and confusing downstream errors.
 
 - Change `restart_device` annotation to `Annotations: &mcp.ToolAnnotations{DestructiveHint: true}`
 
-### 3d — HTTP transport auth warning — MEDIUM
+### 3d — HTTP transport auth warning ✅
 
 When `--transport http` is used there is no authentication layer. Anyone reaching the
 port can invoke `restart_device`. Add a visible runtime warning.

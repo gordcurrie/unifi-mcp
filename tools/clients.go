@@ -19,7 +19,7 @@ func registerClientTools(s *mcp.Server, client unifiClient) {
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		clients, err := client.ListClients(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("list_clients: %w", err)
+			return errorResult(fmt.Errorf("list_clients: %w", err))
 		}
 		return jsonResult(clients)
 	})
