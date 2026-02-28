@@ -19,12 +19,15 @@ type unifiClient interface {
 	GetDevice(ctx context.Context, siteID, deviceID string) (unifi.Device, error)
 	RestartDevice(ctx context.Context, siteID, deviceID string) error
 	GetDeviceStats(ctx context.Context, siteID, deviceID string) (unifi.DeviceStats, error)
+	ListPendingDevices(ctx context.Context) ([]unifi.PendingDevice, error)
 
 	// Clients
 	ListClients(ctx context.Context, siteID string) ([]unifi.NetworkClient, error)
+	GetClient(ctx context.Context, siteID, clientID string) (unifi.NetworkClient, error)
 
 	// Network
 	ListWiFiBroadcasts(ctx context.Context, siteID string) ([]unifi.WiFiBroadcast, error)
+	GetWiFiBroadcast(ctx context.Context, siteID, broadcastID string) (unifi.WiFiBroadcast, error)
 	ListNetworks(ctx context.Context, siteID string) ([]unifi.NetworkConf, error)
 	ListFirewallPolicies(ctx context.Context, siteID string) ([]unifi.FirewallPolicy, error)
 	ListFirewallZones(ctx context.Context, siteID string) ([]unifi.FirewallZone, error)

@@ -81,4 +81,16 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		}
 		return jsonResult(stats)
 	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_pending_devices",
+		Description: "List devices visible on the network that have not yet been adopted.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
+		devices, err := client.ListPendingDevices(ctx)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_pending_devices: %w", err))
+		}
+		return jsonResult(devices)
+	})
 }

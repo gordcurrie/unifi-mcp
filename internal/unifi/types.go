@@ -55,6 +55,16 @@ type NetworkClient struct {
 	UplinkDeviceID string `json:"uplinkDeviceId,omitempty"`
 }
 
+// PendingDevice is returned by GET /integration/v1/pending-devices.
+type PendingDevice struct {
+	ID              string `json:"id"`
+	MAC             string `json:"macAddress"`
+	IP              string `json:"ipAddress,omitempty"`
+	Model           string `json:"model,omitempty"`
+	FirmwareVersion string `json:"firmwareVersion,omitempty"`
+	State           string `json:"state,omitempty"`
+}
+
 // WiFiBroadcast is returned by GET /integration/v1/sites/{siteId}/wifi/broadcasts.
 type WiFiBroadcast struct {
 	ID      string `json:"id"`

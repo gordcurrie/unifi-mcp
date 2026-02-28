@@ -117,3 +117,44 @@ func TestGetDeviceStats(t *testing.T) {
 		}
 	})
 }
+
+func TestListPendingDevices(t *testing.T) {
+	t.Run("decodes pending device list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/pending-devices" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "pd-1", "macAddress": "aa:bb:cc:dd:ee:ff", "model": "U6-Pro", "state": "PENDING"},
+				},
+				"totalCount": 1,
+			})
+		})
+		devices, err := client.ListPendingDevices(context.Background())
+		if err != nil {
+			t.Fatalf("ListPendingDevices: %v", err)
+		}
+		if len(devices) != 1 {
+			t.Fatalf("got %d devices, want 1", len(devices))
+		}
+		if devices[0].MAC != "aa:bb:cc:dd:ee:ff" {
+			t.Errorf("got MAC %q, want aa:bb:cc:dd:ee:ff", devices[0].MAC)
+		}
+		if devices[0].Model != "U6-Pro" {
+			t.Errorf("got Model %q, want U6-Pro", devices[0].Model)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.ListPendingDevices(context.Background())
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

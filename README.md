@@ -117,18 +117,21 @@ export UNIFI_SITE_ID=your-site-uuid
 | `get_device` | Details for a single device by ID |
 | `restart_device` | Restart a device by ID — requires `confirmed: true` |
 | `get_device_stats` | Latest CPU, memory, and uptime stats for a device |
+| `list_pending_devices` | Devices visible on the network not yet adopted |
 
 ### Clients
 
 | Tool | Description |
 |---|---|
 | `list_clients` | All currently connected clients |
+| `get_client` | Details for a single connected client by ID |
 
 ### Network
 
 | Tool | Description |
 |---|---|
 | `list_wifi_broadcasts` | All WiFi broadcast (SSID) configurations |
+| `get_wifi_broadcast` | Details for a single WiFi broadcast (SSID) by ID |
 | `list_networks` | LAN/VLAN network configurations |
 | `list_firewall_policies` | All firewall policies |
 | `list_firewall_zones` | All firewall zones |

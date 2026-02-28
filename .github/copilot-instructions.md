@@ -158,6 +158,13 @@ git add . && git commit -F /tmp/msg.txt
 
 Never pass multi-line messages with `-m` — the shell mangles them.
 
+## PR Size Guidelines
+
+- **Target < 500 lines changed per PR** (diffs shown by `git diff --stat`, excluding generated files).
+- Split large features into logical sub-PRs — e.g. read-only tools first, then mutations.
+- Each PR must be independently reviewable, `make check` clean, and merge-safe on its own.
+- A good split heuristic: one new `tools/<group>.go` file + its matching `internal/unifi/` client methods per PR.
+
 ## Git Push Rules
 
 - Use plain `git push` for normal commits (new commits on top of the branch).
