@@ -6,6 +6,9 @@ import (
 	"fmt"
 )
 
+// ErrSiteNotFound is returned by GetSite when no site matches the requested ID.
+var ErrSiteNotFound = errors.New("site not found")
+
 // GetInfo returns application information from GET /integration/v1/info.
 func (c *Client) GetInfo(ctx context.Context) (ApplicationInfo, error) {
 	data, err := c.get(ctx, "/integration/v1/info")
@@ -45,5 +48,5 @@ func (c *Client) GetSite(ctx context.Context, siteID string) (Site, error) {
 			return s, nil
 		}
 	}
-	return Site{}, fmt.Errorf("GetSite %s: %w", id, errors.New("site not found"))
+	return Site{}, fmt.Errorf("GetSite %s: %w", id, ErrSiteNotFound)
 }

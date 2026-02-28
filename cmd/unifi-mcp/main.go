@@ -46,7 +46,7 @@ func run() error {
 
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "unifi-mcp",
-		Version: "0.1.0",
+		Version: "0.2.0",
 	}, nil)
 
 	tools.RegisterAll(s, client)

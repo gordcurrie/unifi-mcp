@@ -281,12 +281,17 @@ Both annotated with `DestructiveHint: true`.
 
 ## Phase 2 — v1-Only Rewrite
 
-### Decision: Drop legacy API support (Option A)
+### Decision: Drop legacy API support (Option A) — supersedes Phase 1 notes
 
 Live testing against UCG-Max running Network 10.1.85 revealed that the v1 API path
 prefix is `/integration/v1/` (not `/v1/`), and the v1 API surface is comprehensive
 enough for all read and most action use cases. Rather than maintain dual-mode routing
 (UUID site IDs for v1, slug site IDs for legacy), we drop all legacy API usage entirely.
+
+> **Note:** This decision supersedes all Phase 1 design notes that describe the v1 prefix
+> as `/v1/...`, rely on legacy `/api/s/{site}/...` paths, reference `tools/destructive.go`,
+> or list `UNIFI_ALLOW_DESTRUCTIVE`. Those items are retained above as historical context only
+> and must not be implemented. All new work targets `/integration/v1/sites/{siteID}/...` only.
 
 **Tools dropped** (no v1 equivalent):
 - `locate_device`, `unlocate_device` — devmgr `set-locate`
