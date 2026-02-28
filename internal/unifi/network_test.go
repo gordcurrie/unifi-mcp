@@ -155,3 +155,38 @@ func TestListACLRules(t *testing.T) {
 		}
 	})
 }
+
+func TestGetWiFiBroadcast(t *testing.T) {
+	t.Run("decodes single broadcast", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts/bc-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+			})
+		})
+		bc, err := client.GetWiFiBroadcast(context.Background(), "", "bc-1")
+		if err != nil {
+			t.Fatalf("GetWiFiBroadcast: %v", err)
+		}
+		if bc.ID != "bc-1" {
+			t.Errorf("got ID %q, want bc-1", bc.ID)
+		}
+		if !bc.Enabled {
+			t.Error("got Enabled false, want true")
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.GetWiFiBroadcast(context.Background(), "", "bc-1")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

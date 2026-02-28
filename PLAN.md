@@ -107,10 +107,11 @@ updates before merging.
 ### 4a — WiFi broadcast mutation
 
 Enable/disable a WiFi broadcast (WLAN on/off for a given SSID).
+- `GET /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — get single ✅ (shipped in Phase 4 PR 1)
 - `PUT /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — full update; set `enabled` field
-- New tools: `get_wifi_broadcast` (read-only), `set_wifi_broadcast_enabled` (mutating, `confirmed bool`)
+- New tools: `set_wifi_broadcast_enabled` (mutating, `confirmed bool`)
 
-### 4b — Client lookup by ID
+### 4b — Client lookup by ID ✅
 
 Direct single-client lookup is confirmed in the API (`GET /v1/sites/{id}/clients/{clientId}`).
 The v1 filtering syntax also supports querying by property (e.g. `macAddress.eq(...)`).
@@ -123,7 +124,7 @@ Very useful for rebooting cameras, APs, or other PoE devices.
 - `POST /v1/sites/{id}/devices/{deviceId}/interfaces/ports/{portIdx}/actions` body `{"action":"POWER_CYCLE"}`
 - New tool: `power_cycle_port` (mutating, `confirmed bool`, `device_id`, `port_idx`)
 
-### 4d — Pending device discovery
+### 4d — Pending device discovery ✅
 
 List devices visible on the network but not yet adopted.
 - `GET /v1/pending-devices`

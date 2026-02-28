@@ -48,3 +48,38 @@ func TestListClients(t *testing.T) {
 		}
 	})
 }
+
+func TestGetClient(t *testing.T) {
+	t.Run("decodes single client", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/clients/c-99" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "c-99", "macAddress": "aa:bb:cc:00:00:99", "type": "WIRELESS", "ipAddress": "10.0.0.5",
+			})
+		})
+		c, err := client.GetClient(context.Background(), "", "c-99")
+		if err != nil {
+			t.Fatalf("GetClient: %v", err)
+		}
+		if c.ID != "c-99" {
+			t.Errorf("got ID %q, want c-99", c.ID)
+		}
+		if c.IP != "10.0.0.5" {
+			t.Errorf("got IP %q, want 10.0.0.5", c.IP)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.GetClient(context.Background(), "", "c-99")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

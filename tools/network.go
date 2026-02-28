@@ -11,6 +11,10 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 	}
+	type broadcastInput struct {
+		SiteID      string `json:"site_id,omitempty"   jsonschema:"site ID; omit to use default"`
+		BroadcastID string `json:"broadcast_id"         jsonschema:"WiFi broadcast ID"`
+	}
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_wifi_broadcasts",
@@ -22,6 +26,21 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 			return errorResult(fmt.Errorf("list_wifi_broadcasts: %w", err))
 		}
 		return jsonResult(broadcasts)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_wifi_broadcast",
+		Description: "Get details for a specific WiFi broadcast (SSID) by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input broadcastInput) (*mcp.CallToolResult, any, error) {
+		if input.BroadcastID == "" {
+			return errorResult(fmt.Errorf("get_wifi_broadcast: broadcast_id is required"))
+		}
+		bc, err := client.GetWiFiBroadcast(ctx, input.SiteID, input.BroadcastID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_wifi_broadcast: %w", err))
+		}
+		return jsonResult(bc)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{

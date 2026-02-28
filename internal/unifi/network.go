@@ -21,6 +21,22 @@ func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string) ([]WiFiB
 	return broadcasts, nil
 }
 
+// GetWiFiBroadcast returns a single WiFi broadcast configuration from
+// GET /integration/v1/sites/{siteID}/wifi/broadcasts/{broadcastID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetWiFiBroadcast(ctx context.Context, siteID, broadcastID string) (WiFiBroadcast, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts/%s", id, broadcastID))
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("GetWiFiBroadcast %s %s: %w", id, broadcastID, err)
+	}
+	broadcast, err := decodeV1[WiFiBroadcast](data)
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("GetWiFiBroadcast %s %s: %w", id, broadcastID, err)
+	}
+	return broadcast, nil
+}
+
 // ListNetworks returns all configured networks from GET /integration/v1/sites/{siteID}/networks.
 // Pass an empty siteID to use the client default.
 func (c *Client) ListNetworks(ctx context.Context, siteID string) ([]NetworkConf, error) {

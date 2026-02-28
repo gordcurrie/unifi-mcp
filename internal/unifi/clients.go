@@ -19,3 +19,18 @@ func (c *Client) ListClients(ctx context.Context, siteID string) ([]NetworkClien
 	}
 	return clients, nil
 }
+
+// GetClient returns a single connected client from GET /integration/v1/sites/{siteID}/clients/{clientID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetClient(ctx context.Context, siteID, clientID string) (NetworkClient, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s", id, clientID))
+	if err != nil {
+		return NetworkClient{}, fmt.Errorf("GetClient %s %s: %w", id, clientID, err)
+	}
+	client, err := decodeV1[NetworkClient](data)
+	if err != nil {
+		return NetworkClient{}, fmt.Errorf("GetClient %s %s: %w", id, clientID, err)
+	}
+	return client, nil
+}

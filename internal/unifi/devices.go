@@ -49,6 +49,20 @@ func (c *Client) RestartDevice(ctx context.Context, siteID, deviceID string) err
 	return nil
 }
 
+// ListPendingDevices returns devices visible on the network but not yet adopted from
+// GET /integration/v1/pending-devices. This endpoint is not site-scoped.
+func (c *Client) ListPendingDevices(ctx context.Context) ([]PendingDevice, error) {
+	data, err := c.get(ctx, "/integration/v1/pending-devices")
+	if err != nil {
+		return nil, fmt.Errorf("ListPendingDevices: %w", err)
+	}
+	devices, err := decodeV1List[PendingDevice](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListPendingDevices: %w", err)
+	}
+	return devices, nil
+}
+
 // GetDeviceStats returns the latest statistics for a device from
 // GET /integration/v1/sites/{siteID}/devices/{deviceID}/statistics/latest.
 // Pass an empty siteID to use the client default.
