@@ -108,3 +108,42 @@ type ACLRule struct {
 	Action  string `json:"action"`
 	Index   int    `json:"index"`
 }
+
+// TrafficMatchingList is returned by GET /integration/v1/sites/{siteId}/traffic-matching-lists.
+type TrafficMatchingList struct {
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Type    string   `json:"type,omitempty"`
+	Entries []string `json:"entries,omitempty"`
+}
+
+// WAN is returned by GET /integration/v1/sites/{siteId}/wans.
+type WAN struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name,omitempty"`
+	Type      string   `json:"type,omitempty"`
+	Enabled   bool     `json:"enabled"`
+	State     string   `json:"state,omitempty"`
+	IPAddress string   `json:"ipAddress,omitempty"`
+	Gateway   string   `json:"gateway,omitempty"`
+	DNS       []string `json:"dns,omitempty"`
+}
+
+// VPNTunnel is returned by GET /integration/v1/sites/{siteId}/vpn/site-to-site-tunnels.
+type VPNTunnel struct {
+	ID       string `json:"id"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Enabled  bool   `json:"enabled"`
+	State    string `json:"state,omitempty"`
+	LocalIP  string `json:"localIp,omitempty"`
+	RemoteIP string `json:"remoteIp,omitempty"`
+}
+
+// VPNServer is returned by GET /integration/v1/sites/{siteId}/vpn/servers.
+type VPNServer struct {
+	ID      string `json:"id"`
+	Name    string `json:"name,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Enabled bool   `json:"enabled"`
+}

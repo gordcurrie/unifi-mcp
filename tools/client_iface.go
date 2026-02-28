@@ -32,4 +32,9 @@ type unifiClient interface {
 	ListFirewallPolicies(ctx context.Context, siteID string) ([]unifi.FirewallPolicy, error)
 	ListFirewallZones(ctx context.Context, siteID string) ([]unifi.FirewallZone, error)
 	ListACLRules(ctx context.Context, siteID string) ([]unifi.ACLRule, error)
+	ListTrafficMatchingLists(ctx context.Context, siteID string) ([]unifi.TrafficMatchingList, error)
+	GetTrafficMatchingList(ctx context.Context, siteID, listID string) (unifi.TrafficMatchingList, error)
+	ListWANs(ctx context.Context, siteID string) ([]unifi.WAN, error)
+	ListVPNTunnels(ctx context.Context, siteID string) ([]unifi.VPNTunnel, error)
+	ListVPNServers(ctx context.Context, siteID string) ([]unifi.VPNServer, error)
 }

@@ -136,6 +136,11 @@ export UNIFI_SITE_ID=your-site-uuid
 | `list_firewall_policies` | All firewall policies |
 | `list_firewall_zones` | All firewall zones |
 | `list_acl_rules` | All ACL rules |
+| `list_traffic_matching_lists` | All traffic matching lists (IP/port sets used by firewall policies) |
+| `get_traffic_matching_list` | Details for a single traffic matching list by ID |
+| `list_wans` | All WAN interface definitions |
+| `list_vpn_tunnels` | All site-to-site VPN tunnels |
+| `list_vpn_servers` | All VPN server configurations |
 
 ---
 

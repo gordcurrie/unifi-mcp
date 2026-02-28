@@ -96,3 +96,83 @@ func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, er
 	}
 	return rules, nil
 }
+
+// ListTrafficMatchingLists returns all traffic matching lists from
+// GET /integration/v1/sites/{siteID}/traffic-matching-lists.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string) ([]TrafficMatchingList, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
+	}
+	lists, err := decodeV1List[TrafficMatchingList](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
+	}
+	return lists, nil
+}
+
+// GetTrafficMatchingList returns a single traffic matching list from
+// GET /integration/v1/sites/{siteID}/traffic-matching-lists/{listID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetTrafficMatchingList(ctx context.Context, siteID, listID string) (TrafficMatchingList, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists/%s", id, listID))
+	if err != nil {
+		return TrafficMatchingList{}, fmt.Errorf("GetTrafficMatchingList %s %s: %w", id, listID, err)
+	}
+	list, err := decodeV1[TrafficMatchingList](data)
+	if err != nil {
+		return TrafficMatchingList{}, fmt.Errorf("GetTrafficMatchingList %s %s: %w", id, listID, err)
+	}
+	return list, nil
+}
+
+// ListWANs returns all WAN interface definitions from
+// GET /integration/v1/sites/{siteID}/wans.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListWANs(ctx context.Context, siteID string) ([]WAN, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wans", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListWANs %s: %w", id, err)
+	}
+	wans, err := decodeV1List[WAN](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListWANs %s: %w", id, err)
+	}
+	return wans, nil
+}
+
+// ListVPNTunnels returns all site-to-site VPN tunnels from
+// GET /integration/v1/sites/{siteID}/vpn/site-to-site-tunnels.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListVPNTunnels(ctx context.Context, siteID string) ([]VPNTunnel, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/site-to-site-tunnels", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
+	}
+	tunnels, err := decodeV1List[VPNTunnel](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
+	}
+	return tunnels, nil
+}
+
+// ListVPNServers returns all VPN server configurations from
+// GET /integration/v1/sites/{siteID}/vpn/servers.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListVPNServers(ctx context.Context, siteID string) ([]VPNServer, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/servers", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListVPNServers %s: %w", id, err)
+	}
+	servers, err := decodeV1List[VPNServer](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListVPNServers %s: %w", id, err)
+	}
+	return servers, nil
+}
