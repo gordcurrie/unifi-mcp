@@ -71,7 +71,7 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 		if base, ok := http.DefaultTransport.(*http.Transport); ok {
 			t := base.Clone()
 			if t.TLSClientConfig == nil {
-				t.TLSClientConfig = &tls.Config{} //nolint:gosec // populated below
+				t.TLSClientConfig = &tls.Config{MinVersion: tls.VersionTLS12}
 			}
 			//nolint:gosec // G402: InsecureSkipVerify is only set when UNIFI_INSECURE=true, explicit user opt-in
 			t.TLSClientConfig.InsecureSkipVerify = true // #nosec G402
