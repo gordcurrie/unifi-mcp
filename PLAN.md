@@ -299,13 +299,13 @@ enough for all read and most action use cases. Rather than maintain dual-mode ro
 - `set_wlan_enabled` — v1 WiFi Broadcasts update is complex; deferred to Phase 3
 
 **Tools renamed/replaced:**
-- `list_wlans` → `list_wifi_broadcasts` (path: `/v1/sites/{id}/wifi/broadcasts`)
-- `list_firewall_rules` → `list_firewall_policies` + `list_firewall_zones` (path: `/v1/sites/{id}/firewall/...`)
+- `list_wlans` → `list_wifi_broadcasts` (path: `/integration/v1/sites/{id}/wifi/broadcasts`)
+- `list_firewall_rules` → `list_firewall_policies` + `list_firewall_zones` (path: `/integration/v1/sites/{id}/firewall/...`)
 - `list_port_forwards` — removed (no v1 equivalent; deferred)
-- `get_device_stats` — re-pointed at `/v1/sites/{id}/devices/{deviceId}/statistics/latest`
+- `get_device_stats` — re-pointed at `/integration/v1/sites/{id}/devices/{deviceId}/statistics/latest`
 
 **New tool added:**
-- `list_acl_rules` → `GET /v1/sites/{id}/acl-rules`
+- `list_acl_rules` → `GET /integration/v1/sites/{id}/acl-rules`
 
 ### Discoveries
 

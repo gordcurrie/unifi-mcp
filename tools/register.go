@@ -6,14 +6,8 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// Config controls optional tool categories.
-type Config struct {
-	// AllowDestructive is reserved for future destructive tool support.
-	AllowDestructive bool
-}
-
 // RegisterAll registers every enabled tool group with the MCP server.
-func RegisterAll(s *mcp.Server, client *unifi.Client, cfg Config) {
+func RegisterAll(s *mcp.Server, client *unifi.Client) {
 	registerSiteTools(s, client)
 	registerDeviceTools(s, client)
 	registerClientTools(s, client)

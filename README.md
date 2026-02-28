@@ -153,12 +153,12 @@ cmd/unifi-mcp/main.go      — flags, env vars, server bootstrap
 internal/unifi/            — UniFi HTTP client (no third-party UniFi libs)
   client.go                — core HTTP + generic response decoders
   types.go                 — all data types
-  sites.go / devices.go / clients.go / statistics.go / network.go
+  sites.go / devices.go / clients.go / network.go
 tools/                     — MCP tool registration
   register.go              — RegisterAll wires all tool groups
-  sites.go / devices.go / clients.go / statistics.go / network.go / destructive.go
+  sites.go / devices.go / clients.go / network.go
   helpers.go               — jsonResult / textResult helpers
 ```
 
-Both v1 (`/v1/sites/{id}/...`) and legacy (`/api/s/{site}/...`) UniFi API paths are used,
-both authenticated with the `X-API-Key` header.
+All endpoints use the integration v1 API (`/proxy/network/integration/v1/sites/{id}/...`),
+authenticated with the `X-API-Key` header.

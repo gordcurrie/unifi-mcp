@@ -96,6 +96,38 @@ func TestListFirewallPolicies(t *testing.T) {
 	})
 }
 
+func TestListFirewallZones(t *testing.T) {
+	t.Run("decodes zone list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "z-1", "name": "Internal", "networkIds": []string{"net-1", "net-2"}},
+					{"id": "z-2", "name": "External"},
+				},
+				"totalCount": 2,
+			})
+		})
+		zones, err := client.ListFirewallZones(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListFirewallZones: %v", err)
+		}
+		if len(zones) != 2 {
+			t.Fatalf("got %d zones, want 2", len(zones))
+		}
+		if zones[0].Name != "Internal" {
+			t.Errorf("got Name %q, want Internal", zones[0].Name)
+		}
+		if len(zones[0].NetworkIDs) != 2 {
+			t.Errorf("got %d networkIDs, want 2", len(zones[0].NetworkIDs))
+		}
+	})
+}
+
 func TestListACLRules(t *testing.T) {
 	t.Run("decodes ACL rule list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
