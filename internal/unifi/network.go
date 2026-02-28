@@ -97,6 +97,40 @@ func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, er
 	return rules, nil
 }
 
+// SetWiFiBroadcastEnabled enables or disables a WiFi broadcast via
+// GET then PUT /integration/v1/sites/{siteID}/wifi/broadcasts/{broadcastID}.
+// It fetches the current resource as a raw map to preserve all API fields,
+// sets the enabled flag, and PUTs the full object back.
+// Pass an empty siteID to use the client default.
+func (c *Client) SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastID string, enabled bool) (WiFiBroadcast, error) {
+	id := c.site(siteID)
+	path := fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts/%s", id, broadcastID)
+
+	// GET current state as raw map for the round-trip PUT.
+	raw, err := c.get(ctx, path)
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("SetWiFiBroadcastEnabled %s %s: get: %w", id, broadcastID, err)
+	}
+	body, err := decodeV1[map[string]any](raw)
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("SetWiFiBroadcastEnabled %s %s: decode: %w", id, broadcastID, err)
+	}
+	// Strip read-only fields the API rejects in PUT bodies.
+	delete(body, "id")
+	delete(body, "metadata")
+	body["enabled"] = enabled
+
+	updated, err := c.put(ctx, path, body)
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("SetWiFiBroadcastEnabled %s %s: put: %w", id, broadcastID, err)
+	}
+	bc, err := decodeV1[WiFiBroadcast](updated)
+	if err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("SetWiFiBroadcastEnabled %s %s: decode response: %w", id, broadcastID, err)
+	}
+	return bc, nil
+}
+
 // ListTrafficMatchingLists returns all traffic matching lists from
 // GET /integration/v1/sites/{siteID}/traffic-matching-lists.
 // Pass an empty siteID to use the client default.

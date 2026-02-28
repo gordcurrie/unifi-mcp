@@ -191,6 +191,57 @@ func TestGetWiFiBroadcast(t *testing.T) {
 	})
 }
 
+func TestSetWiFiBroadcastEnabled(t *testing.T) {
+	t.Run("disables a broadcast", func(t *testing.T) {
+		var putEnabled any
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts/bc-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			switch r.Method {
+			case http.MethodGet:
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+				})
+			case http.MethodPut:
+				var body map[string]any
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					http.Error(w, "bad body", http.StatusBadRequest)
+					return
+				}
+				putEnabled = body["enabled"]
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": false,
+				})
+			default:
+				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			}
+		})
+		bc, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "bc-1", false)
+		if err != nil {
+			t.Fatalf("SetWiFiBroadcastEnabled: %v", err)
+		}
+		if bc.Enabled {
+			t.Error("got Enabled true, want false")
+		}
+		if putEnabled != false {
+			t.Errorf("PUT body enabled = %v, want false", putEnabled)
+		}
+	})
+
+	t.Run("returns error when GET fails", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "bc-1", false)
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
 func TestListTrafficMatchingLists(t *testing.T) {
 	t.Run("decodes list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {

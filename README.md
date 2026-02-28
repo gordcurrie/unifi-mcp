@@ -118,6 +118,7 @@ export UNIFI_SITE_ID=your-site-uuid
 | `restart_device` | Restart a device by ID — requires `confirmed: true` |
 | `get_device_stats` | Latest CPU, memory, and uptime stats for a device |
 | `list_pending_devices` | Devices visible on the network not yet adopted |
+| `power_cycle_port` | Power-cycle a single PoE port on a switch — requires `confirmed: true` |
 
 ### Clients
 
@@ -132,6 +133,7 @@ export UNIFI_SITE_ID=your-site-uuid
 |---|---|
 | `list_wifi_broadcasts` | All WiFi broadcast (SSID) configurations |
 | `get_wifi_broadcast` | Details for a single WiFi broadcast (SSID) by ID |
+| `set_wifi_broadcast_enabled` | Enable or disable a WiFi broadcast (SSID) — requires `confirmed: true` |
 | `list_networks` | LAN/VLAN network configurations |
 | `list_firewall_policies` | All firewall policies |
 | `list_firewall_zones` | All firewall zones |

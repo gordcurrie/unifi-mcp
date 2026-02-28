@@ -49,6 +49,21 @@ func (c *Client) RestartDevice(ctx context.Context, siteID, deviceID string) err
 	return nil
 }
 
+// PowerCyclePort power-cycles a single PoE port on a switch via
+// POST /integration/v1/sites/{siteID}/devices/{deviceID}/interfaces/ports/{portIdx}/actions.
+// Pass an empty siteID to use the client default.
+func (c *Client) PowerCyclePort(ctx context.Context, siteID, deviceID string, portIdx int) error {
+	id := c.site(siteID)
+	_, err := c.postWithBody(ctx,
+		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/interfaces/ports/%d/actions", id, deviceID, portIdx),
+		deviceActionRequest{Action: "POWER_CYCLE"},
+	)
+	if err != nil {
+		return fmt.Errorf("PowerCyclePort %s %s port %d: %w", id, deviceID, portIdx, err)
+	}
+	return nil
+}
+
 // ListPendingDevices returns devices visible on the network but not yet adopted from
 // GET /integration/v1/pending-devices. This endpoint is not site-scoped.
 func (c *Client) ListPendingDevices(ctx context.Context) ([]PendingDevice, error) {

@@ -93,4 +93,28 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		}
 		return jsonResult(devices)
 	})
+
+	type powerCyclePortInput struct {
+		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		DeviceID  string `json:"device_id"          jsonschema:"device ID of the switch"`
+		PortIdx   int    `json:"port_idx"           jsonschema:"port index number to power-cycle"`
+		Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the port power cycle"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "power_cycle_port",
+		Description: "Power-cycle a single PoE port on a switch. Set confirmed=true to proceed.",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input powerCyclePortInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("power_cycle_port: set confirmed=true to confirm the port power cycle"))
+		}
+		if input.DeviceID == "" {
+			return errorResult(fmt.Errorf("power_cycle_port: device_id is required"))
+		}
+		if err := client.PowerCyclePort(ctx, input.SiteID, input.DeviceID, input.PortIdx); err != nil {
+			return errorResult(fmt.Errorf("power_cycle_port: %w", err))
+		}
+		return textResult(fmt.Sprintf("power cycle command sent to port %d on device %s", input.PortIdx, input.DeviceID))
+	})
 }

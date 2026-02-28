@@ -104,7 +104,7 @@ updates before merging.
 > which is `https://<console>/proxy/network/integration`. The full resolved path is
 > `https://<console>/proxy/network/integration/v1/...` — identical to the existing tools.
 
-### 4a — WiFi broadcast mutation
+### ✅ 4a — WiFi broadcast mutation
 
 Enable/disable a WiFi broadcast (WLAN on/off for a given SSID).
 - `GET /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — get single ✅ (shipped in Phase 4 PR 1)
@@ -117,7 +117,7 @@ Direct single-client lookup is confirmed in the API (`GET /v1/sites/{id}/clients
 The v1 filtering syntax also supports querying by property (e.g. `macAddress.eq(...)`).
 - New tool: `get_client` (read-only, `client_id` required)
 
-### 4c — Port power cycle (PoE reboot)
+### ✅ 4c — Port power cycle (PoE reboot)
 
 Power-cycle a single PoE port on a switch without restarting the whole device.
 Very useful for rebooting cameras, APs, or other PoE devices.
