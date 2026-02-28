@@ -2,7 +2,6 @@ package tools
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -28,7 +27,7 @@ func registerDestructiveTools(s *mcp.Server, client unifiClient) {
 		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveHint},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input forgetClientInput) (*mcp.CallToolResult, any, error) {
 		if !input.Confirmed {
-			return nil, nil, errors.New("forget_client: set confirmed=true to execute this destructive action")
+			return nil, nil, fmt.Errorf("forget_client: set confirmed=true to execute this destructive action")
 		}
 		if err := client.ForgetClient(ctx, input.SiteID, input.MAC); err != nil {
 			return nil, nil, fmt.Errorf("forget_client: %w", err)
@@ -42,7 +41,7 @@ func registerDestructiveTools(s *mcp.Server, client unifiClient) {
 		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveHint},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input reprovisionInput) (*mcp.CallToolResult, any, error) {
 		if !input.Confirmed {
-			return nil, nil, errors.New("force_reprovision_device: set confirmed=true to execute this destructive action")
+			return nil, nil, fmt.Errorf("force_reprovision_device: set confirmed=true to execute this destructive action")
 		}
 		if err := client.ForceReprovisionDevice(ctx, input.SiteID, input.MAC); err != nil {
 			return nil, nil, fmt.Errorf("force_reprovision_device: %w", err)

@@ -1,16 +1,22 @@
 BINARY := bin/unifi-mcp
 CMD     := ./cmd/unifi-mcp
 
+# Pinned tool versions — update these intentionally when upgrading
+GOFUMPT_VERSION       := v0.7.0
+GOSEC_VERSION         := v2.22.8
+GOVULNCHECK_VERSION   := v1.1.4
+GOLANGCILINT_VERSION  := v2.10.1
+
 .PHONY: all install-tools fix fmt vet lint sec vulncheck test build check clean
 
 all: check
 
 ## install-tools – installs all required dev tools
 install-tools:
-	go install mvdan.cc/gofumpt@latest
-	go install github.com/securego/gosec/v2/cmd/gosec@latest
-	go install golang.org/x/vuln/cmd/govulncheck@latest
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	go install mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
+	go install github.com/securego/gosec/v2/cmd/gosec@$(GOSEC_VERSION)
+	go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCILINT_VERSION)
 
 ## fix – apply go fix to update deprecated API usage
 fix:

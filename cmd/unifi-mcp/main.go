@@ -31,7 +31,7 @@ func run() error {
 	var transport string
 	var addr string
 	flag.StringVar(&transport, "transport", "stdio", "transport to use: stdio or http")
-	flag.StringVar(&addr, "addr", ":8080", "listen address for http transport")
+	flag.StringVar(&addr, "addr", "127.0.0.1:8080", "listen address for http transport")
 	flag.Parse()
 
 	baseURL := os.Getenv("UNIFI_BASE_URL")

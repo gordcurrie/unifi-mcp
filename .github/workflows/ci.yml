@@ -38,6 +38,9 @@ jobs:
       - name: fix + fmt
         run: make fix fmt
 
+      - name: Check for uncommitted changes
+        run: git diff --exit-code
+
       - name: vet
         run: make vet
 
