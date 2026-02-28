@@ -65,6 +65,9 @@ func run() error {
 			Addr:              addr,
 			Handler:           mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server { return s }, nil),
 			ReadHeaderTimeout: 10 * time.Second,
+			ReadTimeout:       30 * time.Second,
+			WriteTimeout:      30 * time.Second,
+			IdleTimeout:       120 * time.Second,
 		}
 		go func() {
 			<-ctx.Done()

@@ -7,7 +7,7 @@ built on the official [`modelcontextprotocol/go-sdk`](https://github.com/modelco
 
 ## Prerequisites
 
-- Go 1.23 or later
+- Go 1.26 or later
 - UniFi OS console (UCG-Max, UDM-Pro, etc.) with the REST API enabled
 - A UniFi **API key** generated under *UniFi OS → Settings → API*
 
@@ -49,8 +49,12 @@ export UNIFI_SITE_ID=your-site-uuid
 
 ### HTTP streamable
 
+> **Note:** The HTTP transport binds to the address as-is with no authentication.
+> Use a loopback address (`:8080` binds all interfaces; prefer `127.0.0.1:8080`)
+> or place it behind a reverse proxy with auth before exposing it on a shared network.
+
 ```bash
-./bin/unifi-mcp --transport http --addr :8080
+./bin/unifi-mcp --transport http --addr 127.0.0.1:8080
 ```
 
 ---
@@ -115,7 +119,7 @@ export UNIFI_SITE_ID=your-site-uuid
 | `restart_device` | Restart a device |
 | `locate_device` | Flash device LEDs to locate it |
 | `unlocate_device` | Stop LED location flash |
-| `upgrade_device_firmware` | Trigger a firmware upgrade |
+| `upgrade_device` | Trigger a firmware upgrade |
 | `run_speed_test` | Start an internet speed test |
 | `get_speed_test_status` | Poll speed test progress and results |
 
@@ -133,9 +137,9 @@ export UNIFI_SITE_ID=your-site-uuid
 
 | Tool | Description |
 |---|---|
-| `get_site_statistics` | Aggregate traffic and client counts for the site |
-| `get_device_statistics` | Per-device traffic statistics |
-| `get_client_statistics` | Per-client traffic statistics |
+| `get_site_stats` | Aggregate traffic and client counts for the site |
+| `get_device_stats` | Per-device traffic statistics |
+| `get_client_stats` | Per-client traffic statistics |
 | `list_events` | Recent UniFi events |
 | `list_alarms` | Active (or archived) alarms |
 

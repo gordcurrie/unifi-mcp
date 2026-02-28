@@ -68,10 +68,20 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 
 	transport := http.DefaultTransport
 	if insecure {
-		//nolint:gosec // G402: InsecureSkipVerify is only set when UNIFI_INSECURE=true,
-		// which the user must explicitly opt into. Default is secure (verify enabled).
-		transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402 -- only set when UNIFI_INSECURE=true, explicit user opt-in
+		if base, ok := http.DefaultTransport.(*http.Transport); ok {
+			t := base.Clone()
+			if t.TLSClientConfig == nil {
+				t.TLSClientConfig = &tls.Config{} //nolint:gosec // populated below
+			}
+			//nolint:gosec // G402: InsecureSkipVerify is only set when UNIFI_INSECURE=true, explicit user opt-in
+			t.TLSClientConfig.InsecureSkipVerify = true // #nosec G402
+			transport = t
+		} else {
+			// Fallback if DefaultTransport has been replaced by something other than *http.Transport.
+			//nolint:gosec // G402: InsecureSkipVerify is only set when UNIFI_INSECURE=true, explicit user opt-in
+			transport = &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402
+			}
 		}
 	}
 
@@ -179,11 +189,30 @@ func decodeV1List[T any](data []byte) ([]T, error) {
 	return resp.Data, nil
 }
 
-// decodeLegacy decodes a legacy API list response envelope.
+// decodeLegacy decodes a legacy API list response envelope and validates meta.rc.
 func decodeLegacy[T any](data []byte) ([]T, error) {
 	var resp legacyResponse[T]
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, fmt.Errorf("decode legacy response: %w", err)
 	}
+	if resp.Meta.RC != "" && resp.Meta.RC != "ok" {
+		return nil, fmt.Errorf("controller error: rc=%s msg=%s", resp.Meta.RC, resp.Meta.Msg)
+	}
 	return resp.Data, nil
+}
+
+// checkLegacyRC decodes just the meta envelope from a legacy command response
+// and returns an error when meta.rc is not "ok".
+func checkLegacyRC(data []byte) error {
+	type envelope struct {
+		Meta legacyMeta `json:"meta"`
+	}
+	var resp envelope
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return fmt.Errorf("decode legacy response: %w", err)
+	}
+	if resp.Meta.RC != "" && resp.Meta.RC != "ok" {
+		return fmt.Errorf("controller error: rc=%s msg=%s", resp.Meta.RC, resp.Meta.Msg)
+	}
+	return nil
 }

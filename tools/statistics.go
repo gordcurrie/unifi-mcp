@@ -29,37 +29,37 @@ func registerStatisticsTools(s *mcp.Server, client unifiClient) {
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "get_site_statistics",
+		Name:        "get_site_stats",
 		Description: "Get aggregate traffic and client statistics for the site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		stats, err := client.GetSiteStats(ctx, input.SiteID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_site_statistics: %w", err)
+			return nil, nil, fmt.Errorf("get_site_stats: %w", err)
 		}
 		return jsonResult(stats)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "get_device_statistics",
+		Name:        "get_device_stats",
 		Description: "Get statistics for a specific device.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceStatsInput) (*mcp.CallToolResult, any, error) {
 		dev, err := client.GetDeviceStats(ctx, input.SiteID, input.DeviceID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_device_statistics: %w", err)
+			return nil, nil, fmt.Errorf("get_device_stats: %w", err)
 		}
 		return jsonResult(dev)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "get_client_statistics",
+		Name:        "get_client_stats",
 		Description: "Get statistics for a specific connected client.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input clientStatsInput) (*mcp.CallToolResult, any, error) {
 		cl, err := client.GetClientStats(ctx, input.SiteID, input.ClientID)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get_client_statistics: %w", err)
+			return nil, nil, fmt.Errorf("get_client_stats: %w", err)
 		}
 		return jsonResult(cl)
 	})

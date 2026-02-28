@@ -24,8 +24,11 @@ func (c *Client) ListWLANs(ctx context.Context, site string) ([]WLAN, error) {
 // Pass an empty site to use the client default.
 func (c *Client) SetWLANEnabled(ctx context.Context, site, wlanID string, enabled bool) error {
 	s := c.site(site)
-	_, err := c.put(ctx, fmt.Sprintf("/api/s/%s/rest/wlanconf/%s", s, wlanID), wlanEnabledRequest{Enabled: enabled})
+	data, err := c.put(ctx, fmt.Sprintf("/api/s/%s/rest/wlanconf/%s", s, wlanID), wlanEnabledRequest{Enabled: enabled})
 	if err != nil {
+		return fmt.Errorf("SetWLANEnabled %s enabled=%v: %w", wlanID, enabled, err)
+	}
+	if _, err := decodeLegacy[struct{}](data); err != nil {
 		return fmt.Errorf("SetWLANEnabled %s enabled=%v: %w", wlanID, enabled, err)
 	}
 	return nil

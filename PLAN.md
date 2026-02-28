@@ -50,7 +50,7 @@ unifi_mcp/
 | Flag          | Default          | Description                                     |
 |---------------|------------------|-------------------------------------------------|
 | `--transport` | `stdio`          | `stdio` or `http`                               |
-| `--addr`      | `localhost:8080` | Listen address when `--transport=http`          |
+| `--addr`      | `:8080`          | Listen address when `--transport=http`          |
 
 ---
 
@@ -71,7 +71,7 @@ single-site home lab use, but it is still accepted as an optional input paramete
 
 ---
 
-## Tool Inventory (22 always-on + 2 opt-in destructive)
+## Tool Inventory (27 always-on + 2 opt-in destructive)
 
 | File            | Tool                        | Read-only |
 |-----------------|-----------------------------|-----------|
@@ -83,7 +83,7 @@ single-site home lab use, but it is still accepted as an optional input paramete
 | `devices.go`    | `restart_device`            |           |
 | `devices.go`    | `locate_device`             |           |
 | `devices.go`    | `unlocate_device`           |           |
-| `devices.go`    | `upgrade_device_firmware`   |           |
+| `devices.go`    | `upgrade_device`            |           |
 | `devices.go`    | `run_speed_test`            |           |
 | `devices.go`    | `get_speed_test_status`     | ✅        |
 | `clients.go`    | `list_active_clients`       | ✅        |
@@ -91,9 +91,9 @@ single-site home lab use, but it is still accepted as an optional input paramete
 | `clients.go`    | `block_client`              |           |
 | `clients.go`    | `unblock_client`            |           |
 | `clients.go`    | `kick_client`               |           |
-| `statistics.go` | `get_site_statistics`       | ✅        |
-| `statistics.go` | `get_device_statistics`     | ✅        |
-| `statistics.go` | `get_client_statistics`     | ✅        |
+| `statistics.go` | `get_site_stats`            | ✅        |
+| `statistics.go` | `get_device_stats`          | ✅        |
+| `statistics.go` | `get_client_stats`          | ✅        |
 | `statistics.go` | `list_events`               | ✅        |
 | `statistics.go` | `list_alarms`               | ✅        |
 | `network.go`    | `list_wlans`                | ✅        |
@@ -160,8 +160,8 @@ Legacy devmgr commands (`POST /api/s/{site}/cmd/devmgr`):
 - `ForceReprovisionDevice(site, mac string)`
 
 Legacy stat endpoints:
-- `RunSpeedTest(site string)` → `POST /api/s/{site}/cmd/devmgr` `{"cmd":"speedtest"}`
-- `GetSpeedTestStatus(site string)` → `POST /api/s/{site}/cmd/devmgr` `{"cmd":"speedtest-status"}`
+- `RunSpeedTest(site string)` → `POST /api/s/{site}/cmd/devmgr/speedtest`
+- `GetSpeedTestStatus(site string)` → `GET /api/s/{site}/stat/speedtest-status`
 
 ### Step 7 — `internal/unifi/clients.go`
 
@@ -179,8 +179,8 @@ Legacy stamgr commands (`POST /api/s/{site}/cmd/stamgr`):
 
 v1 endpoints:
 - `GetSiteStats(siteID string)` → `GET /v1/sites/{siteID}/statistics/site`
-- `GetDeviceStats(siteID string)` → `GET /v1/sites/{siteID}/statistics/devices`
-- `GetClientStats(siteID string, macs []string)` → `GET /v1/sites/{siteID}/statistics/clients`
+- `GetDeviceStats(siteID, deviceID string)` → `GET /v1/sites/{siteID}/statistics/devices/{deviceID}`
+- `GetClientStats(siteID, clientID string)` → `GET /v1/sites/{siteID}/statistics/clients/{clientID}`
 
 Legacy stat endpoints:
 - `ListEvents(site string)` → `GET /api/s/{site}/stat/event`

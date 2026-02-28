@@ -38,39 +38,39 @@ func (c *Client) ListKnownClients(ctx context.Context, siteID string) ([]KnownCl
 // BlockClient blocks the client with the given MAC address.
 func (c *Client) BlockClient(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "block-sta", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "block-sta", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("BlockClient %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // UnblockClient removes the block on the client with the given MAC address.
 func (c *Client) UnblockClient(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "unblock-sta", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "unblock-sta", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("UnblockClient %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // KickClient disconnects (but does not ban) the client with the given MAC address.
 func (c *Client) KickClient(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "kick-sta", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "kick-sta", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("KickClient %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // ForgetClient permanently removes the client record from the controller.
 func (c *Client) ForgetClient(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "forget-sta", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/stamgr", s), clientCmdRequest{Cmd: "forget-sta", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("ForgetClient %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }

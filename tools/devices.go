@@ -78,12 +78,12 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "upgrade_device_firmware",
+		Name:        "upgrade_device",
 		Description: "Trigger a firmware upgrade on a UniFi device.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input deviceMACInput) (*mcp.CallToolResult, any, error) {
 		if err := client.UpgradeDevice(ctx, input.SiteID, input.MAC); err != nil {
-			return nil, nil, fmt.Errorf("upgrade_device_firmware: %w", err)
+			return nil, nil, fmt.Errorf("upgrade_device: %w", err)
 		}
 		return textResult("upgrade initiated for " + input.MAC)
 	})

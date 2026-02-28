@@ -26,11 +26,11 @@ func (c *Client) GetDevice(ctx context.Context, siteID, deviceID string) (Device
 	id := c.site(siteID)
 	data, err := c.get(ctx, fmt.Sprintf("/v1/sites/%s/devices/%s", id, deviceID))
 	if err != nil {
-		return Device{}, fmt.Errorf("GetDevice %s: %w", deviceID, err)
+		return Device{}, fmt.Errorf("GetDevice %s %s: %w", id, deviceID, err)
 	}
 	dev, err := decodeV1Single[Device](data)
 	if err != nil {
-		return Device{}, fmt.Errorf("GetDevice %s: %w", deviceID, err)
+		return Device{}, fmt.Errorf("GetDevice %s %s: %w", id, deviceID, err)
 	}
 	return dev, nil
 }
@@ -38,61 +38,61 @@ func (c *Client) GetDevice(ctx context.Context, siteID, deviceID string) (Device
 // RestartDevice sends a restart command via POST /api/s/{site}/cmd/devmgr.
 func (c *Client) RestartDevice(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "restart", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "restart", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("RestartDevice %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // LocateDevice enables the locate/blink LED on a device.
 func (c *Client) LocateDevice(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "set-locate", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "set-locate", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("LocateDevice %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // UnlocateDevice disables the locate/blink LED on a device.
 func (c *Client) UnlocateDevice(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "unset-locate", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "unset-locate", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("UnlocateDevice %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // UpgradeDevice triggers a firmware upgrade on the device.
 func (c *Client) UpgradeDevice(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "upgrade", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "upgrade", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("UpgradeDevice %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // ForceReprovisionDevice forces reprovisioning of the device config.
 func (c *Client) ForceReprovisionDevice(ctx context.Context, site, mac string) error {
 	s := c.site(site)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "force-reprovision", MAC: mac})
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr", s), deviceCmdRequest{Cmd: "force-reprovision", MAC: mac})
 	if err != nil {
 		return fmt.Errorf("ForceReprovisionDevice %s: %w", mac, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // RunSpeedTest initiates a speed test from the USG/UCG.
 func (c *Client) RunSpeedTest(ctx context.Context, site string) error {
 	s := c.site(site)
-	_, err := c.post(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr/speedtest", s))
+	data, err := c.post(ctx, fmt.Sprintf("/api/s/%s/cmd/devmgr/speedtest", s))
 	if err != nil {
 		return fmt.Errorf("RunSpeedTest %s: %w", s, err)
 	}
-	return nil
+	return checkLegacyRC(data)
 }
 
 // GetSpeedTestStatus returns the most recent speed test result.
