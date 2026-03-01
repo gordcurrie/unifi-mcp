@@ -12,6 +12,8 @@ import (
 func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bool) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Offset int    `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int    `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
 	}
 	type broadcastInput struct {
 		SiteID      string `json:"site_id,omitempty"   jsonschema:"site ID; omit to use default"`
@@ -23,7 +25,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all WiFi broadcast configurations (SSIDs).",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		broadcasts, err := client.ListWiFiBroadcasts(ctx, input.SiteID)
+		broadcasts, err := client.ListWiFiBroadcasts(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_wifi_broadcasts: %w", err))
 		}
@@ -80,7 +82,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all configured networks (VLANs, LAN segments).",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		nets, err := client.ListNetworks(ctx, input.SiteID)
+		nets, err := client.ListNetworks(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_networks: %w", err))
 		}
@@ -92,7 +94,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all firewall policies for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		policies, err := client.ListFirewallPolicies(ctx, input.SiteID)
+		policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
 		}
@@ -104,7 +106,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all firewall zones for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		zones, err := client.ListFirewallZones(ctx, input.SiteID)
+		zones, err := client.ListFirewallZones(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_firewall_zones: %w", err))
 		}
@@ -121,7 +123,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all traffic matching lists (IP/port sets used by firewall policies).",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		lists, err := client.ListTrafficMatchingLists(ctx, input.SiteID)
+		lists, err := client.ListTrafficMatchingLists(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_traffic_matching_lists: %w", err))
 		}
@@ -148,7 +150,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all WAN interface definitions for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		wans, err := client.ListWANs(ctx, input.SiteID)
+		wans, err := client.ListWANs(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_wans: %w", err))
 		}
@@ -160,7 +162,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all site-to-site VPN tunnels for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		tunnels, err := client.ListVPNTunnels(ctx, input.SiteID)
+		tunnels, err := client.ListVPNTunnels(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_vpn_tunnels: %w", err))
 		}
@@ -172,7 +174,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all VPN server configurations for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		servers, err := client.ListVPNServers(ctx, input.SiteID)
+		servers, err := client.ListVPNServers(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_vpn_servers: %w", err))
 		}
@@ -211,7 +213,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all local DNS policies (A-record overrides) for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		policies, err := client.ListDNSPolicies(ctx, input.SiteID)
+		policies, err := client.ListDNSPolicies(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_dns_policies: %w", err))
 		}
@@ -511,7 +513,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all ACL rules for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		rules, err := client.ListACLRules(ctx, input.SiteID)
+		rules, err := client.ListACLRules(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_acl_rules: %w", err))
 		}
@@ -725,7 +727,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all hotspot vouchers for a site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		vouchers, err := client.ListVouchers(ctx, input.SiteID)
+		vouchers, err := client.ListVouchers(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_vouchers: %w", err))
 		}
@@ -812,7 +814,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all device tags defined for the site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		tags, err := client.ListDeviceTags(ctx, input.SiteID)
+		tags, err := client.ListDeviceTags(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_device_tags: %w", err))
 		}
@@ -823,8 +825,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Name:        "list_dpi_categories",
 		Description: "List all DPI application categories (used in firewall matching rules).",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
-		cats, err := client.ListDPICategories(ctx)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+	},
+	) (*mcp.CallToolResult, any, error) {
+		cats, err := client.ListDPICategories(ctx, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_dpi_categories: %w", err))
 		}
@@ -835,8 +841,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Name:        "list_dpi_applications",
 		Description: "List all DPI applications (used in firewall matching rules).",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
-		apps, err := client.ListDPIApplications(ctx)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+	},
+	) (*mcp.CallToolResult, any, error) {
+		apps, err := client.ListDPIApplications(ctx, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_dpi_applications: %w", err))
 		}
@@ -848,7 +858,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List all RADIUS profiles configured for the site.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		profiles, err := client.ListRADIUSProfiles(ctx, input.SiteID)
+		profiles, err := client.ListRADIUSProfiles(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_radius_profiles: %w", err))
 		}

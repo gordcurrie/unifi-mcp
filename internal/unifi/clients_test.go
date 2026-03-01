@@ -23,18 +23,18 @@ func TestListClients(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		clients, err := client.ListClients(context.Background(), "")
+		clients, err := client.ListClients(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListClients: %v", err)
 		}
-		if len(clients) != 2 {
-			t.Fatalf("got %d clients, want 2", len(clients))
+		if len(clients.Data) != 2 {
+			t.Fatalf("got %d clients, want 2", len(clients.Data))
 		}
-		if clients[0].MAC != "aa:bb:cc:00:00:01" {
-			t.Errorf("got MAC %q, want %q", clients[0].MAC, "aa:bb:cc:00:00:01")
+		if clients.Data[0].MAC != "aa:bb:cc:00:00:01" {
+			t.Errorf("got MAC %q, want %q", clients.Data[0].MAC, "aa:bb:cc:00:00:01")
 		}
-		if clients[1].Type != "WIRELESS" {
-			t.Errorf("got Type %q, want WIRELESS", clients[1].Type)
+		if clients.Data[1].Type != "WIRELESS" {
+			t.Errorf("got Type %q, want WIRELESS", clients.Data[1].Type)
 		}
 	})
 
@@ -42,7 +42,7 @@ func TestListClients(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListClients(context.Background(), "")
+		_, err := client.ListClients(context.Background(), "", 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}

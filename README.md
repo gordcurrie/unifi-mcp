@@ -102,6 +102,29 @@ export UNIFI_SITE_ID=your-site-uuid
 
 ## Tools Reference
 
+### Pagination
+
+All `list_*` tools support optional pagination via `offset` and `limit` fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `offset` | `int` | Number of items to skip (0 = use API default, i.e. return from the start) |
+| `limit` | `int` | Maximum number of items to return (0 = use API default page size) |
+
+All list tools return a `Page[T]` object containing:
+
+```json
+{
+  "data": [...],
+  "totalCount": 42,
+  "offset": 0,
+  "limit": 25,
+  "count": 25
+}
+```
+
+Omit both fields (or pass `0`) to fetch the API's default first page.
+
 ### Sites
 
 | Tool | Description |

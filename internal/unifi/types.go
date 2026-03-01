@@ -1,5 +1,17 @@
 package unifi
 
+// Page wraps a paginated v1 list response, exposing the data slice alongside
+// the server-reported pagination metadata (totalCount, offset, limit, count).
+// All list methods return Page[T] so callers can implement cursor-style
+// iteration using offset + limit query parameters.
+type Page[T any] struct {
+	Data       []T `json:"data"`
+	TotalCount int `json:"totalCount"`
+	Offset     int `json:"offset"`
+	Limit      int `json:"limit"`
+	Count      int `json:"count"`
+}
+
 // ApplicationInfo is returned by GET /integration/v1/info.
 type ApplicationInfo struct {
 	ApplicationVersion string `json:"applicationVersion"`

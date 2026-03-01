@@ -11,6 +11,8 @@ import (
 func registerClientTools(s *mcp.Server, client unifiClient) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Offset int    `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int    `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
 	}
 	type clientInput struct {
 		SiteID   string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
@@ -22,7 +24,7 @@ func registerClientTools(s *mcp.Server, client unifiClient) {
 		Description: "List all currently connected clients on the network.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		clients, err := client.ListClients(ctx, input.SiteID)
+		clients, err := client.ListClients(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_clients: %w", err))
 		}

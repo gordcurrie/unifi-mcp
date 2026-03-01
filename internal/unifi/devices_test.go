@@ -23,18 +23,18 @@ func TestListDevices(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		devices, err := client.ListDevices(context.Background(), "")
+		devices, err := client.ListDevices(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListDevices: %v", err)
 		}
-		if len(devices) != 2 {
-			t.Fatalf("got %d devices, want 2", len(devices))
+		if len(devices.Data) != 2 {
+			t.Fatalf("got %d devices, want 2", len(devices.Data))
 		}
-		if devices[0].ID != "dev-1" {
-			t.Errorf("got devices[0].ID %q, want dev-1", devices[0].ID)
+		if devices.Data[0].ID != "dev-1" {
+			t.Errorf("got devices[0].ID %q, want dev-1", devices.Data[0].ID)
 		}
-		if devices[1].State != "OFFLINE" {
-			t.Errorf("got devices[1].State %q, want OFFLINE", devices[1].State)
+		if devices.Data[1].State != "OFFLINE" {
+			t.Errorf("got devices[1].State %q, want OFFLINE", devices.Data[1].State)
 		}
 	})
 
@@ -42,7 +42,7 @@ func TestListDevices(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListDevices(context.Background(), "")
+		_, err := client.ListDevices(context.Background(), "", 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -133,18 +133,18 @@ func TestListPendingDevices(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		devices, err := client.ListPendingDevices(context.Background())
+		devices, err := client.ListPendingDevices(context.Background(), 0, 0)
 		if err != nil {
 			t.Fatalf("ListPendingDevices: %v", err)
 		}
-		if len(devices) != 1 {
-			t.Fatalf("got %d devices, want 1", len(devices))
+		if len(devices.Data) != 1 {
+			t.Fatalf("got %d devices, want 1", len(devices.Data))
 		}
-		if devices[0].MAC != "aa:bb:cc:dd:ee:ff" {
-			t.Errorf("got MAC %q, want aa:bb:cc:dd:ee:ff", devices[0].MAC)
+		if devices.Data[0].MAC != "aa:bb:cc:dd:ee:ff" {
+			t.Errorf("got MAC %q, want aa:bb:cc:dd:ee:ff", devices.Data[0].MAC)
 		}
-		if devices[0].Model != "U6-Pro" {
-			t.Errorf("got Model %q, want U6-Pro", devices[0].Model)
+		if devices.Data[0].Model != "U6-Pro" {
+			t.Errorf("got Model %q, want U6-Pro", devices.Data[0].Model)
 		}
 	})
 
@@ -152,7 +152,7 @@ func TestListPendingDevices(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListPendingDevices(context.Background())
+		_, err := client.ListPendingDevices(context.Background(), 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}

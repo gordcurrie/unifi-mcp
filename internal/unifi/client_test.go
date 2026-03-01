@@ -85,15 +85,15 @@ func TestListSites(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		sites, err := client.ListSites(context.Background())
+		sites, err := client.ListSites(context.Background(), 0, 0)
 		if err != nil {
 			t.Fatalf("ListSites: %v", err)
 		}
-		if len(sites) != 2 {
-			t.Fatalf("got %d sites, want 2", len(sites))
+		if len(sites.Data) != 2 {
+			t.Fatalf("got %d sites, want 2", len(sites.Data))
 		}
-		if sites[0].ID != "site-1" {
-			t.Errorf("got site[0].ID %q, want %q", sites[0].ID, "site-1")
+		if sites.Data[0].ID != "site-1" {
+			t.Errorf("got site[0].ID %q, want %q", sites.Data[0].ID, "site-1")
 		}
 	})
 }

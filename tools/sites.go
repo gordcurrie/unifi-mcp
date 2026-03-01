@@ -11,6 +11,10 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 	}
+	type pageInput struct {
+		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+	}
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_application_info",
@@ -28,12 +32,12 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 		Name:        "list_sites",
 		Description: "List all sites on the UniFi controller.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
-		sites, err := client.ListSites(ctx)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input pageInput) (*mcp.CallToolResult, any, error) {
+		page, err := client.ListSites(ctx, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_sites: %w", err))
 		}
-		return jsonResult(sites)
+		return jsonResult(page)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{

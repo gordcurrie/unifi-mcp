@@ -6,18 +6,18 @@ import (
 )
 
 // ListClients returns all currently connected clients from GET /integration/v1/sites/{siteID}/clients.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListClients(ctx context.Context, siteID string) ([]NetworkClient, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListClients(ctx context.Context, siteID string, offset, limit int) (Page[NetworkClient], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListClients %s: %w", id, err)
+		return Page[NetworkClient]{}, fmt.Errorf("ListClients %s: %w", id, err)
 	}
-	clients, err := decodeV1List[NetworkClient](data)
+	page, err := decodeV1List[NetworkClient](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListClients %s: %w", id, err)
+		return Page[NetworkClient]{}, fmt.Errorf("ListClients %s: %w", id, err)
 	}
-	return clients, nil
+	return page, nil
 }
 
 // GetClient returns a single connected client from GET /integration/v1/sites/{siteID}/clients/{clientID}.

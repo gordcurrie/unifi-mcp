@@ -8,18 +8,18 @@ import (
 
 // ListWiFiBroadcasts returns all WiFi broadcast (SSID) configurations from
 // GET /integration/v1/sites/{siteID}/wifi/broadcasts.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string) ([]WiFiBroadcast, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string, offset, limit int) (Page[WiFiBroadcast], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
+		return Page[WiFiBroadcast]{}, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
 	}
-	broadcasts, err := decodeV1List[WiFiBroadcast](data)
+	page, err := decodeV1List[WiFiBroadcast](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
+		return Page[WiFiBroadcast]{}, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
 	}
-	return broadcasts, nil
+	return page, nil
 }
 
 // GetWiFiBroadcast returns a single WiFi broadcast configuration from
@@ -39,48 +39,48 @@ func (c *Client) GetWiFiBroadcast(ctx context.Context, siteID, broadcastID strin
 }
 
 // ListNetworks returns all configured networks from GET /integration/v1/sites/{siteID}/networks.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListNetworks(ctx context.Context, siteID string) ([]NetworkConf, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListNetworks(ctx context.Context, siteID string, offset, limit int) (Page[NetworkConf], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/networks", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/networks", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListNetworks %s: %w", id, err)
+		return Page[NetworkConf]{}, fmt.Errorf("ListNetworks %s: %w", id, err)
 	}
-	networks, err := decodeV1List[NetworkConf](data)
+	page, err := decodeV1List[NetworkConf](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListNetworks %s: %w", id, err)
+		return Page[NetworkConf]{}, fmt.Errorf("ListNetworks %s: %w", id, err)
 	}
-	return networks, nil
+	return page, nil
 }
 
 // ListFirewallPolicies returns all firewall policies from GET /integration/v1/sites/{siteID}/firewall/policies.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string) ([]FirewallPolicy, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string, offset, limit int) (Page[FirewallPolicy], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
+		return Page[FirewallPolicy]{}, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
 	}
-	policies, err := decodeV1List[FirewallPolicy](data)
+	page, err := decodeV1List[FirewallPolicy](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
+		return Page[FirewallPolicy]{}, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
 	}
-	return policies, nil
+	return page, nil
 }
 
 // ListFirewallZones returns all firewall zones from GET /integration/v1/sites/{siteID}/firewall/zones.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListFirewallZones(ctx context.Context, siteID string) ([]FirewallZone, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListFirewallZones(ctx context.Context, siteID string, offset, limit int) (Page[FirewallZone], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallZones %s: %w", id, err)
+		return Page[FirewallZone]{}, fmt.Errorf("ListFirewallZones %s: %w", id, err)
 	}
-	zones, err := decodeV1List[FirewallZone](data)
+	page, err := decodeV1List[FirewallZone](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListFirewallZones %s: %w", id, err)
+		return Page[FirewallZone]{}, fmt.Errorf("ListFirewallZones %s: %w", id, err)
 	}
-	return zones, nil
+	return page, nil
 }
 
 // GetFirewallPolicy returns a single firewall policy from
@@ -202,18 +202,18 @@ func (c *Client) DeleteFirewallZone(ctx context.Context, siteID, zoneID string) 
 }
 
 // ListACLRules returns all ACL rules from GET /integration/v1/sites/{siteID}/acl-rules.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListACLRules(ctx context.Context, siteID string, offset, limit int) (Page[ACLRule], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListACLRules %s: %w", id, err)
+		return Page[ACLRule]{}, fmt.Errorf("ListACLRules %s: %w", id, err)
 	}
-	rules, err := decodeV1List[ACLRule](data)
+	page, err := decodeV1List[ACLRule](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListACLRules %s: %w", id, err)
+		return Page[ACLRule]{}, fmt.Errorf("ListACLRules %s: %w", id, err)
 	}
-	return rules, nil
+	return page, nil
 }
 
 // GetACLRule returns a single ACL rule from
@@ -366,18 +366,18 @@ func (c *Client) SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastI
 
 // ListTrafficMatchingLists returns all traffic matching lists from
 // GET /integration/v1/sites/{siteID}/traffic-matching-lists.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string) ([]TrafficMatchingList, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string, offset, limit int) (Page[TrafficMatchingList], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
+		return Page[TrafficMatchingList]{}, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
 	}
-	lists, err := decodeV1List[TrafficMatchingList](data)
+	page, err := decodeV1List[TrafficMatchingList](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
+		return Page[TrafficMatchingList]{}, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
 	}
-	return lists, nil
+	return page, nil
 }
 
 // GetTrafficMatchingList returns a single traffic matching list from
@@ -398,66 +398,66 @@ func (c *Client) GetTrafficMatchingList(ctx context.Context, siteID, listID stri
 
 // ListWANs returns all WAN interface definitions from
 // GET /integration/v1/sites/{siteID}/wans.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListWANs(ctx context.Context, siteID string) ([]WAN, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListWANs(ctx context.Context, siteID string, offset, limit int) (Page[WAN], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wans", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/wans", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListWANs %s: %w", id, err)
+		return Page[WAN]{}, fmt.Errorf("ListWANs %s: %w", id, err)
 	}
-	wans, err := decodeV1List[WAN](data)
+	page, err := decodeV1List[WAN](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListWANs %s: %w", id, err)
+		return Page[WAN]{}, fmt.Errorf("ListWANs %s: %w", id, err)
 	}
-	return wans, nil
+	return page, nil
 }
 
 // ListVPNTunnels returns all site-to-site VPN tunnels from
 // GET /integration/v1/sites/{siteID}/vpn/site-to-site-tunnels.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListVPNTunnels(ctx context.Context, siteID string) ([]VPNTunnel, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListVPNTunnels(ctx context.Context, siteID string, offset, limit int) (Page[VPNTunnel], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/site-to-site-tunnels", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/site-to-site-tunnels", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
+		return Page[VPNTunnel]{}, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
 	}
-	tunnels, err := decodeV1List[VPNTunnel](data)
+	page, err := decodeV1List[VPNTunnel](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
+		return Page[VPNTunnel]{}, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
 	}
-	return tunnels, nil
+	return page, nil
 }
 
 // ListVPNServers returns all VPN server configurations from
 // GET /integration/v1/sites/{siteID}/vpn/servers.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListVPNServers(ctx context.Context, siteID string) ([]VPNServer, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListVPNServers(ctx context.Context, siteID string, offset, limit int) (Page[VPNServer], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/servers", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/servers", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListVPNServers %s: %w", id, err)
+		return Page[VPNServer]{}, fmt.Errorf("ListVPNServers %s: %w", id, err)
 	}
-	servers, err := decodeV1List[VPNServer](data)
+	page, err := decodeV1List[VPNServer](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListVPNServers %s: %w", id, err)
+		return Page[VPNServer]{}, fmt.Errorf("ListVPNServers %s: %w", id, err)
 	}
-	return servers, nil
+	return page, nil
 }
 
 // ListDNSPolicies returns all DNS policies from
 // GET /integration/v1/sites/{siteID}/dns/policies.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListDNSPolicies(ctx context.Context, siteID string) ([]DNSPolicy, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListDNSPolicies(ctx context.Context, siteID string, offset, limit int) (Page[DNSPolicy], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
+		return Page[DNSPolicy]{}, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
 	}
-	policies, err := decodeV1List[DNSPolicy](data)
+	page, err := decodeV1List[DNSPolicy](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
+		return Page[DNSPolicy]{}, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
 	}
-	return policies, nil
+	return page, nil
 }
 
 // GetDNSPolicy returns a single DNS policy from
@@ -521,18 +521,18 @@ func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) e
 
 // ListVouchers returns all hotspot vouchers for a site via
 // GET /integration/v1/sites/{siteID}/hotspot/vouchers.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListVouchers(ctx context.Context, siteID string) ([]Voucher, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListVouchers(ctx context.Context, siteID string, offset, limit int) (Page[Voucher], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListVouchers %s: %w", id, err)
+		return Page[Voucher]{}, fmt.Errorf("ListVouchers %s: %w", id, err)
 	}
-	vouchers, err := decodeV1List[Voucher](data)
+	page, err := decodeV1List[Voucher](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListVouchers %s: %w", id, err)
+		return Page[Voucher]{}, fmt.Errorf("ListVouchers %s: %w", id, err)
 	}
-	return vouchers, nil
+	return page, nil
 }
 
 // GetVoucher returns a single hotspot voucher via
@@ -585,60 +585,62 @@ func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) er
 
 // ListDeviceTags returns all device tags from
 // GET /integration/v1/sites/{siteID}/device-tags.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListDeviceTags(ctx context.Context, siteID string) ([]DeviceTag, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListDeviceTags(ctx context.Context, siteID string, offset, limit int) (Page[DeviceTag], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/device-tags", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/device-tags", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListDeviceTags %s: %w", id, err)
+		return Page[DeviceTag]{}, fmt.Errorf("ListDeviceTags %s: %w", id, err)
 	}
-	tags, err := decodeV1List[DeviceTag](data)
+	page, err := decodeV1List[DeviceTag](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListDeviceTags %s: %w", id, err)
+		return Page[DeviceTag]{}, fmt.Errorf("ListDeviceTags %s: %w", id, err)
 	}
-	return tags, nil
+	return page, nil
 }
 
 // ListDPICategories returns all DPI application categories from
 // GET /integration/v1/dpi/categories.
-func (c *Client) ListDPICategories(ctx context.Context) ([]DPICategory, error) {
-	data, err := c.get(ctx, "/integration/v1/dpi/categories")
+// offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListDPICategories(ctx context.Context, offset, limit int) (Page[DPICategory], error) {
+	data, err := c.getWithQuery(ctx, "/integration/v1/dpi/categories", offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListDPICategories: %w", err)
+		return Page[DPICategory]{}, fmt.Errorf("ListDPICategories: %w", err)
 	}
-	cats, err := decodeV1List[DPICategory](data)
+	page, err := decodeV1List[DPICategory](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListDPICategories: %w", err)
+		return Page[DPICategory]{}, fmt.Errorf("ListDPICategories: %w", err)
 	}
-	return cats, nil
+	return page, nil
 }
 
 // ListDPIApplications returns all DPI applications from
 // GET /integration/v1/dpi/applications.
-func (c *Client) ListDPIApplications(ctx context.Context) ([]DPIApplication, error) {
-	data, err := c.get(ctx, "/integration/v1/dpi/applications")
+// offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListDPIApplications(ctx context.Context, offset, limit int) (Page[DPIApplication], error) {
+	data, err := c.getWithQuery(ctx, "/integration/v1/dpi/applications", offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListDPIApplications: %w", err)
+		return Page[DPIApplication]{}, fmt.Errorf("ListDPIApplications: %w", err)
 	}
-	apps, err := decodeV1List[DPIApplication](data)
+	page, err := decodeV1List[DPIApplication](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListDPIApplications: %w", err)
+		return Page[DPIApplication]{}, fmt.Errorf("ListDPIApplications: %w", err)
 	}
-	return apps, nil
+	return page, nil
 }
 
 // ListRADIUSProfiles returns all RADIUS profiles from
 // GET /integration/v1/sites/{siteID}/radius/profiles.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListRADIUSProfiles(ctx context.Context, siteID string) ([]RADIUSProfile, error) {
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListRADIUSProfiles(ctx context.Context, siteID string, offset, limit int) (Page[RADIUSProfile], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/radius/profiles", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/radius/profiles", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
+		return Page[RADIUSProfile]{}, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
 	}
-	profiles, err := decodeV1List[RADIUSProfile](data)
+	page, err := decodeV1List[RADIUSProfile](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
+		return Page[RADIUSProfile]{}, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
 	}
-	return profiles, nil
+	return page, nil
 }
