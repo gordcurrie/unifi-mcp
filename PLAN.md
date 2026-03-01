@@ -210,4 +210,15 @@ Low-priority but useful for firewall policy creation context.
 - `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
 - New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`
 
+### 4m — Pagination refactor (cross-cutting)
+
+Consistent pagination support across all list tools. Breaking change — do as a dedicated PR before adding further tools.
+
+- Add `Page[T]` response wrapper type (`data`, `totalCount`, `offset`, `limit`, `count`)
+- Change `decodeV1List` to return `Page[T]` instead of `[]T`
+- Change all list client methods to return `(Page[T], error)`
+- Add optional `offset` + `limit` params to all list tool inputs (default: API default page size)
+- Update all tests to assert on `Page[T]` shape
+- Document pagination behaviour in README
+
 
