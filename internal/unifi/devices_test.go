@@ -158,3 +158,42 @@ func TestListPendingDevices(t *testing.T) {
 		}
 	})
 }
+
+func TestPowerCyclePort(t *testing.T) {
+	t.Run("posts power cycle action", func(t *testing.T) {
+		var gotPath, gotAction string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost {
+				http.Error(w, "unexpected method", http.StatusMethodNotAllowed)
+				return
+			}
+			gotPath = r.URL.Path
+			var req deviceActionRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			gotAction = req.Action
+			w.WriteHeader(http.StatusNoContent)
+		})
+		if err := client.PowerCyclePort(context.Background(), "", "dev-1", 3); err != nil {
+			t.Fatalf("PowerCyclePort: %v", err)
+		}
+		wantPath := "/integration/v1/sites/test-site-id/devices/dev-1/interfaces/ports/3/actions"
+		if gotPath != wantPath {
+			t.Errorf("got path %q, want %q", gotPath, wantPath)
+		}
+		if gotAction != "POWER_CYCLE" {
+			t.Errorf("got action %q, want POWER_CYCLE", gotAction)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		if err := client.PowerCyclePort(context.Background(), "", "dev-1", 3); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

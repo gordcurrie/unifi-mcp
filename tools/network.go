@@ -43,6 +43,36 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		return jsonResult(bc)
 	})
 
+	destructiveTrue := true
+
+	type setBroadcastInput struct {
+		SiteID      string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		BroadcastID string `json:"broadcast_id"       jsonschema:"WiFi broadcast ID"`
+		Enabled     *bool  `json:"enabled"            jsonschema:"true to enable the broadcast, false to disable"`
+		Confirmed   bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "set_wifi_broadcast_enabled",
+		Description: "Enable or disable a WiFi broadcast (SSID). Set confirmed=true to proceed.",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input setBroadcastInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: set confirmed=true to confirm the change"))
+		}
+		if input.BroadcastID == "" {
+			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: broadcast_id is required"))
+		}
+		if input.Enabled == nil {
+			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: enabled is required"))
+		}
+		bc, err := client.SetWiFiBroadcastEnabled(ctx, input.SiteID, input.BroadcastID, *input.Enabled)
+		if err != nil {
+			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: %w", err))
+		}
+		return jsonResult(bc)
+	})
+
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_networks",
 		Description: "List all configured networks (VLANs, LAN segments).",
