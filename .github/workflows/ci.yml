@@ -27,3 +27,8 @@ jobs:
 
       - name: Run quality gates
         run: make check
+
+      - name: Ensure working tree is clean
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
