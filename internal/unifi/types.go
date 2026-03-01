@@ -137,7 +137,7 @@ type FirewallPolicy struct {
 type FirewallZone struct {
 	ID         string                   `json:"id"`
 	Name       string                   `json:"name"`
-	NetworkIDs []string                 `json:"networkIds"`
+	NetworkIDs []string                 `json:"networkIds,omitempty"`
 	Metadata   FirewallResourceMetadata `json:"metadata"`
 }
 
