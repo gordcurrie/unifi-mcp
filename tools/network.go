@@ -48,7 +48,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 	type setBroadcastInput struct {
 		SiteID      string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		BroadcastID string `json:"broadcast_id"       jsonschema:"WiFi broadcast ID"`
-		Enabled     bool   `json:"enabled"            jsonschema:"true to enable the broadcast, false to disable"`
+		Enabled     *bool  `json:"enabled"            jsonschema:"true to enable the broadcast, false to disable"`
 		Confirmed   bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
 	}
 
@@ -63,7 +63,10 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		if input.BroadcastID == "" {
 			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: broadcast_id is required"))
 		}
-		bc, err := client.SetWiFiBroadcastEnabled(ctx, input.SiteID, input.BroadcastID, input.Enabled)
+		if input.Enabled == nil {
+			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: enabled is required"))
+		}
+		bc, err := client.SetWiFiBroadcastEnabled(ctx, input.SiteID, input.BroadcastID, *input.Enabled)
 		if err != nil {
 			return errorResult(fmt.Errorf("set_wifi_broadcast_enabled: %w", err))
 		}
