@@ -736,6 +736,37 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 			t.Error("expected error, got nil")
 		}
 	})
+
+	t.Run("returns error on PUT failure", func(t *testing.T) {
+		callCount := 0
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			w.Header().Set("Content-Type", "application/json")
+			if callCount == 1 {
+				if r.Method != http.MethodGet {
+					t.Fatalf("first request method = %s, want GET", r.Method)
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "fp-1", "enabled": false, "name": "Block All",
+					"action":          map[string]any{"type": "BLOCK"},
+					"source":          map[string]any{"zoneId": "zone-a"},
+					"destination":     map[string]any{"zoneId": "zone-b"},
+					"ipProtocolScope": map[string]any{"ipVersion": "IPV4_AND_IPV6"},
+					"loggingEnabled":  false,
+					"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": true},
+				})
+				return
+			}
+			if r.Method != http.MethodPut {
+				t.Fatalf("second request method = %s, want PUT", r.Method)
+			}
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
 }
 
 func TestDeleteFirewallPolicy(t *testing.T) {
