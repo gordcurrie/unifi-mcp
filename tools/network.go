@@ -515,4 +515,212 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			return textResult(fmt.Sprintf("Firewall zone %s deleted", input.ZoneID))
 		})
 	}
+
+	// ── ACL Rules ────────────────────────────────────────────────────────────
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_acl_rules",
+		Description: "List all ACL rules for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		rules, err := client.ListACLRules(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_acl_rules: %w", err))
+		}
+		return jsonResult(rules)
+	})
+
+	type aclRuleInput struct {
+		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		RuleID string `json:"rule_id"            jsonschema:"ACL rule ID"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_acl_rule",
+		Description: "Get details for a specific ACL rule by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input aclRuleInput) (*mcp.CallToolResult, any, error) {
+		if input.RuleID == "" {
+			return errorResult(fmt.Errorf("get_acl_rule: rule_id is required"))
+		}
+		rule, err := client.GetACLRule(ctx, input.SiteID, input.RuleID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_acl_rule: %w", err))
+		}
+		return jsonResult(rule)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_acl_rule_ordering",
+		Description: "Get the current ACL rule evaluation order.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		ordering, err := client.GetACLRuleOrdering(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_acl_rule_ordering: %w", err))
+		}
+		return jsonResult(ordering)
+	})
+
+	// ACL write tools are intentionally gated on allowDestructive (UNIFI_ALLOW_DESTRUCTIVE=true).
+	//
+	// Unlike firewall zones (organisational containers), any ACL mutation directly
+	// controls which traffic is allowed or blocked. A misplaced BLOCK rule — or a
+	// reorder that promotes one — can cause a complete network outage. Requiring the
+	// explicit opt-in flag ensures that an AI session without it cannot issue any
+	// ACL write at all, not just delete. The confirmed:true field per-call is a
+	// secondary guard; the flag is the primary one.
+	if allowDestructive {
+		type aclRuleMutateInput struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			Type      string `json:"type"               jsonschema:"rule type: IPV4 or MAC"`
+			Name      string `json:"name"               jsonschema:"rule name"`
+			Action    string `json:"action"             jsonschema:"rule action: ALLOW or BLOCK"`
+			Enabled   bool   `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+		}
+
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "create_acl_rule",
+			Description: "Create a new ACL rule. type must be IPV4 or MAC; action must be ALLOW or BLOCK. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input aclRuleMutateInput) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("create_acl_rule: set confirmed=true to confirm the change"))
+			}
+			if input.Type == "" {
+				return errorResult(fmt.Errorf("create_acl_rule: type is required (IPV4 or MAC)"))
+			}
+			if input.Name == "" {
+				return errorResult(fmt.Errorf("create_acl_rule: name is required"))
+			}
+			if input.Action == "" {
+				return errorResult(fmt.Errorf("create_acl_rule: action is required (ALLOW or BLOCK)"))
+			}
+			rule, err := client.CreateACLRule(ctx, input.SiteID, unifi.ACLRuleRequest{
+				Type:    input.Type,
+				Name:    input.Name,
+				Action:  input.Action,
+				Enabled: input.Enabled,
+			})
+			if err != nil {
+				return errorResult(fmt.Errorf("create_acl_rule: %w", err))
+			}
+			return jsonResult(rule)
+		})
+
+		type updateACLRuleInput struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			RuleID    string `json:"rule_id"            jsonschema:"ACL rule ID"`
+			Type      string `json:"type"               jsonschema:"rule type: IPV4 or MAC"`
+			Name      string `json:"name"               jsonschema:"rule name"`
+			Action    string `json:"action"             jsonschema:"rule action: ALLOW or BLOCK"`
+			Enabled   bool   `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+		}
+
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "update_acl_rule",
+			Description: "Update an existing ACL rule by ID. type must be IPV4 or MAC; action must be ALLOW or BLOCK. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateACLRuleInput) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("update_acl_rule: set confirmed=true to confirm the change"))
+			}
+			if input.RuleID == "" {
+				return errorResult(fmt.Errorf("update_acl_rule: rule_id is required"))
+			}
+			if input.Type == "" {
+				return errorResult(fmt.Errorf("update_acl_rule: type is required (IPV4 or MAC)"))
+			}
+			if input.Name == "" {
+				return errorResult(fmt.Errorf("update_acl_rule: name is required"))
+			}
+			if input.Action == "" {
+				return errorResult(fmt.Errorf("update_acl_rule: action is required (ALLOW or BLOCK)"))
+			}
+			rule, err := client.UpdateACLRule(ctx, input.SiteID, input.RuleID, unifi.ACLRuleRequest{
+				Type:    input.Type,
+				Name:    input.Name,
+				Action:  input.Action,
+				Enabled: input.Enabled,
+			})
+			if err != nil {
+				return errorResult(fmt.Errorf("update_acl_rule: %w", err))
+			}
+			return jsonResult(rule)
+		})
+
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "set_acl_rule_enabled",
+			Description: "Enable or disable an ACL rule. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			RuleID    string `json:"rule_id"            jsonschema:"ACL rule ID"`
+			Enabled   *bool  `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("set_acl_rule_enabled: set confirmed=true to confirm the change"))
+			}
+			if input.RuleID == "" {
+				return errorResult(fmt.Errorf("set_acl_rule_enabled: rule_id is required"))
+			}
+			if input.Enabled == nil {
+				return errorResult(fmt.Errorf("set_acl_rule_enabled: enabled is required"))
+			}
+			rule, err := client.SetACLRuleEnabled(ctx, input.SiteID, input.RuleID, *input.Enabled)
+			if err != nil {
+				return errorResult(fmt.Errorf("set_acl_rule_enabled: %w", err))
+			}
+			return jsonResult(rule)
+		})
+
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "reorder_acl_rules",
+			Description: "Set the ACL rule evaluation order. Provide rule_ids as a comma-separated list of rule IDs in the desired order. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			RuleIDs   *string `json:"rule_ids"           jsonschema:"comma-separated list of ACL rule IDs in the desired evaluation order"`
+			Confirmed bool    `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("reorder_acl_rules: set confirmed=true to confirm the change"))
+			}
+			if input.RuleIDs == nil || *input.RuleIDs == "" {
+				return errorResult(fmt.Errorf("reorder_acl_rules: rule_ids is required"))
+			}
+			ordering, err := client.ReorderACLRules(ctx, input.SiteID, splitNetworkIDs(input.RuleIDs))
+			if err != nil {
+				return errorResult(fmt.Errorf("reorder_acl_rules: %w", err))
+			}
+			return jsonResult(ordering)
+		})
+
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "delete_acl_rule",
+			Description: "Permanently delete an ACL rule by ID. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			RuleID    string `json:"rule_id"            jsonschema:"ACL rule ID"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the deletion"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("delete_acl_rule: set confirmed=true to confirm the deletion"))
+			}
+			if input.RuleID == "" {
+				return errorResult(fmt.Errorf("delete_acl_rule: rule_id is required"))
+			}
+			if err := client.DeleteACLRule(ctx, input.SiteID, input.RuleID); err != nil {
+				return errorResult(fmt.Errorf("delete_acl_rule: %w", err))
+			}
+			return textResult(fmt.Sprintf("ACL rule %s deleted", input.RuleID))
+		})
+	}
 }

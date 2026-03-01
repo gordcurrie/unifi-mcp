@@ -948,3 +948,272 @@ func TestDeleteFirewallZone(t *testing.T) {
 		}
 	})
 }
+
+func TestGetACLRule(t *testing.T) {
+	t.Run("decodes single rule", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "ar-1", "type": "IPV4", "name": "test-rule",
+				"enabled": true, "action": "ALLOW", "index": 0,
+				"metadata": map[string]any{"origin": "USER_DEFINED"},
+			})
+		})
+		rule, err := client.GetACLRule(context.Background(), "", "ar-1")
+		if err != nil {
+			t.Fatalf("GetACLRule: %v", err)
+		}
+		if rule.Name != "test-rule" {
+			t.Errorf("got Name %q, want test-rule", rule.Name)
+		}
+		if rule.Action != "ALLOW" {
+			t.Errorf("got Action %q, want ALLOW", rule.Action)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "not found", http.StatusNotFound)
+		})
+		_, err := client.GetACLRule(context.Background(), "", "missing")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestCreateACLRule(t *testing.T) {
+	t.Run("posts body and decodes response", func(t *testing.T) {
+		var gotBody ACLRuleRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules" || r.Method != http.MethodPost {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "ar-new", "type": gotBody.Type, "name": gotBody.Name,
+				"action": gotBody.Action, "enabled": gotBody.Enabled, "index": 0,
+				"metadata": map[string]any{"origin": "USER_DEFINED"},
+			})
+		})
+		req := ACLRuleRequest{Type: "IPV4", Name: "my-rule", Action: "BLOCK", Enabled: true}
+		rule, err := client.CreateACLRule(context.Background(), "", req)
+		if err != nil {
+			t.Fatalf("CreateACLRule: %v", err)
+		}
+		if rule.ID != "ar-new" {
+			t.Errorf("got ID %q, want ar-new", rule.ID)
+		}
+		if gotBody.Action != "BLOCK" {
+			t.Errorf("sent Action %q, want BLOCK", gotBody.Action)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.CreateACLRule(context.Background(), "", ACLRuleRequest{Type: "IPV4", Name: "x", Action: "ALLOW"})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestUpdateACLRule(t *testing.T) {
+	t.Run("puts body and decodes response", func(t *testing.T) {
+		var gotBody ACLRuleRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" || r.Method != http.MethodPut {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "ar-1", "type": gotBody.Type, "name": gotBody.Name,
+				"action": gotBody.Action, "enabled": gotBody.Enabled, "index": 0,
+			})
+		})
+		req := ACLRuleRequest{Type: "IPV4", Name: "renamed", Action: "ALLOW", Enabled: false}
+		rule, err := client.UpdateACLRule(context.Background(), "", "ar-1", req)
+		if err != nil {
+			t.Fatalf("UpdateACLRule: %v", err)
+		}
+		if rule.Name != "renamed" {
+			t.Errorf("got Name %q, want renamed", rule.Name)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.UpdateACLRule(context.Background(), "", "ar-1", ACLRuleRequest{Type: "IPV4", Name: "x", Action: "ALLOW"})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteACLRule(t *testing.T) {
+	t.Run("sends DELETE and succeeds on 200", func(t *testing.T) {
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			w.WriteHeader(http.StatusOK)
+		})
+		if err := client.DeleteACLRule(context.Background(), "", "ar-1"); err != nil {
+			t.Fatalf("DeleteACLRule: %v", err)
+		}
+		if gotMethod != http.MethodDelete {
+			t.Errorf("got method %q, want DELETE", gotMethod)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		if err := client.DeleteACLRule(context.Background(), "", "ar-1"); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestSetACLRuleEnabled(t *testing.T) {
+	t.Run("gets then puts with enabled flag set", func(t *testing.T) {
+		callCount := 0
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			w.Header().Set("Content-Type", "application/json")
+			if callCount == 1 {
+				if r.Method != http.MethodGet {
+					t.Fatalf("first call method = %s, want GET", r.Method)
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "ar-1", "type": "IPV4", "name": "my-rule",
+					"action": "ALLOW", "enabled": false, "index": 0,
+				})
+				return
+			}
+			if r.Method != http.MethodPut {
+				t.Fatalf("second call method = %s, want PUT", r.Method)
+			}
+			var body ACLRuleRequest
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "ar-1", "type": body.Type, "name": body.Name,
+				"action": body.Action, "enabled": body.Enabled, "index": 0,
+			})
+		})
+		rule, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		if err != nil {
+			t.Fatalf("SetACLRuleEnabled: %v", err)
+		}
+		if !rule.Enabled {
+			t.Error("expected rule.Enabled true")
+		}
+	})
+
+	t.Run("returns error on GET failure", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestGetACLRuleOrdering(t *testing.T) {
+	t.Run("decodes ordering response", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ordering" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"orderedAclRuleIds": []string{"ar-1", "ar-2"},
+			})
+		})
+		ordering, err := client.GetACLRuleOrdering(context.Background(), "")
+		if err != nil {
+			t.Fatalf("GetACLRuleOrdering: %v", err)
+		}
+		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "ar-1" {
+			t.Errorf("got IDs %v, want [ar-1 ar-2]", ordering.OrderedACLRuleIDs)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.GetACLRuleOrdering(context.Background(), "")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestReorderACLRules(t *testing.T) {
+	t.Run("puts ordered IDs and decodes response", func(t *testing.T) {
+		var gotBody ACLRuleOrdering
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ordering" || r.Method != http.MethodPut {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"orderedAclRuleIds": gotBody.OrderedACLRuleIDs,
+			})
+		})
+		ordering, err := client.ReorderACLRules(context.Background(), "", []string{"ar-2", "ar-1"})
+		if err != nil {
+			t.Fatalf("ReorderACLRules: %v", err)
+		}
+		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "ar-2" {
+			t.Errorf("got IDs %v, want [ar-2 ar-1]", ordering.OrderedACLRuleIDs)
+		}
+		if gotBody.OrderedACLRuleIDs[0] != "ar-2" {
+			t.Errorf("sent IDs[0] %q, want ar-2", gotBody.OrderedACLRuleIDs[0])
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.ReorderACLRules(context.Background(), "", []string{"ar-1"})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

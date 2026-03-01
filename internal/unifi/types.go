@@ -149,12 +149,27 @@ type FirewallZoneRequest struct {
 
 // ACLRule is returned by GET /integration/v1/sites/{siteId}/acl-rules.
 type ACLRule struct {
-	ID      string `json:"id"`
+	ID       string                   `json:"id"`
+	Type     string                   `json:"type"`
+	Name     string                   `json:"name"`
+	Enabled  bool                     `json:"enabled"`
+	Action   string                   `json:"action"`
+	Index    int                      `json:"index"`
+	Metadata FirewallResourceMetadata `json:"metadata"`
+}
+
+// ACLRuleRequest is the body for POST and PUT to /integration/v1/sites/{siteId}/acl-rules.
+// Type must be "IPV4" or "MAC". Action must be "ALLOW" or "BLOCK".
+type ACLRuleRequest struct {
 	Type    string `json:"type"`
 	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
 	Action  string `json:"action"`
-	Index   int    `json:"index"`
+	Enabled bool   `json:"enabled"`
+}
+
+// ACLRuleOrdering is returned by GET /integration/v1/sites/{siteId}/acl-rules/ordering.
+type ACLRuleOrdering struct {
+	OrderedACLRuleIDs []string `json:"orderedAclRuleIds"`
 }
 
 // TrafficMatchingList is returned by GET /integration/v1/sites/{siteId}/traffic-matching-lists.
