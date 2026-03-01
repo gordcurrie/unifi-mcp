@@ -25,6 +25,7 @@ type unifiClient interface {
 	// Clients
 	ListClients(ctx context.Context, siteID string) ([]unifi.NetworkClient, error)
 	GetClient(ctx context.Context, siteID, clientID string) (unifi.NetworkClient, error)
+	AuthorizeGuestClient(ctx context.Context, siteID, clientID string, req unifi.GuestAuthRequest) error
 
 	// Network
 	ListWiFiBroadcasts(ctx context.Context, siteID string) ([]unifi.WiFiBroadcast, error)
@@ -66,4 +67,10 @@ type unifiClient interface {
 	GetVoucher(ctx context.Context, siteID, voucherID string) (unifi.Voucher, error)
 	CreateVouchers(ctx context.Context, siteID string, req unifi.VoucherRequest) ([]unifi.Voucher, error)
 	DeleteVoucher(ctx context.Context, siteID, voucherID string) error
+
+	// Reference data
+	ListDeviceTags(ctx context.Context, siteID string) ([]unifi.DeviceTag, error)
+	ListDPICategories(ctx context.Context) ([]unifi.DPICategory, error)
+	ListDPIApplications(ctx context.Context) ([]unifi.DPIApplication, error)
+	ListRADIUSProfiles(ctx context.Context, siteID string) ([]unifi.RADIUSProfile, error)
 }

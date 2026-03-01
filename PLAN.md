@@ -196,13 +196,13 @@ Useful if running a guest or hotspot network.
 - `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
 
-### 4k — Guest client authorization
+### ✅ 4k — Guest client authorization
 
 Authorize or revoke guest network access for a connected client.
 - `POST /v1/sites/{id}/clients/{clientId}/actions` body `{"action":"AUTHORIZE_GUEST_ACCESS", ...}`
 - New tool: `authorize_guest_client` (mutating, `confirmed bool`, optional time/data/rate limits)
 
-### 4l — Supporting reference data (read-only)
+### ✅ 4l — Supporting reference data (read-only)
 
 Low-priority but useful for firewall policy creation context.
 - `GET /v1/sites/{id}/device-tags` — device tags (used in WiFi broadcast device filters)

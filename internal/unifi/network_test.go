@@ -1359,3 +1359,149 @@ func TestDeleteVoucher(t *testing.T) {
 		}
 	})
 }
+
+func TestListDeviceTags(t *testing.T) {
+	t.Run("decodes tag list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/device-tags" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "dt-1", "name": "cameras"},
+					{"id": "dt-2", "name": "iot"},
+				},
+				"totalCount": 2,
+			})
+		})
+		tags, err := client.ListDeviceTags(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListDeviceTags: %v", err)
+		}
+		if len(tags) != 2 || tags[0].ID != "dt-1" {
+			t.Errorf("got %+v, want [{ID:dt-1 ...}]", tags)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.ListDeviceTags(context.Background(), "")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestListDPICategories(t *testing.T) {
+	t.Run("decodes category list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/dpi/categories" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": 0, "name": "Instant messengers"},
+					{"id": 4, "name": "Media streaming services"},
+				},
+				"totalCount": 2,
+			})
+		})
+		cats, err := client.ListDPICategories(context.Background())
+		if err != nil {
+			t.Fatalf("ListDPICategories: %v", err)
+		}
+		if len(cats) != 2 || cats[0].ID != 0 || cats[1].Name != "Media streaming services" {
+			t.Errorf("unexpected categories: %+v", cats)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.ListDPICategories(context.Background())
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestListDPIApplications(t *testing.T) {
+	t.Run("decodes application list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/dpi/applications" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": 39, "name": "Slack", "categoryId": 17},
+					{"id": 40, "name": "Telegram", "categoryId": 0},
+				},
+				"totalCount": 2,
+			})
+		})
+		apps, err := client.ListDPIApplications(context.Background())
+		if err != nil {
+			t.Fatalf("ListDPIApplications: %v", err)
+		}
+		if len(apps) != 2 || apps[0].ID != 39 || apps[0].CategoryID != 17 {
+			t.Errorf("unexpected applications: %+v", apps)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.ListDPIApplications(context.Background())
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestListRADIUSProfiles(t *testing.T) {
+	t.Run("decodes profile list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/radius/profiles" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "rp-1", "name": "Default", "metadata": map[string]any{"origin": "SYSTEM_DEFINED", "configurable": true}},
+				},
+				"totalCount": 1,
+			})
+		})
+		profiles, err := client.ListRADIUSProfiles(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListRADIUSProfiles: %v", err)
+		}
+		if len(profiles) != 1 || profiles[0].ID != "rp-1" || profiles[0].Metadata == nil {
+			t.Errorf("unexpected profiles: %+v", profiles)
+		}
+		if profiles[0].Metadata.Origin != "SYSTEM_DEFINED" {
+			t.Errorf("got origin %q, want SYSTEM_DEFINED", profiles[0].Metadata.Origin)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.ListRADIUSProfiles(context.Background(), "")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

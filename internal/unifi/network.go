@@ -582,3 +582,63 @@ func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) er
 	}
 	return nil
 }
+
+// ListDeviceTags returns all device tags from
+// GET /integration/v1/sites/{siteID}/device-tags.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListDeviceTags(ctx context.Context, siteID string) ([]DeviceTag, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/device-tags", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListDeviceTags %s: %w", id, err)
+	}
+	tags, err := decodeV1List[DeviceTag](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListDeviceTags %s: %w", id, err)
+	}
+	return tags, nil
+}
+
+// ListDPICategories returns all DPI application categories from
+// GET /integration/v1/dpi/categories.
+func (c *Client) ListDPICategories(ctx context.Context) ([]DPICategory, error) {
+	data, err := c.get(ctx, "/integration/v1/dpi/categories")
+	if err != nil {
+		return nil, fmt.Errorf("ListDPICategories: %w", err)
+	}
+	cats, err := decodeV1List[DPICategory](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListDPICategories: %w", err)
+	}
+	return cats, nil
+}
+
+// ListDPIApplications returns all DPI applications from
+// GET /integration/v1/dpi/applications.
+func (c *Client) ListDPIApplications(ctx context.Context) ([]DPIApplication, error) {
+	data, err := c.get(ctx, "/integration/v1/dpi/applications")
+	if err != nil {
+		return nil, fmt.Errorf("ListDPIApplications: %w", err)
+	}
+	apps, err := decodeV1List[DPIApplication](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListDPIApplications: %w", err)
+	}
+	return apps, nil
+}
+
+// ListRADIUSProfiles returns all RADIUS profiles from
+// GET /integration/v1/sites/{siteID}/radius/profiles.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListRADIUSProfiles(ctx context.Context, siteID string) ([]RADIUSProfile, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/radius/profiles", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
+	}
+	profiles, err := decodeV1List[RADIUSProfile](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
+	}
+	return profiles, nil
+}
