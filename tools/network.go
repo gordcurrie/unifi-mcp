@@ -199,7 +199,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Type        string `json:"type"                   jsonschema:"policy type, e.g. A_RECORD"`
 		Domain      string `json:"domain"                 jsonschema:"domain name to resolve"`
 		IPv4Address string `json:"ipv4_address,omitempty" jsonschema:"IPv4 address the domain maps to"`
-		TTLSeconds  int    `json:"ttl_seconds,omitempty"  jsonschema:"TTL in seconds; 0 uses the server default"`
+		TTLSeconds  int    `json:"ttl_seconds"            jsonschema:"TTL in seconds; required by the API (send 0 to use the server default)"`
 		Enabled     *bool  `json:"enabled"                jsonschema:"true to activate the policy, false to create disabled"`
 	}
 	type updateDNSPolicyInput struct {
@@ -208,7 +208,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Type        string `json:"type"                   jsonschema:"policy type, e.g. A_RECORD"`
 		Domain      string `json:"domain"                 jsonschema:"domain name to resolve"`
 		IPv4Address string `json:"ipv4_address,omitempty" jsonschema:"IPv4 address the domain maps to"`
-		TTLSeconds  int    `json:"ttl_seconds,omitempty"  jsonschema:"TTL in seconds; 0 uses the server default"`
+		TTLSeconds  int    `json:"ttl_seconds"            jsonschema:"TTL in seconds; required by the API (send 0 to use the server default)"`
 		Enabled     *bool  `json:"enabled"                jsonschema:"true to activate the policy, false to disable"`
 	}
 	type deleteDNSPolicyInput struct {
