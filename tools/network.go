@@ -770,16 +770,21 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Count < 1 {
 			return errorResult(fmt.Errorf("create_vouchers: count must be at least 1"))
 		}
-		voucher, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
+		if err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
 			Count:            input.Count,
 			Name:             input.Name,
 			TimeLimitMinutes: input.TimeLimitMinutes,
 			DataLimitMb:      input.DataLimitMb,
-		})
-		if err != nil {
+		}); err != nil {
 			return errorResult(fmt.Errorf("create_vouchers: %w", err))
 		}
-		return jsonResult(voucher)
+		// The API returns no voucher data on creation; list all vouchers so
+		// the caller can see the newly generated codes.
+		vouchers, err := client.ListVouchers(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("create_vouchers list: %w", err))
+		}
+		return jsonResult(vouchers)
 	})
 
 	if allowDestructive {

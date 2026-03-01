@@ -552,20 +552,16 @@ func (c *Client) GetVoucher(ctx context.Context, siteID, voucherID string) (Vouc
 
 // CreateVouchers generates one or more hotspot vouchers via
 // POST /integration/v1/sites/{siteID}/hotspot/vouchers.
-// The API returns the first created voucher; all generated codes are
-// retrievable via ListVouchers.
+// The API does not return the created voucher data; use ListVouchers to
+// retrieve codes after creation.
 // Pass an empty siteID to use the client default.
-func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) (Voucher, error) {
+func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) error {
 	id := c.site(siteID)
-	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), req)
+	_, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), req)
 	if err != nil {
-		return Voucher{}, fmt.Errorf("CreateVouchers %s: %w", id, err)
+		return fmt.Errorf("CreateVouchers %s: %w", id, err)
 	}
-	voucher, err := decodeV1[Voucher](data)
-	if err != nil {
-		return Voucher{}, fmt.Errorf("CreateVouchers %s: %w", id, err)
-	}
-	return voucher, nil
+	return nil
 }
 
 // DeleteVoucher revokes a single hotspot voucher via
