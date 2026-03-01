@@ -159,7 +159,7 @@ type ACLRule struct {
 }
 
 // ACLRuleRequest is the body for POST and PUT to /integration/v1/sites/{siteId}/acl-rules.
-// Type must be "IPV4" or "MAC". Action must be "ALLOW" or "BLOCK".
+// Known Type values: "IPV4", "MAC". Known Action values: "ALLOW", "BLOCK".
 type ACLRuleRequest struct {
 	Type    string `json:"type"`
 	Name    string `json:"name"`

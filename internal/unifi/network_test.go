@@ -138,7 +138,7 @@ func TestListACLRules(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "r-1", "name": "allow-mgmt", "action": "ALLOW", "enabled": true, "type": "INTERNET", "index": 0},
+					{"id": "r-1", "name": "allow-mgmt", "action": "ALLOW", "enabled": true, "type": "IPV4", "index": 0},
 				},
 				"totalCount": 1,
 			})

@@ -423,7 +423,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
 	}
 
-	splitNetworkIDs := func(s *string) []string {
+	splitIDs := func(s *string) []string {
 		if s == nil || *s == "" {
 			return []string{}
 		}
@@ -446,7 +446,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		}
 		zone, err := client.CreateFirewallZone(ctx, input.SiteID, unifi.FirewallZoneRequest{
 			Name:       input.Name,
-			NetworkIDs: splitNetworkIDs(input.NetworkIDs),
+			NetworkIDs: splitIDs(input.NetworkIDs),
 		})
 		if err != nil {
 			return errorResult(fmt.Errorf("create_firewall_zone: %w", err))
@@ -480,7 +480,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			}
 			networkIDs = existing.NetworkIDs
 		} else {
-			networkIDs = splitNetworkIDs(input.NetworkIDs)
+			networkIDs = splitIDs(input.NetworkIDs)
 		}
 		zone, err := client.UpdateFirewallZone(ctx, input.SiteID, input.ZoneID, unifi.FirewallZoneRequest{
 			Name:       input.Name,
@@ -576,7 +576,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			Type      string `json:"type"               jsonschema:"rule type: IPV4 or MAC"`
 			Name      string `json:"name"               jsonschema:"rule name"`
 			Action    string `json:"action"             jsonschema:"rule action: ALLOW or BLOCK"`
-			Enabled   bool   `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
+			Enabled   *bool  `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
 			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
 		}
 
@@ -597,11 +597,14 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			if input.Action == "" {
 				return errorResult(fmt.Errorf("create_acl_rule: action is required (ALLOW or BLOCK)"))
 			}
+			if input.Enabled == nil {
+				return errorResult(fmt.Errorf("create_acl_rule: enabled is required"))
+			}
 			rule, err := client.CreateACLRule(ctx, input.SiteID, unifi.ACLRuleRequest{
 				Type:    input.Type,
 				Name:    input.Name,
 				Action:  input.Action,
-				Enabled: input.Enabled,
+				Enabled: *input.Enabled,
 			})
 			if err != nil {
 				return errorResult(fmt.Errorf("create_acl_rule: %w", err))
@@ -615,7 +618,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			Type      string `json:"type"               jsonschema:"rule type: IPV4 or MAC"`
 			Name      string `json:"name"               jsonschema:"rule name"`
 			Action    string `json:"action"             jsonschema:"rule action: ALLOW or BLOCK"`
-			Enabled   bool   `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
+			Enabled   *bool  `json:"enabled"            jsonschema:"true to enable the rule, false to disable"`
 			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
 		}
 
@@ -639,11 +642,14 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			if input.Action == "" {
 				return errorResult(fmt.Errorf("update_acl_rule: action is required (ALLOW or BLOCK)"))
 			}
+			if input.Enabled == nil {
+				return errorResult(fmt.Errorf("update_acl_rule: enabled is required"))
+			}
 			rule, err := client.UpdateACLRule(ctx, input.SiteID, input.RuleID, unifi.ACLRuleRequest{
 				Type:    input.Type,
 				Name:    input.Name,
 				Action:  input.Action,
-				Enabled: input.Enabled,
+				Enabled: *input.Enabled,
 			})
 			if err != nil {
 				return errorResult(fmt.Errorf("update_acl_rule: %w", err))
@@ -694,7 +700,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			if input.RuleIDs == nil || *input.RuleIDs == "" {
 				return errorResult(fmt.Errorf("reorder_acl_rules: rule_ids is required"))
 			}
-			ordering, err := client.ReorderACLRules(ctx, input.SiteID, splitNetworkIDs(input.RuleIDs))
+			ordering, err := client.ReorderACLRules(ctx, input.SiteID, splitIDs(input.RuleIDs))
 			if err != nil {
 				return errorResult(fmt.Errorf("reorder_acl_rules: %w", err))
 			}
