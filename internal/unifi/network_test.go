@@ -443,3 +443,165 @@ func TestListVPNServers(t *testing.T) {
 		}
 	})
 }
+
+func TestListDNSPolicies(t *testing.T) {
+	t.Run("decodes policy list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "p-1", "type": "A_RECORD", "domain": "nas.home", "ipv4Address": "192.168.1.100", "enabled": true},
+					{"id": "p-2", "type": "A_RECORD", "domain": "pi.home", "ipv4Address": "192.168.1.200", "enabled": false},
+				},
+				"totalCount": 2,
+			})
+		})
+		policies, err := client.ListDNSPolicies(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListDNSPolicies: %v", err)
+		}
+		if len(policies) != 2 {
+			t.Fatalf("got %d policies, want 2", len(policies))
+		}
+		if policies[0].Domain != "nas.home" {
+			t.Errorf("got Domain %q, want nas.home", policies[0].Domain)
+		}
+		if policies[1].Enabled {
+			t.Error("expected policies[1].Enabled false")
+		}
+	})
+}
+
+func TestGetDNSPolicy(t *testing.T) {
+	t.Run("decodes single policy", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "p-1", "type": "A_RECORD", "domain": "nas.home",
+				"ipv4Address": "192.168.1.100", "ttlSeconds": 300, "enabled": true,
+			})
+		})
+		policy, err := client.GetDNSPolicy(context.Background(), "", "p-1")
+		if err != nil {
+			t.Fatalf("GetDNSPolicy: %v", err)
+		}
+		if policy.IPv4Address != "192.168.1.100" {
+			t.Errorf("got IPv4Address %q, want 192.168.1.100", policy.IPv4Address)
+		}
+		if policy.TTLSeconds != 300 {
+			t.Errorf("got TTLSeconds %d, want 300", policy.TTLSeconds)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "not found", http.StatusNotFound)
+		})
+		_, err := client.GetDNSPolicy(context.Background(), "", "missing")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestCreateDNSPolicy(t *testing.T) {
+	t.Run("posts and decodes created policy", func(t *testing.T) {
+		var gotBody DNSPolicyRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies" {
+				http.Error(w, "bad request", http.StatusBadRequest)
+				return
+			}
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "p-new", "type": gotBody.Type, "domain": gotBody.Domain,
+				"ipv4Address": gotBody.IPv4Address, "enabled": gotBody.Enabled,
+			})
+		})
+		req := DNSPolicyRequest{Type: "A_RECORD", Domain: "test.home", IPv4Address: "10.0.0.5", Enabled: true}
+		policy, err := client.CreateDNSPolicy(context.Background(), "", req)
+		if err != nil {
+			t.Fatalf("CreateDNSPolicy: %v", err)
+		}
+		if policy.ID != "p-new" {
+			t.Errorf("got ID %q, want p-new", policy.ID)
+		}
+		if gotBody.Domain != "test.home" {
+			t.Errorf("POST body domain = %q, want test.home", gotBody.Domain)
+		}
+	})
+}
+
+func TestUpdateDNSPolicy(t *testing.T) {
+	t.Run("puts and decodes updated policy", func(t *testing.T) {
+		var gotBody DNSPolicyRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+				http.Error(w, "bad request", http.StatusBadRequest)
+				return
+			}
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "p-1", "type": gotBody.Type, "domain": gotBody.Domain,
+				"ipv4Address": gotBody.IPv4Address, "enabled": gotBody.Enabled,
+			})
+		})
+		req := DNSPolicyRequest{Type: "A_RECORD", Domain: "nas.home", IPv4Address: "192.168.1.99", Enabled: true}
+		policy, err := client.UpdateDNSPolicy(context.Background(), "", "p-1", req)
+		if err != nil {
+			t.Fatalf("UpdateDNSPolicy: %v", err)
+		}
+		if gotBody.IPv4Address != "192.168.1.99" {
+			t.Errorf("PUT body IPv4Address = %q, want 192.168.1.99", gotBody.IPv4Address)
+		}
+		if policy.ID != "p-1" {
+			t.Errorf("got ID %q, want p-1", policy.ID)
+		}
+	})
+}
+
+func TestDeleteDNSPolicy(t *testing.T) {
+	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			w.WriteHeader(http.StatusNoContent)
+		})
+		if err := client.DeleteDNSPolicy(context.Background(), "", "p-1"); err != nil {
+			t.Fatalf("DeleteDNSPolicy: %v", err)
+		}
+		if gotMethod != http.MethodDelete {
+			t.Errorf("got method %q, want DELETE", gotMethod)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+		})
+		if err := client.DeleteDNSPolicy(context.Background(), "", "p-1"); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

@@ -143,6 +143,16 @@ export UNIFI_SITE_ID=your-site-uuid
 | `list_wans` | All WAN interface definitions |
 | `list_vpn_tunnels` | All site-to-site VPN tunnels |
 | `list_vpn_servers` | All VPN server configurations |
+| `list_dns_policies` | All local DNS A-record policies |
+| `get_dns_policy` | Details for a single DNS policy by ID |
+| `create_dns_policy` | Create a new local DNS A-record policy |
+| `update_dns_policy` | Update an existing DNS policy by ID |
+
+### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
+
+| Tool | Description |
+|---|---|
+| `delete_dns_policy` | Permanently delete a DNS policy — requires `confirmed: true` |
 
 ---
 

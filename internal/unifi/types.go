@@ -147,3 +147,22 @@ type VPNServer struct {
 	Type    string `json:"type,omitempty"`
 	Enabled bool   `json:"enabled"`
 }
+
+// DNSPolicy is returned by GET /integration/v1/sites/{siteId}/dns/policies.
+type DNSPolicy struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	Domain      string `json:"domain"`
+	IPv4Address string `json:"ipv4Address,omitempty"`
+	TTLSeconds  int    `json:"ttlSeconds,omitempty"`
+	Enabled     bool   `json:"enabled"`
+}
+
+// DNSPolicyRequest is the body for POST and PUT to /integration/v1/sites/{siteId}/dns/policies.
+type DNSPolicyRequest struct {
+	Type        string `json:"type"`
+	Domain      string `json:"domain"`
+	IPv4Address string `json:"ipv4Address,omitempty"`
+	TTLSeconds  int    `json:"ttlSeconds,omitempty"`
+	Enabled     bool   `json:"enabled"`
+}
