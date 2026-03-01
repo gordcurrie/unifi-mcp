@@ -284,7 +284,7 @@ type DPICategory struct {
 type DPIApplication struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name,omitempty"`
-	CategoryID int    `json:"categoryId,omitempty"`
+	CategoryID int    `json:"categoryId"`
 }
 
 // RADIUSProfile is returned by GET /integration/v1/sites/{siteId}/radius/profiles.
