@@ -418,16 +418,16 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type firewallZoneMutateInput struct {
-		SiteID     string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		Name       string `json:"name"               jsonschema:"zone name"`
-		NetworkIDs string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
+		SiteID     string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Name       string  `json:"name"               jsonschema:"zone name"`
+		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
 	}
 
-	splitNetworkIDs := func(s string) []string {
-		if s == "" {
+	splitNetworkIDs := func(s *string) []string {
+		if s == nil || *s == "" {
 			return []string{}
 		}
-		parts := strings.Split(s, ",")
+		parts := strings.Split(*s, ",")
 		result := make([]string, 0, len(parts))
 		for _, p := range parts {
 			if trimmed := strings.TrimSpace(p); trimmed != "" {
@@ -455,10 +455,10 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type updateFirewallZoneInput struct {
-		SiteID     string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		ZoneID     string `json:"zone_id"            jsonschema:"firewall zone ID"`
-		Name       string `json:"name"               jsonschema:"zone name"`
-		NetworkIDs string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
+		SiteID     string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ZoneID     string  `json:"zone_id"            jsonschema:"firewall zone ID"`
+		Name       string  `json:"name"               jsonschema:"zone name"`
+		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
