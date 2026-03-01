@@ -91,19 +91,22 @@ func (c *Client) get(ctx context.Context, path string) ([]byte, error) {
 
 // getWithQuery performs a GET request appending optional offset/limit query parameters.
 // A value of 0 means "omit the parameter and let the API use its default".
+// Negative values are invalid and return an error.
 func (c *Client) getWithQuery(ctx context.Context, path string, offset, limit int) ([]byte, error) {
+	if offset < 0 || limit < 0 {
+		return nil, fmt.Errorf("getWithQuery: offset and limit must be >= 0 (got offset=%d, limit=%d)", offset, limit)
+	}
 	if offset == 0 && limit == 0 {
 		return c.get(ctx, path)
 	}
-	sep := "?"
+	q := url.Values{}
 	if offset > 0 {
-		path += sep + fmt.Sprintf("offset=%d", offset)
-		sep = "&"
+		q.Set("offset", fmt.Sprintf("%d", offset))
 	}
 	if limit > 0 {
-		path += sep + fmt.Sprintf("limit=%d", limit)
+		q.Set("limit", fmt.Sprintf("%d", limit))
 	}
-	return c.do(ctx, http.MethodGet, path, nil)
+	return c.do(ctx, http.MethodGet, path+"?"+q.Encode(), nil)
 }
 
 // post performs a POST request with no body to the given path.

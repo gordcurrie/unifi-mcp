@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ListClients returns all currently connected clients from GET /integration/v1/sites/{siteID}/clients.
+// ListClients returns one page of currently connected clients from GET /integration/v1/sites/{siteID}/clients.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListClients(ctx context.Context, siteID string, offset, limit int) (Page[NetworkClient], error) {
 	id := c.site(siteID)

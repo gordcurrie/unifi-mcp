@@ -133,3 +133,45 @@ func TestSiteFallback(t *testing.T) {
 		t.Errorf(`site("override") = %q, want %q`, got, "override")
 	}
 }
+
+func TestGetWithQuery(t *testing.T) {
+	cases := []struct {
+		name      string
+		offset    int
+		limit     int
+		wantQuery string // expected raw query string (empty = no query params)
+		wantErr   bool
+	}{
+		{"zero/zero omits params", 0, 0, "", false},
+		{"offset only", 10, 0, "offset=10", false},
+		{"limit only", 0, 25, "limit=25", false},
+		{"both", 10, 25, "limit=25&offset=10", false},
+		{"negative offset returns error", -1, 0, "", true},
+		{"negative limit returns error", 0, -1, "", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotQuery string
+			client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				gotQuery = r.URL.RawQuery
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"data": []map[string]any{}, "totalCount": 0,
+				})
+			})
+			_, err := client.getWithQuery(context.Background(), "/integration/v1/sites", tc.offset, tc.limit)
+			if tc.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if gotQuery != tc.wantQuery {
+				t.Errorf("RawQuery = %q, want %q", gotQuery, tc.wantQuery)
+			}
+		})
+	}
+}

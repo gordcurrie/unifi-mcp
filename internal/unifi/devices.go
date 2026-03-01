@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ListDevices returns all adopted devices from GET /integration/v1/sites/{siteID}/devices.
+// ListDevices returns one page of adopted devices from GET /integration/v1/sites/{siteID}/devices.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDevices(ctx context.Context, siteID string, offset, limit int) (Page[Device], error) {
 	id := c.site(siteID)

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// ListWiFiBroadcasts returns all WiFi broadcast (SSID) configurations from
+// ListWiFiBroadcasts returns one page of WiFi broadcast (SSID) configurations from
 // GET /integration/v1/sites/{siteID}/wifi/broadcasts.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string, offset, limit int) (Page[WiFiBroadcast], error) {
@@ -38,7 +38,7 @@ func (c *Client) GetWiFiBroadcast(ctx context.Context, siteID, broadcastID strin
 	return broadcast, nil
 }
 
-// ListNetworks returns all configured networks from GET /integration/v1/sites/{siteID}/networks.
+// ListNetworks returns one page of configured networks from GET /integration/v1/sites/{siteID}/networks.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListNetworks(ctx context.Context, siteID string, offset, limit int) (Page[NetworkConf], error) {
 	id := c.site(siteID)
@@ -53,7 +53,7 @@ func (c *Client) ListNetworks(ctx context.Context, siteID string, offset, limit 
 	return page, nil
 }
 
-// ListFirewallPolicies returns all firewall policies from GET /integration/v1/sites/{siteID}/firewall/policies.
+// ListFirewallPolicies returns one page of firewall policies from GET /integration/v1/sites/{siteID}/firewall/policies.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string, offset, limit int) (Page[FirewallPolicy], error) {
 	id := c.site(siteID)
@@ -68,7 +68,7 @@ func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string, offset
 	return page, nil
 }
 
-// ListFirewallZones returns all firewall zones from GET /integration/v1/sites/{siteID}/firewall/zones.
+// ListFirewallZones returns one page of firewall zones from GET /integration/v1/sites/{siteID}/firewall/zones.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListFirewallZones(ctx context.Context, siteID string, offset, limit int) (Page[FirewallZone], error) {
 	id := c.site(siteID)
@@ -201,7 +201,7 @@ func (c *Client) DeleteFirewallZone(ctx context.Context, siteID, zoneID string) 
 	return nil
 }
 
-// ListACLRules returns all ACL rules from GET /integration/v1/sites/{siteID}/acl-rules.
+// ListACLRules returns one page of ACL rules from GET /integration/v1/sites/{siteID}/acl-rules.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListACLRules(ctx context.Context, siteID string, offset, limit int) (Page[ACLRule], error) {
 	id := c.site(siteID)
@@ -364,7 +364,7 @@ func (c *Client) SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastI
 	return bc, nil
 }
 
-// ListTrafficMatchingLists returns all traffic matching lists from
+// ListTrafficMatchingLists returns one page of traffic matching lists from
 // GET /integration/v1/sites/{siteID}/traffic-matching-lists.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string, offset, limit int) (Page[TrafficMatchingList], error) {
@@ -396,7 +396,7 @@ func (c *Client) GetTrafficMatchingList(ctx context.Context, siteID, listID stri
 	return list, nil
 }
 
-// ListWANs returns all WAN interface definitions from
+// ListWANs returns one page of WAN interface definitions from
 // GET /integration/v1/sites/{siteID}/wans.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListWANs(ctx context.Context, siteID string, offset, limit int) (Page[WAN], error) {
@@ -412,7 +412,7 @@ func (c *Client) ListWANs(ctx context.Context, siteID string, offset, limit int)
 	return page, nil
 }
 
-// ListVPNTunnels returns all site-to-site VPN tunnels from
+// ListVPNTunnels returns one page of site-to-site VPN tunnels from
 // GET /integration/v1/sites/{siteID}/vpn/site-to-site-tunnels.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVPNTunnels(ctx context.Context, siteID string, offset, limit int) (Page[VPNTunnel], error) {
@@ -428,7 +428,7 @@ func (c *Client) ListVPNTunnels(ctx context.Context, siteID string, offset, limi
 	return page, nil
 }
 
-// ListVPNServers returns all VPN server configurations from
+// ListVPNServers returns one page of VPN server configurations from
 // GET /integration/v1/sites/{siteID}/vpn/servers.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVPNServers(ctx context.Context, siteID string, offset, limit int) (Page[VPNServer], error) {
@@ -444,7 +444,7 @@ func (c *Client) ListVPNServers(ctx context.Context, siteID string, offset, limi
 	return page, nil
 }
 
-// ListDNSPolicies returns all DNS policies from
+// ListDNSPolicies returns one page of DNS policies from
 // GET /integration/v1/sites/{siteID}/dns/policies.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDNSPolicies(ctx context.Context, siteID string, offset, limit int) (Page[DNSPolicy], error) {
@@ -519,7 +519,7 @@ func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) e
 	return nil
 }
 
-// ListVouchers returns all hotspot vouchers for a site via
+// ListVouchers returns one page of hotspot vouchers for a site via
 // GET /integration/v1/sites/{siteID}/hotspot/vouchers.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVouchers(ctx context.Context, siteID string, offset, limit int) (Page[Voucher], error) {
@@ -583,7 +583,7 @@ func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) er
 	return nil
 }
 
-// ListDeviceTags returns all device tags from
+// ListDeviceTags returns one page of device tags from
 // GET /integration/v1/sites/{siteID}/device-tags.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDeviceTags(ctx context.Context, siteID string, offset, limit int) (Page[DeviceTag], error) {
@@ -599,7 +599,7 @@ func (c *Client) ListDeviceTags(ctx context.Context, siteID string, offset, limi
 	return page, nil
 }
 
-// ListDPICategories returns all DPI application categories from
+// ListDPICategories returns one page of DPI application categories from
 // GET /integration/v1/dpi/categories.
 // offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDPICategories(ctx context.Context, offset, limit int) (Page[DPICategory], error) {
@@ -614,7 +614,7 @@ func (c *Client) ListDPICategories(ctx context.Context, offset, limit int) (Page
 	return page, nil
 }
 
-// ListDPIApplications returns all DPI applications from
+// ListDPIApplications returns one page of DPI applications from
 // GET /integration/v1/dpi/applications.
 // offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDPIApplications(ctx context.Context, offset, limit int) (Page[DPIApplication], error) {
@@ -629,7 +629,7 @@ func (c *Client) ListDPIApplications(ctx context.Context, offset, limit int) (Pa
 	return page, nil
 }
 
-// ListRADIUSProfiles returns all RADIUS profiles from
+// ListRADIUSProfiles returns one page of RADIUS profiles from
 // GET /integration/v1/sites/{siteID}/radius/profiles.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListRADIUSProfiles(ctx context.Context, siteID string, offset, limit int) (Page[RADIUSProfile], error) {
