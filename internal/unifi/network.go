@@ -2,6 +2,7 @@ package unifi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 )
 
@@ -550,18 +551,25 @@ func (c *Client) GetVoucher(ctx context.Context, siteID, voucherID string) (Vouc
 	return voucher, nil
 }
 
+// voucherCreateResponse is the envelope returned by POST /hotspot/vouchers.
+type voucherCreateResponse struct {
+	Vouchers []Voucher `json:"vouchers"`
+}
+
 // CreateVouchers generates one or more hotspot vouchers via
 // POST /integration/v1/sites/{siteID}/hotspot/vouchers.
-// The API does not return the created voucher data; use ListVouchers to
-// retrieve codes after creation.
 // Pass an empty siteID to use the client default.
-func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) error {
+func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) ([]Voucher, error) {
 	id := c.site(siteID)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), req)
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), req)
 	if err != nil {
-		return fmt.Errorf("CreateVouchers %s: %w", id, err)
+		return nil, fmt.Errorf("CreateVouchers %s: %w", id, err)
 	}
-	return nil
+	var resp voucherCreateResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("CreateVouchers %s: decode response: %w", id, err)
+	}
+	return resp.Vouchers, nil
 }
 
 // DeleteVoucher revokes a single hotspot voucher via

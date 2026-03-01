@@ -64,6 +64,6 @@ type unifiClient interface {
 	// Vouchers
 	ListVouchers(ctx context.Context, siteID string) ([]unifi.Voucher, error)
 	GetVoucher(ctx context.Context, siteID, voucherID string) (unifi.Voucher, error)
-	CreateVouchers(ctx context.Context, siteID string, req unifi.VoucherRequest) error
+	CreateVouchers(ctx context.Context, siteID string, req unifi.VoucherRequest) ([]unifi.Voucher, error)
 	DeleteVoucher(ctx context.Context, siteID, voucherID string) error
 }

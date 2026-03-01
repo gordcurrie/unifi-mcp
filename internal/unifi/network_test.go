@@ -1289,7 +1289,7 @@ func TestGetVoucher(t *testing.T) {
 }
 
 func TestCreateVouchers(t *testing.T) {
-	t.Run("sends count and succeeds", func(t *testing.T) {
+	t.Run("sends count and returns vouchers", func(t *testing.T) {
 		var gotBody VoucherRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
@@ -1301,12 +1301,19 @@ func TestCreateVouchers(t *testing.T) {
 				http.Error(w, "decode error", http.StatusBadRequest)
 				return
 			}
-			// API returns no meaningful body on creation.
-			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"vouchers": []map[string]any{
+					{"id": "v-2", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes, "expired": false},
+				},
+			})
 		})
 		req := VoucherRequest{Count: 1, Name: "test", TimeLimitMinutes: 120}
-		if err := client.CreateVouchers(context.Background(), "", req); err != nil {
+		vouchers, err := client.CreateVouchers(context.Background(), "", req)
+		if err != nil {
 			t.Fatalf("CreateVouchers: %v", err)
+		}
+		if len(vouchers) != 1 || vouchers[0].ID != "v-2" {
+			t.Errorf("got %+v, want [{ID:v-2 ...}]", vouchers)
 		}
 		if gotBody.Count != 1 || gotBody.Name != "test" || gotBody.TimeLimitMinutes != 120 {
 			t.Errorf("sent body %+v, want {Count:1 Name:test TimeLimitMinutes:120}", gotBody)
@@ -1317,7 +1324,8 @@ func TestCreateVouchers(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		if err := client.CreateVouchers(context.Background(), "", VoucherRequest{Count: 1}); err == nil {
+		_, err := client.CreateVouchers(context.Background(), "", VoucherRequest{Count: 1})
+		if err == nil {
 			t.Error("expected error, got nil")
 		}
 	})

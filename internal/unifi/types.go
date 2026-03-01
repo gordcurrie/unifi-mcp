@@ -231,18 +231,20 @@ type DNSPolicyRequest struct {
 	Enabled     bool   `json:"enabled"`
 }
 
-// Voucher is returned by GET /integration/v1/sites/{siteId}/hotspot/vouchers.
+// Voucher is returned by the hotspot voucher endpoints.
 type Voucher struct {
-	ID               string `json:"id"`
-	Code             string `json:"code,omitempty"`
-	Name             string `json:"name,omitempty"`
-	TimeLimitMinutes int    `json:"timeLimitMinutes,omitempty"`
-	DataLimitMb      int    `json:"dataLimitMb,omitempty"`
-	UsageQuota       int    `json:"usageQuota,omitempty"`
-	UsageCount       int    `json:"usageCount,omitempty"`
-	Status           string `json:"status,omitempty"`
-	CreatedAt        string `json:"createdAt,omitempty"`
-	ExpiresAt        string `json:"expiresAt,omitempty"`
+	ID                   string `json:"id"`
+	Code                 string `json:"code,omitempty"`
+	Name                 string `json:"name,omitempty"`
+	TimeLimitMinutes     int    `json:"timeLimitMinutes,omitempty"`
+	DataLimitMb          int    `json:"dataLimitMb,omitempty"`
+	UsageQuota           int    `json:"usageQuota,omitempty"`
+	UsageCount           int    `json:"usageCount,omitempty"`
+	AuthorizedGuestCount int    `json:"authorizedGuestCount,omitempty"`
+	Expired              bool   `json:"expired,omitempty"`
+	Status               string `json:"status,omitempty"`
+	CreatedAt            string `json:"createdAt,omitempty"`
+	ExpiresAt            string `json:"expiresAt,omitempty"`
 }
 
 // VoucherRequest is the body for POST to /integration/v1/sites/{siteId}/hotspot/vouchers.
