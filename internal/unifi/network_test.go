@@ -543,6 +543,16 @@ func TestCreateDNSPolicy(t *testing.T) {
 			t.Errorf("POST body domain = %q, want test.home", gotBody.Domain)
 		}
 	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.CreateDNSPolicy(context.Background(), "", DNSPolicyRequest{Type: "A_RECORD", Domain: "x.home"})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
 }
 
 func TestUpdateDNSPolicy(t *testing.T) {
@@ -573,6 +583,16 @@ func TestUpdateDNSPolicy(t *testing.T) {
 		}
 		if policy.ID != "p-1" {
 			t.Errorf("got ID %q, want p-1", policy.ID)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.UpdateDNSPolicy(context.Background(), "", "p-1", DNSPolicyRequest{Type: "A_RECORD", Domain: "nas.home"})
+		if err == nil {
+			t.Error("expected error, got nil")
 		}
 	})
 }

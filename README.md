@@ -31,6 +31,7 @@ go build -o bin/unifi-mcp ./cmd/unifi-mcp
 | `UNIFI_API_KEY` | Yes | UniFi API key |
 | `UNIFI_SITE_ID` | Yes | Default site UUID — find it with `list_sites` |
 | `UNIFI_INSECURE` | No | Set `true` to skip TLS verification (self-signed certs) |
+| `UNIFI_ALLOW_DESTRUCTIVE` | No | Set `true` to enable permanent-delete tools (e.g. `delete_dns_policy`) |
 
 ---
 

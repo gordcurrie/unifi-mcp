@@ -247,7 +247,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "create_dns_policy",
 		Description: "Create a new local DNS A-record policy mapping a domain to an IP address.",
-		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input createDNSPolicyInput) (*mcp.CallToolResult, any, error) {
 		if input.Type == "" {
 			return errorResult(fmt.Errorf("create_dns_policy: type is required"))
@@ -275,7 +274,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "update_dns_policy",
 		Description: "Update an existing local DNS policy by ID.",
-		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateDNSPolicyInput) (*mcp.CallToolResult, any, error) {
 		if input.PolicyID == "" {
 			return errorResult(fmt.Errorf("update_dns_policy: policy_id is required"))
