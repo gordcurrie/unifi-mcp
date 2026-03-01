@@ -60,4 +60,10 @@ type unifiClient interface {
 	CreateDNSPolicy(ctx context.Context, siteID string, req unifi.DNSPolicyRequest) (unifi.DNSPolicy, error)
 	UpdateDNSPolicy(ctx context.Context, siteID, policyID string, req unifi.DNSPolicyRequest) (unifi.DNSPolicy, error)
 	DeleteDNSPolicy(ctx context.Context, siteID, policyID string) error
+
+	// Vouchers
+	ListVouchers(ctx context.Context, siteID string) ([]unifi.Voucher, error)
+	GetVoucher(ctx context.Context, siteID, voucherID string) (unifi.Voucher, error)
+	CreateVouchers(ctx context.Context, siteID string, req unifi.VoucherRequest) ([]unifi.Voucher, error)
+	DeleteVoucher(ctx context.Context, siteID, voucherID string) error
 }

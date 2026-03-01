@@ -186,7 +186,7 @@ Useful for context when reasoning about firewall rules and routing.
 - `GET /v1/sites/{id}/vpn/servers` — list VPN servers
 - New tools: `list_wans`, `list_vpn_tunnels`, `list_vpn_servers`
 
-### 4j — Hotspot vouchers
+### ✅ 4j — Hotspot vouchers
 
 Full CRUD for guest Hotspot vouchers (time/data-limited access codes).
 Useful if running a guest or hotspot network.

@@ -230,3 +230,27 @@ type DNSPolicyRequest struct {
 	TTLSeconds  int    `json:"ttlSeconds"`
 	Enabled     bool   `json:"enabled"`
 }
+
+// Voucher is returned by GET /integration/v1/sites/{siteId}/hotspot/vouchers.
+type Voucher struct {
+	ID               string `json:"id"`
+	Code             string `json:"code,omitempty"`
+	Name             string `json:"name,omitempty"`
+	TimeLimitMinutes int    `json:"timeLimitMinutes,omitempty"`
+	DataLimitMb      int    `json:"dataLimitMb,omitempty"`
+	UsageQuota       int    `json:"usageQuota,omitempty"`
+	UsageCount       int    `json:"usageCount,omitempty"`
+	Status           string `json:"status,omitempty"`
+	CreatedAt        string `json:"createdAt,omitempty"`
+	ExpiresAt        string `json:"expiresAt,omitempty"`
+}
+
+// VoucherRequest is the body for POST to /integration/v1/sites/{siteId}/hotspot/vouchers.
+// Count controls how many vouchers are generated in one call (minimum 1).
+// TimeLimitMinutes and DataLimitMb are optional; 0 means unlimited.
+type VoucherRequest struct {
+	Count            int    `json:"count"`
+	Name             string `json:"name,omitempty"`
+	TimeLimitMinutes int    `json:"timeLimitMinutes,omitempty"`
+	DataLimitMb      int    `json:"dataLimitMb,omitempty"`
+}

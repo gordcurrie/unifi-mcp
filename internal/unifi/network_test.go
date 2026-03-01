@@ -1220,3 +1220,143 @@ func TestReorderACLRules(t *testing.T) {
 		}
 	})
 }
+
+func TestListVouchers(t *testing.T) {
+	t.Run("decodes voucher list", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "v-1", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID"},
+				},
+				"totalCount": 1,
+			})
+		})
+		vouchers, err := client.ListVouchers(context.Background(), "")
+		if err != nil {
+			t.Fatalf("ListVouchers: %v", err)
+		}
+		if len(vouchers) != 1 || vouchers[0].ID != "v-1" || vouchers[0].Code != "ABC123" {
+			t.Errorf("got %+v, want [{ID:v-1 Code:ABC123 ...}]", vouchers)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.ListVouchers(context.Background(), "")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestGetVoucher(t *testing.T) {
+	t.Run("decodes single voucher", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers/v-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "v-1", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID",
+			})
+		})
+		voucher, err := client.GetVoucher(context.Background(), "", "v-1")
+		if err != nil {
+			t.Fatalf("GetVoucher: %v", err)
+		}
+		if voucher.ID != "v-1" || voucher.Code != "ABC123" {
+			t.Errorf("got %+v, want {ID:v-1 Code:ABC123}", voucher)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "not found", http.StatusNotFound)
+		})
+		_, err := client.GetVoucher(context.Background(), "", "v-1")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestCreateVouchers(t *testing.T) {
+	t.Run("sends count and returns list", func(t *testing.T) {
+		var gotBody VoucherRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"data": []map[string]any{
+					{"id": "v-2", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes},
+				},
+				"totalCount": 1,
+			})
+		})
+		req := VoucherRequest{Count: 1, Name: "test", TimeLimitMinutes: 120}
+		vouchers, err := client.CreateVouchers(context.Background(), "", req)
+		if err != nil {
+			t.Fatalf("CreateVouchers: %v", err)
+		}
+		if len(vouchers) != 1 || vouchers[0].ID != "v-2" {
+			t.Errorf("got %+v, want [{ID:v-2 ...}]", vouchers)
+		}
+		if gotBody.Count != 1 || gotBody.Name != "test" || gotBody.TimeLimitMinutes != 120 {
+			t.Errorf("sent body %+v, want {Count:1 Name:test TimeLimitMinutes:120}", gotBody)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.CreateVouchers(context.Background(), "", VoucherRequest{Count: 1})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteVoucher(t *testing.T) {
+	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers/v-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			w.WriteHeader(http.StatusNoContent)
+		})
+		if err := client.DeleteVoucher(context.Background(), "", "v-1"); err != nil {
+			t.Fatalf("DeleteVoucher: %v", err)
+		}
+		if gotMethod != http.MethodDelete {
+			t.Errorf("got method %q, want DELETE", gotMethod)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+		})
+		if err := client.DeleteVoucher(context.Background(), "", "v-1"); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}

@@ -717,4 +717,92 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			return textResult(fmt.Sprintf("ACL rule %s deleted", input.RuleID))
 		})
 	}
+
+	// ── Hotspot Vouchers ─────────────────────────────────────────────────────
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_vouchers",
+		Description: "List all hotspot vouchers for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		vouchers, err := client.ListVouchers(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_vouchers: %w", err))
+		}
+		return jsonResult(vouchers)
+	})
+
+	type voucherInput struct {
+		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		VoucherID string `json:"voucher_id"         jsonschema:"voucher ID"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_voucher",
+		Description: "Get details for a specific hotspot voucher by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input voucherInput) (*mcp.CallToolResult, any, error) {
+		if input.VoucherID == "" {
+			return errorResult(fmt.Errorf("get_voucher: voucher_id is required"))
+		}
+		voucher, err := client.GetVoucher(ctx, input.SiteID, input.VoucherID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_voucher: %w", err))
+		}
+		return jsonResult(voucher)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "create_vouchers",
+		Description: "Generate one or more hotspot vouchers. count is required (minimum 1). time_limit_minutes and data_limit_mb are optional (0 = unlimited). Set confirmed=true to proceed.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+		SiteID           string `json:"site_id,omitempty"       jsonschema:"site ID; omit to use default"`
+		Count            int    `json:"count"                   jsonschema:"number of vouchers to generate (minimum 1)"`
+		Name             string `json:"name,omitempty"          jsonschema:"optional label for the vouchers"`
+		TimeLimitMinutes int    `json:"time_limit_minutes,omitempty" jsonschema:"access duration in minutes; 0 or omit for unlimited"`
+		DataLimitMb      int    `json:"data_limit_mb,omitempty" jsonschema:"data cap in MB; 0 or omit for unlimited"`
+		Confirmed        bool   `json:"confirmed"               jsonschema:"must be true to confirm the creation"`
+	},
+	) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("create_vouchers: set confirmed=true to confirm the creation"))
+		}
+		if input.Count < 1 {
+			return errorResult(fmt.Errorf("create_vouchers: count must be at least 1"))
+		}
+		vouchers, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
+			Count:            input.Count,
+			Name:             input.Name,
+			TimeLimitMinutes: input.TimeLimitMinutes,
+			DataLimitMb:      input.DataLimitMb,
+		})
+		if err != nil {
+			return errorResult(fmt.Errorf("create_vouchers: %w", err))
+		}
+		return jsonResult(vouchers)
+	})
+
+	if allowDestructive {
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "delete_voucher",
+			Description: "Permanently revoke a hotspot voucher by ID. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			VoucherID string `json:"voucher_id"         jsonschema:"voucher ID"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the deletion"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("delete_voucher: set confirmed=true to confirm the deletion"))
+			}
+			if input.VoucherID == "" {
+				return errorResult(fmt.Errorf("delete_voucher: voucher_id is required"))
+			}
+			if err := client.DeleteVoucher(ctx, input.SiteID, input.VoucherID); err != nil {
+				return errorResult(fmt.Errorf("delete_voucher: %w", err))
+			}
+			return textResult(fmt.Sprintf("Voucher %s deleted", input.VoucherID))
+		})
+	}
 }
