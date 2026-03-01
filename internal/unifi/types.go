@@ -256,3 +256,40 @@ type VoucherRequest struct {
 	TimeLimitMinutes int    `json:"timeLimitMinutes,omitempty"`
 	DataLimitMb      int    `json:"dataLimitMb,omitempty"`
 }
+
+// GuestAuthRequest is the body for POST /integration/v1/sites/{siteId}/clients/{clientId}/actions
+// with action AUTHORIZE_GUEST_ACCESS.
+// TimeLimitMinutes, DataLimitMb, DownloadBandwidthKbps and UploadBandwidthKbps are optional (0 = unlimited).
+type GuestAuthRequest struct {
+	Action                string `json:"action"`
+	TimeLimitMinutes      int    `json:"timeLimitMinutes,omitempty"`
+	DataLimitMb           int    `json:"dataLimitMb,omitempty"`
+	DownloadBandwidthKbps int    `json:"downloadBandwidthKbps,omitempty"`
+	UploadBandwidthKbps   int    `json:"uploadBandwidthKbps,omitempty"`
+}
+
+// DeviceTag is returned by GET /integration/v1/sites/{siteId}/device-tags.
+type DeviceTag struct {
+	ID   string `json:"id"`
+	Name string `json:"name,omitempty"`
+}
+
+// DPICategory is returned by GET /integration/v1/dpi/categories.
+type DPICategory struct {
+	ID   int    `json:"id"`
+	Name string `json:"name,omitempty"`
+}
+
+// DPIApplication is returned by GET /integration/v1/dpi/applications.
+type DPIApplication struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name,omitempty"`
+	CategoryID int    `json:"categoryId"`
+}
+
+// RADIUSProfile is returned by GET /integration/v1/sites/{siteId}/radius/profiles.
+type RADIUSProfile struct {
+	ID       string                    `json:"id"`
+	Name     string                    `json:"name,omitempty"`
+	Metadata *FirewallResourceMetadata `json:"metadata,omitempty"`
+}

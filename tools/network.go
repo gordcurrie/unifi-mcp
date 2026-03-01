@@ -805,4 +805,53 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			return textResult(fmt.Sprintf("Voucher %s deleted", input.VoucherID))
 		})
 	}
+
+	// Reference data
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_device_tags",
+		Description: "List all device tags defined for the site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		tags, err := client.ListDeviceTags(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_device_tags: %w", err))
+		}
+		return jsonResult(tags)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_dpi_categories",
+		Description: "List all DPI application categories (used in firewall matching rules).",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
+		cats, err := client.ListDPICategories(ctx)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_dpi_categories: %w", err))
+		}
+		return jsonResult(cats)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_dpi_applications",
+		Description: "List all DPI applications (used in firewall matching rules).",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
+		apps, err := client.ListDPIApplications(ctx)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_dpi_applications: %w", err))
+		}
+		return jsonResult(apps)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_radius_profiles",
+		Description: "List all RADIUS profiles configured for the site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		profiles, err := client.ListRADIUSProfiles(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_radius_profiles: %w", err))
+		}
+		return jsonResult(profiles)
+	})
 }

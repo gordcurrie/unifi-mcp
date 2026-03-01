@@ -196,18 +196,29 @@ Useful if running a guest or hotspot network.
 - `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
 
-### 4k — Guest client authorization
+### ✅ 4k — Guest client authorization
 
 Authorize or revoke guest network access for a connected client.
 - `POST /v1/sites/{id}/clients/{clientId}/actions` body `{"action":"AUTHORIZE_GUEST_ACCESS", ...}`
 - New tool: `authorize_guest_client` (mutating, `confirmed bool`, optional time/data/rate limits)
 
-### 4l — Supporting reference data (read-only)
+### ✅ 4l — Supporting reference data (read-only)
 
 Low-priority but useful for firewall policy creation context.
 - `GET /v1/sites/{id}/device-tags` — device tags (used in WiFi broadcast device filters)
 - `GET /v1/dpi/categories` + `/v1/dpi/applications` — DPI app categories (firewall matching)
 - `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
-- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`
+- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`, `list_radius_profiles`
+
+### 4m — Pagination refactor (cross-cutting)
+
+Consistent pagination support across all list tools. Breaking change — do as a dedicated PR before adding further tools.
+
+- Add `Page[T]` response wrapper type (`data`, `totalCount`, `offset`, `limit`, `count`)
+- Change `decodeV1List` to return `Page[T]` instead of `[]T`
+- Change all list client methods to return `(Page[T], error)`
+- Add optional `offset` + `limit` params to all list tool inputs (default: API default page size)
+- Update all tests to assert on `Page[T]` shape
+- Document pagination behaviour in README
 
 

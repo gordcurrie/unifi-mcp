@@ -34,3 +34,15 @@ func (c *Client) GetClient(ctx context.Context, siteID, clientID string) (Networ
 	}
 	return client, nil
 }
+
+// AuthorizeGuestClient posts an AUTHORIZE_GUEST_ACCESS action for a connected client via
+// POST /integration/v1/sites/{siteID}/clients/{clientID}/actions.
+// Pass an empty siteID to use the client default.
+func (c *Client) AuthorizeGuestClient(ctx context.Context, siteID, clientID string, req GuestAuthRequest) error {
+	id := c.site(siteID)
+	_, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s/actions", id, clientID), req)
+	if err != nil {
+		return fmt.Errorf("AuthorizeGuestClient %s %s: %w", id, clientID, err)
+	}
+	return nil
+}

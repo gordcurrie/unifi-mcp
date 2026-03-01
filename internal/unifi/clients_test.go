@@ -49,6 +49,41 @@ func TestListClients(t *testing.T) {
 	})
 }
 
+func TestAuthorizeGuestClient(t *testing.T) {
+	t.Run("posts action and succeeds on 200", func(t *testing.T) {
+		var gotBody GuestAuthRequest
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/clients/c-1/actions" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			_ = json.NewDecoder(r.Body).Decode(&gotBody)
+			w.WriteHeader(http.StatusOK)
+		})
+		req := GuestAuthRequest{Action: "AUTHORIZE_GUEST_ACCESS", TimeLimitMinutes: 120}
+		if err := client.AuthorizeGuestClient(context.Background(), "", "c-1", req); err != nil {
+			t.Fatalf("AuthorizeGuestClient: %v", err)
+		}
+		if gotMethod != http.MethodPost {
+			t.Errorf("got method %q, want POST", gotMethod)
+		}
+		if gotBody.Action != "AUTHORIZE_GUEST_ACCESS" || gotBody.TimeLimitMinutes != 120 {
+			t.Errorf("got body %+v, want {Action:AUTHORIZE_GUEST_ACCESS TimeLimitMinutes:120}", gotBody)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		if err := client.AuthorizeGuestClient(context.Background(), "", "c-1", GuestAuthRequest{Action: "AUTHORIZE_GUEST_ACCESS"}); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
 func TestGetClient(t *testing.T) {
 	t.Run("decodes single client", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {

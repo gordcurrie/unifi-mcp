@@ -127,6 +127,7 @@ export UNIFI_SITE_ID=your-site-uuid
 |---|---|
 | `list_clients` | All currently connected clients |
 | `get_client` | Details for a single connected client by ID |
+| `authorize_guest_client` | Authorize a connected client for guest network access — requires `confirmed: true` |
 
 ### Network
 
@@ -158,6 +159,10 @@ export UNIFI_SITE_ID=your-site-uuid
 | `list_vouchers` | All hotspot vouchers |
 | `get_voucher` | Details for a single hotspot voucher by ID |
 | `create_vouchers` | Generate one or more hotspot vouchers — requires `confirmed: true` |
+| `list_device_tags` | All device tags defined for the site |
+| `list_dpi_categories` | All DPI application categories (used in firewall matching rules) |
+| `list_dpi_applications` | All DPI applications (used in firewall matching rules) |
+| `list_radius_profiles` | All RADIUS profiles configured for the site |
 
 ### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
 
