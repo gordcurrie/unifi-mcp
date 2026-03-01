@@ -86,7 +86,7 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_pending_devices",
-		Description: "List devices visible on the network that have not yet been adopted.",
+		Description: "List devices visible on the network that have not yet been adopted. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
 		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
