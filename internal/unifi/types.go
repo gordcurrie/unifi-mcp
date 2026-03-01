@@ -2,8 +2,8 @@ package unifi
 
 // Page wraps a paginated v1 list response, exposing the data slice alongside
 // the server-reported pagination metadata (totalCount, offset, limit, count).
-// All list methods return Page[T] so callers can implement cursor-style
-// iteration using offset + limit query parameters.
+// All list methods return Page[T] so callers can implement offset-based
+// pagination using offset + limit query parameters.
 type Page[T any] struct {
 	Data       []T `json:"data"`
 	TotalCount int `json:"totalCount"`

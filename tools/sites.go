@@ -30,7 +30,7 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_sites",
-		Description: "List all sites on the UniFi controller.",
+		Description: "List sites on the UniFi controller. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input pageInput) (*mcp.CallToolResult, any, error) {
 		page, err := client.ListSites(ctx, input.Offset, input.Limit)

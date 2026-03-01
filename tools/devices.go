@@ -27,7 +27,7 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_devices",
-		Description: "List all adopted devices (APs, switches, gateways) for a site.",
+		Description: "List adopted devices (APs, switches, gateways) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		devices, err := client.ListDevices(ctx, input.SiteID, input.Offset, input.Limit)

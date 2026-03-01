@@ -32,7 +32,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_wifi_broadcasts",
-		Description: "List all WiFi broadcast configurations (SSIDs).",
+		Description: "List WiFi broadcast configurations (SSIDs) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		broadcasts, err := client.ListWiFiBroadcasts(ctx, input.SiteID, input.Offset, input.Limit)
@@ -89,7 +89,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_networks",
-		Description: "List all configured networks (VLANs, LAN segments).",
+		Description: "List configured networks (VLANs, LAN segments) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		nets, err := client.ListNetworks(ctx, input.SiteID, input.Offset, input.Limit)
@@ -101,7 +101,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_firewall_policies",
-		Description: "List all firewall policies for a site.",
+		Description: "List firewall policies for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
@@ -113,7 +113,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_firewall_zones",
-		Description: "List all firewall zones for a site.",
+		Description: "List firewall zones for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		zones, err := client.ListFirewallZones(ctx, input.SiteID, input.Offset, input.Limit)
@@ -130,7 +130,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_traffic_matching_lists",
-		Description: "List all traffic matching lists (IP/port sets used by firewall policies).",
+		Description: "List traffic matching lists (IP/port sets used by firewall policies) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		lists, err := client.ListTrafficMatchingLists(ctx, input.SiteID, input.Offset, input.Limit)
@@ -157,7 +157,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_wans",
-		Description: "List all WAN interface definitions for a site.",
+		Description: "List WAN interface definitions for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		wans, err := client.ListWANs(ctx, input.SiteID, input.Offset, input.Limit)
@@ -169,7 +169,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_vpn_tunnels",
-		Description: "List all site-to-site VPN tunnels for a site.",
+		Description: "List site-to-site VPN tunnels for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		tunnels, err := client.ListVPNTunnels(ctx, input.SiteID, input.Offset, input.Limit)
@@ -181,7 +181,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_vpn_servers",
-		Description: "List all VPN server configurations for a site.",
+		Description: "List VPN server configurations for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		servers, err := client.ListVPNServers(ctx, input.SiteID, input.Offset, input.Limit)
@@ -220,7 +220,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_dns_policies",
-		Description: "List all local DNS policies (A-record overrides) for a site.",
+		Description: "List local DNS policies (A-record overrides) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		policies, err := client.ListDNSPolicies(ctx, input.SiteID, input.Offset, input.Limit)
@@ -520,7 +520,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_acl_rules",
-		Description: "List all ACL rules for a site.",
+		Description: "List ACL rules for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		rules, err := client.ListACLRules(ctx, input.SiteID, input.Offset, input.Limit)
@@ -734,7 +734,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_vouchers",
-		Description: "List all hotspot vouchers for a site.",
+		Description: "List hotspot vouchers for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		vouchers, err := client.ListVouchers(ctx, input.SiteID, input.Offset, input.Limit)
@@ -821,7 +821,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	// Reference data
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_device_tags",
-		Description: "List all device tags defined for the site.",
+		Description: "List device tags defined for the site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		tags, err := client.ListDeviceTags(ctx, input.SiteID, input.Offset, input.Limit)
@@ -833,7 +833,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_dpi_categories",
-		Description: "List all DPI application categories (used in firewall matching rules).",
+		Description: "List DPI application categories (used in firewall matching rules). Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input dpiPageInput) (*mcp.CallToolResult, any, error) {
 		cats, err := client.ListDPICategories(ctx, input.Offset, input.Limit)
@@ -845,7 +845,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_dpi_applications",
-		Description: "List all DPI applications (used in firewall matching rules).",
+		Description: "List DPI applications (used in firewall matching rules). Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input dpiPageInput) (*mcp.CallToolResult, any, error) {
 		apps, err := client.ListDPIApplications(ctx, input.Offset, input.Limit)
@@ -857,7 +857,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_radius_profiles",
-		Description: "List all RADIUS profiles configured for the site.",
+		Description: "List RADIUS profiles configured for the site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
 		profiles, err := client.ListRADIUSProfiles(ctx, input.SiteID, input.Offset, input.Limit)

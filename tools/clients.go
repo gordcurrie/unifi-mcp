@@ -21,7 +21,7 @@ func registerClientTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_clients",
-		Description: "List all currently connected clients on the network.",
+		Description: "List currently connected clients on the network. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
 		clients, err := client.ListClients(ctx, input.SiteID, input.Offset, input.Limit)

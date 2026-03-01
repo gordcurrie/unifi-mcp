@@ -106,7 +106,11 @@ func (c *Client) getWithQuery(ctx context.Context, path string, offset, limit in
 	if limit > 0 {
 		q.Set("limit", fmt.Sprintf("%d", limit))
 	}
-	return c.do(ctx, http.MethodGet, path+"?"+q.Encode(), nil)
+	sep := "?"
+	if strings.Contains(path, "?") {
+		sep = "&"
+	}
+	return c.do(ctx, http.MethodGet, path+sep+q.Encode(), nil)
 }
 
 // post performs a POST request with no body to the given path.
