@@ -2,14 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "feat/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  test:
-    name: test
+  check:
+    name: make check
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,40 +22,13 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Run tests
-        run: go test -race -count=1 ./...
-
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Install dev tools
+      - name: Install tools
         run: make install-tools
 
-      - name: fix + fmt
-        run: make fix fmt
+      - name: Run quality gates
+        run: make check
 
-      - name: Check for uncommitted changes
-        run: git diff --exit-code
-
-      - name: vet
-        run: make vet
-
-      - name: golangci-lint
-        run: make lint
-
-      - name: gosec
-        run: make sec
-
-      - name: govulncheck
-        run: make vulncheck
-
-      - name: build
-        run: make build
+      - name: Ensure working tree is clean
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
