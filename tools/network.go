@@ -463,7 +463,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "update_firewall_zone",
-		Description: "Update an existing firewall zone by ID.",
+		Description: "Update an existing firewall zone by ID. network_ids replaces the full list; omit to preserve existing assignments.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateFirewallZoneInput) (*mcp.CallToolResult, any, error) {
 		if input.ZoneID == "" {
 			return errorResult(fmt.Errorf("update_firewall_zone: zone_id is required"))
@@ -471,9 +471,20 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Name == "" {
 			return errorResult(fmt.Errorf("update_firewall_zone: name is required"))
 		}
+		var networkIDs []string
+		if input.NetworkIDs == nil {
+			// Preserve existing assignments when network_ids is omitted.
+			existing, err := client.GetFirewallZone(ctx, input.SiteID, input.ZoneID)
+			if err != nil {
+				return errorResult(fmt.Errorf("update_firewall_zone: fetch existing zone: %w", err))
+			}
+			networkIDs = existing.NetworkIDs
+		} else {
+			networkIDs = splitNetworkIDs(input.NetworkIDs)
+		}
 		zone, err := client.UpdateFirewallZone(ctx, input.SiteID, input.ZoneID, unifi.FirewallZoneRequest{
 			Name:       input.Name,
-			NetworkIDs: splitNetworkIDs(input.NetworkIDs),
+			NetworkIDs: networkIDs,
 		})
 		if err != nil {
 			return errorResult(fmt.Errorf("update_firewall_zone: %w", err))
