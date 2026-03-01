@@ -82,6 +82,124 @@ func (c *Client) ListFirewallZones(ctx context.Context, siteID string) ([]Firewa
 	return zones, nil
 }
 
+// GetFirewallPolicy returns a single firewall policy from
+// GET /integration/v1/sites/{siteID}/firewall/policies/{policyID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetFirewallPolicy(ctx context.Context, siteID, policyID string) (FirewallPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", id, policyID))
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("GetFirewallPolicy %s %s: %w", id, policyID, err)
+	}
+	policy, err := decodeV1[FirewallPolicy](data)
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("GetFirewallPolicy %s %s: %w", id, policyID, err)
+	}
+	return policy, nil
+}
+
+// SetFirewallPolicyEnabled enables or disables a firewall policy via
+// GET then PUT /integration/v1/sites/{siteID}/firewall/policies/{policyID}.
+// It fetches the current resource as a raw map to preserve all API fields,
+// sets the enabled flag, and PUTs the full object back.
+// Pass an empty siteID to use the client default.
+func (c *Client) SetFirewallPolicyEnabled(ctx context.Context, siteID, policyID string, enabled bool) (FirewallPolicy, error) {
+	id := c.site(siteID)
+	path := fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", id, policyID)
+
+	raw, err := c.get(ctx, path)
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("SetFirewallPolicyEnabled %s %s: get: %w", id, policyID, err)
+	}
+	body, err := decodeV1[map[string]any](raw)
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("SetFirewallPolicyEnabled %s %s: decode: %w", id, policyID, err)
+	}
+	delete(body, "id")
+	delete(body, "metadata")
+	body["enabled"] = enabled
+
+	updated, err := c.put(ctx, path, body)
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("SetFirewallPolicyEnabled %s %s: put: %w", id, policyID, err)
+	}
+	policy, err := decodeV1[FirewallPolicy](updated)
+	if err != nil {
+		return FirewallPolicy{}, fmt.Errorf("SetFirewallPolicyEnabled %s %s: decode response: %w", id, policyID, err)
+	}
+	return policy, nil
+}
+
+// DeleteFirewallPolicy deletes a firewall policy via
+// DELETE /integration/v1/sites/{siteID}/firewall/policies/{policyID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) DeleteFirewallPolicy(ctx context.Context, siteID, policyID string) error {
+	id := c.site(siteID)
+	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", id, policyID)); err != nil {
+		return fmt.Errorf("DeleteFirewallPolicy %s %s: %w", id, policyID, err)
+	}
+	return nil
+}
+
+// GetFirewallZone returns a single firewall zone from
+// GET /integration/v1/sites/{siteID}/firewall/zones/{zoneID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetFirewallZone(ctx context.Context, siteID, zoneID string) (FirewallZone, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", id, zoneID))
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("GetFirewallZone %s %s: %w", id, zoneID, err)
+	}
+	zone, err := decodeV1[FirewallZone](data)
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("GetFirewallZone %s %s: %w", id, zoneID, err)
+	}
+	return zone, nil
+}
+
+// CreateFirewallZone creates a new firewall zone via
+// POST /integration/v1/sites/{siteID}/firewall/zones.
+// Pass an empty siteID to use the client default.
+func (c *Client) CreateFirewallZone(ctx context.Context, siteID string, req FirewallZoneRequest) (FirewallZone, error) {
+	id := c.site(siteID)
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", id), req)
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("CreateFirewallZone %s: %w", id, err)
+	}
+	zone, err := decodeV1[FirewallZone](data)
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("CreateFirewallZone %s: %w", id, err)
+	}
+	return zone, nil
+}
+
+// UpdateFirewallZone replaces a firewall zone via
+// PUT /integration/v1/sites/{siteID}/firewall/zones/{zoneID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) UpdateFirewallZone(ctx context.Context, siteID, zoneID string, req FirewallZoneRequest) (FirewallZone, error) {
+	id := c.site(siteID)
+	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", id, zoneID), req)
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("UpdateFirewallZone %s %s: %w", id, zoneID, err)
+	}
+	zone, err := decodeV1[FirewallZone](data)
+	if err != nil {
+		return FirewallZone{}, fmt.Errorf("UpdateFirewallZone %s %s: %w", id, zoneID, err)
+	}
+	return zone, nil
+}
+
+// DeleteFirewallZone deletes a firewall zone via
+// DELETE /integration/v1/sites/{siteID}/firewall/zones/{zoneID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) DeleteFirewallZone(ctx context.Context, siteID, zoneID string) error {
+	id := c.site(siteID)
+	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", id, zoneID)); err != nil {
+		return fmt.Errorf("DeleteFirewallZone %s %s: %w", id, zoneID, err)
+	}
+	return nil
+}
+
 // ListACLRules returns all ACL rules from GET /integration/v1/sites/{siteID}/acl-rules.
 // Pass an empty siteID to use the client default.
 func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, error) {

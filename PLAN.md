@@ -141,19 +141,19 @@ High value for home lab.
 - `DELETE /v1/sites/{id}/dns/policies/{id}` — delete (destructive, `confirmed bool`)
 - New tools: `list_dns_policies`, `get_dns_policy`, `create_dns_policy`, `update_dns_policy`, `delete_dns_policy`
 
-### 4f — Firewall policy & zone CRUD
+### ✅ 4f — Firewall policy & zone CRUD
 
 Extend beyond read-only to full create/enable-disable/delete.
 The API also provides `PATCH` for just `loggingEnabled` and a dedicated ordering endpoint.
-- `POST /v1/sites/{id}/firewall/policies` — create
-- `PATCH /v1/sites/{id}/firewall/policies/{id}` — partial update (`loggingEnabled`)
-- `PUT /v1/sites/{id}/firewall/policies/{id}` — full update (includes `enabled`)
-- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
-- `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies (source+dest zone pair)
-- `POST /v1/sites/{id}/firewall/zones` — create custom zone
-- `PUT /v1/sites/{id}/firewall/zones/{id}` — update zone (`name`, `networkIds`)
-- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
-- New tools: `get_firewall_policy`, `create_firewall_policy`, `update_firewall_policy`, `delete_firewall_policy`, `reorder_firewall_policies`, `set_firewall_policy_enabled`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
+- `PUT /v1/sites/{id}/firewall/policies/{id}` — full update (includes `enabled`) ✅
+- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`) ✅
+- `POST /v1/sites/{id}/firewall/zones` — create custom zone ✅
+- `PUT /v1/sites/{id}/firewall/zones/{id}` — update zone (`name`, `networkIds`) ✅
+- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`) ✅
+- Deferred: `POST /v1/sites/{id}/firewall/policies` — create (complex schema)
+- Deferred: `PATCH /v1/sites/{id}/firewall/policies/{id}` — partial update
+- Deferred: `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies
+- New tools: `get_firewall_policy`, `set_firewall_policy_enabled`, `delete_firewall_policy`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
 
 ### 4g — ACL rule CRUD
 

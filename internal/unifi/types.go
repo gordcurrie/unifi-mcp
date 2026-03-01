@@ -83,20 +83,68 @@ type NetworkConf struct {
 	Default    bool   `json:"default,omitempty"`
 }
 
+// FirewallResourceMetadata is the read-only metadata returned on firewall policies and zones.
+type FirewallResourceMetadata struct {
+	Origin       string `json:"origin"`
+	Configurable bool   `json:"configurable"`
+}
+
+// FirewallPolicyAction is the action block of a FirewallPolicy.
+type FirewallPolicyAction struct {
+	Type               string `json:"type"`
+	AllowReturnTraffic bool   `json:"allowReturnTraffic,omitempty"`
+}
+
+// FirewallPolicyZoneRef references a zone in a FirewallPolicy source or destination.
+type FirewallPolicyZoneRef struct {
+	ZoneID string `json:"zoneId"`
+}
+
+// FirewallPolicyProtocol names a specific protocol within a protocol filter.
+type FirewallPolicyProtocol struct {
+	Name string `json:"name"`
+}
+
+// FirewallPolicyProtocolFilter is the optional protocol filter inside FirewallPolicyIPScope.
+type FirewallPolicyProtocolFilter struct {
+	Type          string                 `json:"type"`
+	Protocol      FirewallPolicyProtocol `json:"protocol"`
+	MatchOpposite bool                   `json:"matchOpposite"`
+}
+
+// FirewallPolicyIPScope describes the IP version and optional protocol filter of a policy.
+type FirewallPolicyIPScope struct {
+	IPVersion      string                        `json:"ipVersion"`
+	ProtocolFilter *FirewallPolicyProtocolFilter `json:"protocolFilter,omitempty"`
+}
+
 // FirewallPolicy is returned by GET /integration/v1/sites/{siteId}/firewall/policies.
 type FirewallPolicy struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Enabled     bool   `json:"enabled"`
-	Description string `json:"description,omitempty"`
-	Index       int    `json:"index"`
+	ID                    string                   `json:"id"`
+	Name                  string                   `json:"name"`
+	Enabled               bool                     `json:"enabled"`
+	Index                 int                      `json:"index"`
+	Action                FirewallPolicyAction     `json:"action"`
+	Source                FirewallPolicyZoneRef    `json:"source"`
+	Destination           FirewallPolicyZoneRef    `json:"destination"`
+	IPProtocolScope       FirewallPolicyIPScope    `json:"ipProtocolScope"`
+	ConnectionStateFilter []string                 `json:"connectionStateFilter,omitempty"`
+	LoggingEnabled        bool                     `json:"loggingEnabled"`
+	Metadata              FirewallResourceMetadata `json:"metadata"`
 }
 
 // FirewallZone is returned by GET /integration/v1/sites/{siteId}/firewall/zones.
 type FirewallZone struct {
-	ID         string   `json:"id"`
+	ID         string                   `json:"id"`
+	Name       string                   `json:"name"`
+	NetworkIDs []string                 `json:"networkIds,omitempty"`
+	Metadata   FirewallResourceMetadata `json:"metadata"`
+}
+
+// FirewallZoneRequest is the body for POST and PUT to /integration/v1/sites/{siteId}/firewall/zones.
+type FirewallZoneRequest struct {
 	Name       string   `json:"name"`
-	NetworkIDs []string `json:"networkIds,omitempty"`
+	NetworkIDs []string `json:"networkIds"`
 }
 
 // ACLRule is returned by GET /integration/v1/sites/{siteId}/acl-rules.

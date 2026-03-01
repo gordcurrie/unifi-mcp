@@ -137,7 +137,12 @@ export UNIFI_SITE_ID=your-site-uuid
 | `set_wifi_broadcast_enabled` | Enable or disable a WiFi broadcast (SSID) — requires `confirmed: true` |
 | `list_networks` | LAN/VLAN network configurations |
 | `list_firewall_policies` | All firewall policies |
+| `get_firewall_policy` | Details for a single firewall policy by ID |
+| `set_firewall_policy_enabled` | Enable or disable a firewall policy — requires `confirmed: true` |
 | `list_firewall_zones` | All firewall zones |
+| `get_firewall_zone` | Details for a single firewall zone by ID |
+| `create_firewall_zone` | Create a new firewall zone |
+| `update_firewall_zone` | Update an existing firewall zone by ID |
 | `list_acl_rules` | All ACL rules |
 | `list_traffic_matching_lists` | All traffic matching lists (IP/port sets used by firewall policies) |
 | `get_traffic_matching_list` | Details for a single traffic matching list by ID |
@@ -154,6 +159,8 @@ export UNIFI_SITE_ID=your-site-uuid
 | Tool | Description |
 |---|---|
 | `delete_dns_policy` | Permanently delete a DNS policy — requires `confirmed: true` |
+| `delete_firewall_policy` | Permanently delete a firewall policy — requires `confirmed: true` |
+| `delete_firewall_zone` | Permanently delete a firewall zone — requires `confirmed: true` |
 
 ---
 
