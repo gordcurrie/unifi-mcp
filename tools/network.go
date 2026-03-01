@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gordcurrie/unifi-mcp/internal/unifi"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -417,9 +418,23 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type firewallZoneMutateInput struct {
-		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		Name       string   `json:"name"               jsonschema:"zone name"`
-		NetworkIDs []string `json:"network_ids,omitempty" jsonschema:"list of network IDs to assign to this zone; omit or pass empty array for no networks"`
+		SiteID     string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Name       string `json:"name"               jsonschema:"zone name"`
+		NetworkIDs string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
+	}
+
+	splitNetworkIDs := func(s string) []string {
+		if s == "" {
+			return []string{}
+		}
+		parts := strings.Split(s, ",")
+		result := make([]string, 0, len(parts))
+		for _, p := range parts {
+			if trimmed := strings.TrimSpace(p); trimmed != "" {
+				result = append(result, trimmed)
+			}
+		}
+		return result
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -429,13 +444,9 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Name == "" {
 			return errorResult(fmt.Errorf("create_firewall_zone: name is required"))
 		}
-		networkIDs := input.NetworkIDs
-		if networkIDs == nil {
-			networkIDs = []string{}
-		}
 		zone, err := client.CreateFirewallZone(ctx, input.SiteID, unifi.FirewallZoneRequest{
 			Name:       input.Name,
-			NetworkIDs: networkIDs,
+			NetworkIDs: splitNetworkIDs(input.NetworkIDs),
 		})
 		if err != nil {
 			return errorResult(fmt.Errorf("create_firewall_zone: %w", err))
@@ -444,10 +455,10 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type updateFirewallZoneInput struct {
-		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		ZoneID     string   `json:"zone_id"            jsonschema:"firewall zone ID"`
-		Name       string   `json:"name"               jsonschema:"zone name"`
-		NetworkIDs []string `json:"network_ids,omitempty" jsonschema:"list of network IDs to assign to this zone; omit or pass empty array for no networks"`
+		SiteID     string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ZoneID     string `json:"zone_id"            jsonschema:"firewall zone ID"`
+		Name       string `json:"name"               jsonschema:"zone name"`
+		NetworkIDs string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -460,13 +471,9 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Name == "" {
 			return errorResult(fmt.Errorf("update_firewall_zone: name is required"))
 		}
-		networkIDs := input.NetworkIDs
-		if networkIDs == nil {
-			networkIDs = []string{}
-		}
 		zone, err := client.UpdateFirewallZone(ctx, input.SiteID, input.ZoneID, unifi.FirewallZoneRequest{
 			Name:       input.Name,
-			NetworkIDs: networkIDs,
+			NetworkIDs: splitNetworkIDs(input.NetworkIDs),
 		})
 		if err != nil {
 			return errorResult(fmt.Errorf("update_firewall_zone: %w", err))
