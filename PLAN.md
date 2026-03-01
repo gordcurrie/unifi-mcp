@@ -208,7 +208,7 @@ Low-priority but useful for firewall policy creation context.
 - `GET /v1/sites/{id}/device-tags` — device tags (used in WiFi broadcast device filters)
 - `GET /v1/dpi/categories` + `/v1/dpi/applications` — DPI app categories (firewall matching)
 - `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
-- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`
+- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`, `list_radius_profiles`
 
 ### 4m — Pagination refactor (cross-cutting)
 

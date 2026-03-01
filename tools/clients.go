@@ -44,9 +44,12 @@ func registerClientTools(s *mcp.Server, client unifiClient) {
 		return jsonResult(c)
 	})
 
+	destructiveTrue := true
+
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "authorize_guest_client",
 		Description: "Authorize a connected client for guest network access. Set confirmed=true to proceed. Optional: time_limit_minutes, data_limit_mb, download_bandwidth_kbps, upload_bandwidth_kbps (0 = unlimited).",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
 		SiteID                string `json:"site_id,omitempty"              jsonschema:"site ID; omit to use default"`
 		ClientID              string `json:"client_id"                      jsonschema:"client ID to authorize"`
