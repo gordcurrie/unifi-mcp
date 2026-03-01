@@ -210,3 +210,78 @@ func (c *Client) ListVPNServers(ctx context.Context, siteID string) ([]VPNServer
 	}
 	return servers, nil
 }
+
+// ListDNSPolicies returns all DNS policies from
+// GET /integration/v1/sites/{siteID}/dns/policies.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListDNSPolicies(ctx context.Context, siteID string) ([]DNSPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
+	}
+	policies, err := decodeV1List[DNSPolicy](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
+	}
+	return policies, nil
+}
+
+// GetDNSPolicy returns a single DNS policy from
+// GET /integration/v1/sites/{siteID}/dns/policies/{policyID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetDNSPolicy(ctx context.Context, siteID, policyID string) (DNSPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", id, policyID))
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("GetDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	policy, err := decodeV1[DNSPolicy](data)
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("GetDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	return policy, nil
+}
+
+// CreateDNSPolicy creates a new DNS policy via
+// POST /integration/v1/sites/{siteID}/dns/policies.
+// Pass an empty siteID to use the client default.
+func (c *Client) CreateDNSPolicy(ctx context.Context, siteID string, req DNSPolicyRequest) (DNSPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", id), req)
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("CreateDNSPolicy %s: %w", id, err)
+	}
+	policy, err := decodeV1[DNSPolicy](data)
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("CreateDNSPolicy %s: %w", id, err)
+	}
+	return policy, nil
+}
+
+// UpdateDNSPolicy replaces a DNS policy via
+// PUT /integration/v1/sites/{siteID}/dns/policies/{policyID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) UpdateDNSPolicy(ctx context.Context, siteID, policyID string, req DNSPolicyRequest) (DNSPolicy, error) {
+	id := c.site(siteID)
+	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", id, policyID), req)
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("UpdateDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	policy, err := decodeV1[DNSPolicy](data)
+	if err != nil {
+		return DNSPolicy{}, fmt.Errorf("UpdateDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	return policy, nil
+}
+
+// DeleteDNSPolicy deletes a DNS policy via
+// DELETE /integration/v1/sites/{siteID}/dns/policies/{policyID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) error {
+	id := c.site(siteID)
+	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", id, policyID)); err != nil {
+		return fmt.Errorf("DeleteDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	return nil
+}

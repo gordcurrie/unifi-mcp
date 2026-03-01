@@ -113,6 +113,12 @@ func (c *Client) put(ctx context.Context, path string, body any) ([]byte, error)
 	return c.do(ctx, http.MethodPut, path, body)
 }
 
+// delete performs a DELETE request to the given path.
+func (c *Client) delete(ctx context.Context, path string) error {
+	_, err := c.do(ctx, http.MethodDelete, path, nil)
+	return err
+}
+
 // do executes an HTTP request and returns the raw response body.
 func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byte, retErr error) {
 	var reqBody io.Reader

@@ -130,7 +130,7 @@ List devices visible on the network but not yet adopted.
 - `GET /v1/pending-devices`
 - New tool: `list_pending_devices` (read-only)
 
-### 4e — DNS policies
+### ✅ 4e — DNS policies
 
 Local DNS A-record management — map hostnames to IPs on the site (e.g. `nas.home → 192.168.1.100`).
 High value for home lab.

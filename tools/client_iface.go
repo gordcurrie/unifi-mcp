@@ -39,4 +39,11 @@ type unifiClient interface {
 	ListWANs(ctx context.Context, siteID string) ([]unifi.WAN, error)
 	ListVPNTunnels(ctx context.Context, siteID string) ([]unifi.VPNTunnel, error)
 	ListVPNServers(ctx context.Context, siteID string) ([]unifi.VPNServer, error)
+
+	// DNS policies
+	ListDNSPolicies(ctx context.Context, siteID string) ([]unifi.DNSPolicy, error)
+	GetDNSPolicy(ctx context.Context, siteID, policyID string) (unifi.DNSPolicy, error)
+	CreateDNSPolicy(ctx context.Context, siteID string, req unifi.DNSPolicyRequest) (unifi.DNSPolicy, error)
+	UpdateDNSPolicy(ctx context.Context, siteID, policyID string, req unifi.DNSPolicyRequest) (unifi.DNSPolicy, error)
+	DeleteDNSPolicy(ctx context.Context, siteID, policyID string) error
 }

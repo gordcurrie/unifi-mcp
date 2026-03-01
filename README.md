@@ -31,6 +31,7 @@ go build -o bin/unifi-mcp ./cmd/unifi-mcp
 | `UNIFI_API_KEY` | Yes | UniFi API key |
 | `UNIFI_SITE_ID` | Yes | Default site UUID — find it with `list_sites` |
 | `UNIFI_INSECURE` | No | Set `true` to skip TLS verification (self-signed certs) |
+| `UNIFI_ALLOW_DESTRUCTIVE` | No | Set `true` to enable permanent-delete tools (e.g. `delete_dns_policy`) |
 
 ---
 
@@ -143,6 +144,16 @@ export UNIFI_SITE_ID=your-site-uuid
 | `list_wans` | All WAN interface definitions |
 | `list_vpn_tunnels` | All site-to-site VPN tunnels |
 | `list_vpn_servers` | All VPN server configurations |
+| `list_dns_policies` | All local DNS A-record policies |
+| `get_dns_policy` | Details for a single DNS policy by ID |
+| `create_dns_policy` | Create a new local DNS A-record policy |
+| `update_dns_policy` | Update an existing DNS policy by ID |
+
+### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
+
+| Tool | Description |
+|---|---|
+| `delete_dns_policy` | Permanently delete a DNS policy — requires `confirmed: true` |
 
 ---
 

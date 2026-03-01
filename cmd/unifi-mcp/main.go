@@ -39,6 +39,8 @@ func run() error {
 	siteID := os.Getenv("UNIFI_SITE_ID")
 	insecure := os.Getenv("UNIFI_INSECURE") == "true"
 
+	allowDestructive := os.Getenv("UNIFI_ALLOW_DESTRUCTIVE") == "true"
+
 	client, err := unifi.NewClient(baseURL, apiKey, siteID, insecure)
 	if err != nil {
 		return fmt.Errorf("unifi client: %w", err)
@@ -49,7 +51,7 @@ func run() error {
 		Version: "0.3.0",
 	}, nil)
 
-	tools.RegisterAll(s, client)
+	tools.RegisterAll(s, client, allowDestructive)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

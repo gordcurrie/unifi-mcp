@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gordcurrie/unifi-mcp/internal/unifi"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func registerNetworkTools(s *mcp.Server, client unifiClient) {
+func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bool) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 	}
@@ -188,4 +189,134 @@ func registerNetworkTools(s *mcp.Server, client unifiClient) {
 		}
 		return jsonResult(servers)
 	})
+
+	type dnsPolicyInput struct {
+		SiteID   string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		PolicyID string `json:"policy_id"         jsonschema:"DNS policy ID"`
+	}
+	type createDNSPolicyInput struct {
+		SiteID      string `json:"site_id,omitempty"      jsonschema:"site ID; omit to use default"`
+		Type        string `json:"type"                   jsonschema:"policy type, e.g. A_RECORD"`
+		Domain      string `json:"domain"                 jsonschema:"domain name to resolve"`
+		IPv4Address string `json:"ipv4_address,omitempty" jsonschema:"IPv4 address the domain maps to"`
+		TTLSeconds  int    `json:"ttl_seconds"            jsonschema:"TTL in seconds; required by the API (send 0 to use the server default)"`
+		Enabled     *bool  `json:"enabled"                jsonschema:"true to activate the policy, false to create disabled"`
+	}
+	type updateDNSPolicyInput struct {
+		SiteID      string `json:"site_id,omitempty"      jsonschema:"site ID; omit to use default"`
+		PolicyID    string `json:"policy_id"              jsonschema:"DNS policy ID to update"`
+		Type        string `json:"type"                   jsonschema:"policy type, e.g. A_RECORD"`
+		Domain      string `json:"domain"                 jsonschema:"domain name to resolve"`
+		IPv4Address string `json:"ipv4_address,omitempty" jsonschema:"IPv4 address the domain maps to"`
+		TTLSeconds  int    `json:"ttl_seconds"            jsonschema:"TTL in seconds; required by the API (send 0 to use the server default)"`
+		Enabled     *bool  `json:"enabled"                jsonschema:"true to activate the policy, false to disable"`
+	}
+	type deleteDNSPolicyInput struct {
+		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		PolicyID  string `json:"policy_id"         jsonschema:"DNS policy ID to delete"`
+		Confirmed bool   `json:"confirmed"         jsonschema:"must be true to confirm the deletion"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "list_dns_policies",
+		Description: "List all local DNS policies (A-record overrides) for a site.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
+		policies, err := client.ListDNSPolicies(ctx, input.SiteID)
+		if err != nil {
+			return errorResult(fmt.Errorf("list_dns_policies: %w", err))
+		}
+		return jsonResult(policies)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_dns_policy",
+		Description: "Get details for a specific DNS policy by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input dnsPolicyInput) (*mcp.CallToolResult, any, error) {
+		if input.PolicyID == "" {
+			return errorResult(fmt.Errorf("get_dns_policy: policy_id is required"))
+		}
+		policy, err := client.GetDNSPolicy(ctx, input.SiteID, input.PolicyID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_dns_policy: %w", err))
+		}
+		return jsonResult(policy)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "create_dns_policy",
+		Description: "Create a new local DNS A-record policy mapping a domain to an IP address.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input createDNSPolicyInput) (*mcp.CallToolResult, any, error) {
+		if input.Type == "" {
+			return errorResult(fmt.Errorf("create_dns_policy: type is required"))
+		}
+		if input.Domain == "" {
+			return errorResult(fmt.Errorf("create_dns_policy: domain is required"))
+		}
+		if input.Enabled == nil {
+			return errorResult(fmt.Errorf("create_dns_policy: enabled is required"))
+		}
+		req := unifi.DNSPolicyRequest{
+			Type:        input.Type,
+			Domain:      input.Domain,
+			IPv4Address: input.IPv4Address,
+			TTLSeconds:  input.TTLSeconds,
+			Enabled:     *input.Enabled,
+		}
+		policy, err := client.CreateDNSPolicy(ctx, input.SiteID, req)
+		if err != nil {
+			return errorResult(fmt.Errorf("create_dns_policy: %w", err))
+		}
+		return jsonResult(policy)
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "update_dns_policy",
+		Description: "Update an existing local DNS policy by ID.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateDNSPolicyInput) (*mcp.CallToolResult, any, error) {
+		if input.PolicyID == "" {
+			return errorResult(fmt.Errorf("update_dns_policy: policy_id is required"))
+		}
+		if input.Type == "" {
+			return errorResult(fmt.Errorf("update_dns_policy: type is required"))
+		}
+		if input.Domain == "" {
+			return errorResult(fmt.Errorf("update_dns_policy: domain is required"))
+		}
+		if input.Enabled == nil {
+			return errorResult(fmt.Errorf("update_dns_policy: enabled is required"))
+		}
+		req := unifi.DNSPolicyRequest{
+			Type:        input.Type,
+			Domain:      input.Domain,
+			IPv4Address: input.IPv4Address,
+			TTLSeconds:  input.TTLSeconds,
+			Enabled:     *input.Enabled,
+		}
+		policy, err := client.UpdateDNSPolicy(ctx, input.SiteID, input.PolicyID, req)
+		if err != nil {
+			return errorResult(fmt.Errorf("update_dns_policy: %w", err))
+		}
+		return jsonResult(policy)
+	})
+
+	if allowDestructive {
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "delete_dns_policy",
+			Description: "Permanently delete a DNS policy by ID. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input deleteDNSPolicyInput) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("delete_dns_policy: set confirmed=true to confirm the deletion"))
+			}
+			if input.PolicyID == "" {
+				return errorResult(fmt.Errorf("delete_dns_policy: policy_id is required"))
+			}
+			if err := client.DeleteDNSPolicy(ctx, input.SiteID, input.PolicyID); err != nil {
+				return errorResult(fmt.Errorf("delete_dns_policy: %w", err))
+			}
+			return textResult(fmt.Sprintf("DNS policy %s deleted", input.PolicyID))
+		})
+	}
 }
