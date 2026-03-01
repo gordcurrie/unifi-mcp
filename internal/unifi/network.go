@@ -2,6 +2,7 @@ package unifi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 )
 
@@ -514,6 +515,70 @@ func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) e
 	id := c.site(siteID)
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", id, policyID)); err != nil {
 		return fmt.Errorf("DeleteDNSPolicy %s %s: %w", id, policyID, err)
+	}
+	return nil
+}
+
+// ListVouchers returns all hotspot vouchers for a site via
+// GET /integration/v1/sites/{siteID}/hotspot/vouchers.
+// Pass an empty siteID to use the client default.
+func (c *Client) ListVouchers(ctx context.Context, siteID string) ([]Voucher, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id))
+	if err != nil {
+		return nil, fmt.Errorf("ListVouchers %s: %w", id, err)
+	}
+	vouchers, err := decodeV1List[Voucher](data)
+	if err != nil {
+		return nil, fmt.Errorf("ListVouchers %s: %w", id, err)
+	}
+	return vouchers, nil
+}
+
+// GetVoucher returns a single hotspot voucher via
+// GET /integration/v1/sites/{siteID}/hotspot/vouchers/{voucherID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetVoucher(ctx context.Context, siteID, voucherID string) (Voucher, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers/%s", id, voucherID))
+	if err != nil {
+		return Voucher{}, fmt.Errorf("GetVoucher %s %s: %w", id, voucherID, err)
+	}
+	voucher, err := decodeV1[Voucher](data)
+	if err != nil {
+		return Voucher{}, fmt.Errorf("GetVoucher %s %s: %w", id, voucherID, err)
+	}
+	return voucher, nil
+}
+
+// voucherCreateResponse is the envelope returned by POST /hotspot/vouchers.
+type voucherCreateResponse struct {
+	Vouchers []Voucher `json:"vouchers"`
+}
+
+// CreateVouchers generates one or more hotspot vouchers via
+// POST /integration/v1/sites/{siteID}/hotspot/vouchers.
+// Pass an empty siteID to use the client default.
+func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) ([]Voucher, error) {
+	id := c.site(siteID)
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", id), req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateVouchers %s: %w", id, err)
+	}
+	var resp voucherCreateResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("CreateVouchers %s: decode response: %w", id, err)
+	}
+	return resp.Vouchers, nil
+}
+
+// DeleteVoucher revokes a single hotspot voucher via
+// DELETE /integration/v1/sites/{siteID}/hotspot/vouchers/{voucherID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) error {
+	id := c.site(siteID)
+	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers/%s", id, voucherID)); err != nil {
+		return fmt.Errorf("DeleteVoucher %s %s: %w", id, voucherID, err)
 	}
 	return nil
 }

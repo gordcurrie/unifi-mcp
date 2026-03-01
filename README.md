@@ -155,6 +155,9 @@ export UNIFI_SITE_ID=your-site-uuid
 | `get_dns_policy` | Details for a single DNS policy by ID |
 | `create_dns_policy` | Create a new local DNS A-record policy |
 | `update_dns_policy` | Update an existing DNS policy by ID |
+| `list_vouchers` | All hotspot vouchers |
+| `get_voucher` | Details for a single hotspot voucher by ID |
+| `create_vouchers` | Generate one or more hotspot vouchers — requires `confirmed: true` |
 
 ### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
 
@@ -168,6 +171,7 @@ export UNIFI_SITE_ID=your-site-uuid
 | `set_acl_rule_enabled` | Enable or disable an ACL rule — requires `confirmed: true` |
 | `reorder_acl_rules` | Set the ACL rule evaluation order — requires `confirmed: true` |
 | `delete_acl_rule` | Permanently delete an ACL rule — requires `confirmed: true` |
+| `delete_voucher` | Permanently revoke a hotspot voucher — requires `confirmed: true` |
 
 > **Why are all ACL writes destructive-gated?** Unlike firewall zones (organisational
 > containers), any ACL mutation directly controls which traffic is allowed or blocked.
