@@ -155,14 +155,20 @@ The API also provides `PATCH` for just `loggingEnabled` and a dedicated ordering
 - Deferred: `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies
 - New tools: `get_firewall_policy`, `set_firewall_policy_enabled`, `delete_firewall_policy`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
 
-### 4g — ACL rule CRUD
+### ✅ 4g — ACL rule CRUD
 
 Extend beyond read-only to full create/enable-disable/delete/reorder.
 - `POST /v1/sites/{id}/acl-rules` — create
 - `PUT /v1/sites/{id}/acl-rules/{id}` — full update (includes `enabled`)
 - `DELETE /v1/sites/{id}/acl-rules/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - `GET/PUT /v1/sites/{id}/acl-rules/ordering` — reorder
-- New tools: `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule`
+- New tools: `get_acl_rule`, `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule_ordering`
+
+> **Safety note:** All ACL write tools (`create`, `update`, `set_enabled`, `reorder`, `delete`)
+> are gated on `UNIFI_ALLOW_DESTRUCTIVE=true`, not just delete. Unlike firewall zones
+> (organisational containers), any ACL mutation directly controls traffic flow; a misplaced
+> BLOCK rule or a bad reorder can cause a full network outage. The flag is the primary guard;
+> `confirmed: true` is secondary.
 
 ### ✅ 4h — Traffic matching lists (read-only)
 

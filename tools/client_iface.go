@@ -41,6 +41,13 @@ type unifiClient interface {
 	UpdateFirewallZone(ctx context.Context, siteID, zoneID string, req unifi.FirewallZoneRequest) (unifi.FirewallZone, error)
 	DeleteFirewallZone(ctx context.Context, siteID, zoneID string) error
 	ListACLRules(ctx context.Context, siteID string) ([]unifi.ACLRule, error)
+	GetACLRule(ctx context.Context, siteID, ruleID string) (unifi.ACLRule, error)
+	CreateACLRule(ctx context.Context, siteID string, req unifi.ACLRuleRequest) (unifi.ACLRule, error)
+	UpdateACLRule(ctx context.Context, siteID, ruleID string, req unifi.ACLRuleRequest) (unifi.ACLRule, error)
+	DeleteACLRule(ctx context.Context, siteID, ruleID string) error
+	SetACLRuleEnabled(ctx context.Context, siteID, ruleID string, enabled bool) (unifi.ACLRule, error)
+	GetACLRuleOrdering(ctx context.Context, siteID string) (unifi.ACLRuleOrdering, error)
+	ReorderACLRules(ctx context.Context, siteID string, orderedIDs []string) (unifi.ACLRuleOrdering, error)
 	ListTrafficMatchingLists(ctx context.Context, siteID string) ([]unifi.TrafficMatchingList, error)
 	GetTrafficMatchingList(ctx context.Context, siteID, listID string) (unifi.TrafficMatchingList, error)
 	ListWANs(ctx context.Context, siteID string) ([]unifi.WAN, error)

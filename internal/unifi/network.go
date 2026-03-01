@@ -215,6 +215,120 @@ func (c *Client) ListACLRules(ctx context.Context, siteID string) ([]ACLRule, er
 	return rules, nil
 }
 
+// GetACLRule returns a single ACL rule from
+// GET /integration/v1/sites/{siteID}/acl-rules/{ruleID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetACLRule(ctx context.Context, siteID, ruleID string) (ACLRule, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", id, ruleID))
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("GetACLRule %s %s: %w", id, ruleID, err)
+	}
+	rule, err := decodeV1[ACLRule](data)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("GetACLRule %s %s: %w", id, ruleID, err)
+	}
+	return rule, nil
+}
+
+// CreateACLRule creates a new ACL rule via
+// POST /integration/v1/sites/{siteID}/acl-rules.
+// Pass an empty siteID to use the client default.
+func (c *Client) CreateACLRule(ctx context.Context, siteID string, req ACLRuleRequest) (ACLRule, error) {
+	id := c.site(siteID)
+	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", id), req)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("CreateACLRule %s: %w", id, err)
+	}
+	rule, err := decodeV1[ACLRule](data)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("CreateACLRule %s: %w", id, err)
+	}
+	return rule, nil
+}
+
+// UpdateACLRule replaces an ACL rule via
+// PUT /integration/v1/sites/{siteID}/acl-rules/{ruleID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) UpdateACLRule(ctx context.Context, siteID, ruleID string, req ACLRuleRequest) (ACLRule, error) {
+	id := c.site(siteID)
+	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", id, ruleID), req)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("UpdateACLRule %s %s: %w", id, ruleID, err)
+	}
+	rule, err := decodeV1[ACLRule](data)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("UpdateACLRule %s %s: %w", id, ruleID, err)
+	}
+	return rule, nil
+}
+
+// DeleteACLRule deletes an ACL rule via
+// DELETE /integration/v1/sites/{siteID}/acl-rules/{ruleID}.
+// Pass an empty siteID to use the client default.
+func (c *Client) DeleteACLRule(ctx context.Context, siteID, ruleID string) error {
+	id := c.site(siteID)
+	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", id, ruleID)); err != nil {
+		return fmt.Errorf("DeleteACLRule %s %s: %w", id, ruleID, err)
+	}
+	return nil
+}
+
+// SetACLRuleEnabled enables or disables an ACL rule via GET then PUT.
+// It fetches the current rule, flips the enabled flag, and PUTs back.
+// Pass an empty siteID to use the client default.
+func (c *Client) SetACLRuleEnabled(ctx context.Context, siteID, ruleID string, enabled bool) (ACLRule, error) {
+	id := c.site(siteID)
+	existing, err := c.GetACLRule(ctx, siteID, ruleID)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("SetACLRuleEnabled %s %s: get: %w", id, ruleID, err)
+	}
+	req := ACLRuleRequest{
+		Type:    existing.Type,
+		Name:    existing.Name,
+		Action:  existing.Action,
+		Enabled: enabled,
+	}
+	rule, err := c.UpdateACLRule(ctx, siteID, ruleID, req)
+	if err != nil {
+		return ACLRule{}, fmt.Errorf("SetACLRuleEnabled %s %s: put: %w", id, ruleID, err)
+	}
+	return rule, nil
+}
+
+// GetACLRuleOrdering returns the current ACL rule ordering via
+// GET /integration/v1/sites/{siteID}/acl-rules/ordering.
+// Pass an empty siteID to use the client default.
+func (c *Client) GetACLRuleOrdering(ctx context.Context, siteID string) (ACLRuleOrdering, error) {
+	id := c.site(siteID)
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/ordering", id))
+	if err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("GetACLRuleOrdering %s: %w", id, err)
+	}
+	ordering, err := decodeV1[ACLRuleOrdering](data)
+	if err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("GetACLRuleOrdering %s: %w", id, err)
+	}
+	return ordering, nil
+}
+
+// ReorderACLRules sets the ACL rule ordering via
+// PUT /integration/v1/sites/{siteID}/acl-rules/ordering.
+// Pass an empty siteID to use the client default.
+func (c *Client) ReorderACLRules(ctx context.Context, siteID string, orderedIDs []string) (ACLRuleOrdering, error) {
+	id := c.site(siteID)
+	body := ACLRuleOrdering{OrderedACLRuleIDs: orderedIDs}
+	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/ordering", id), body)
+	if err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("ReorderACLRules %s: %w", id, err)
+	}
+	ordering, err := decodeV1[ACLRuleOrdering](data)
+	if err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("ReorderACLRules %s: %w", id, err)
+	}
+	return ordering, nil
+}
+
 // SetWiFiBroadcastEnabled enables or disables a WiFi broadcast via
 // GET then PUT /integration/v1/sites/{siteID}/wifi/broadcasts/{broadcastID}.
 // It fetches the current resource as a raw map to preserve all API fields,

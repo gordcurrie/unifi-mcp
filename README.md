@@ -144,6 +144,8 @@ export UNIFI_SITE_ID=your-site-uuid
 | `create_firewall_zone` | Create a new firewall zone |
 | `update_firewall_zone` | Update an existing firewall zone by ID |
 | `list_acl_rules` | All ACL rules |
+| `get_acl_rule` | Details for a single ACL rule by ID |
+| `get_acl_rule_ordering` | Current ACL rule evaluation order |
 | `list_traffic_matching_lists` | All traffic matching lists (IP/port sets used by firewall policies) |
 | `get_traffic_matching_list` | Details for a single traffic matching list by ID |
 | `list_wans` | All WAN interface definitions |
@@ -161,6 +163,18 @@ export UNIFI_SITE_ID=your-site-uuid
 | `delete_dns_policy` | Permanently delete a DNS policy — requires `confirmed: true` |
 | `delete_firewall_policy` | Permanently delete a firewall policy — requires `confirmed: true` |
 | `delete_firewall_zone` | Permanently delete a firewall zone — requires `confirmed: true` |
+| `create_acl_rule` | Create a new ACL rule — requires `confirmed: true` |
+| `update_acl_rule` | Update an existing ACL rule by ID — requires `confirmed: true` |
+| `set_acl_rule_enabled` | Enable or disable an ACL rule — requires `confirmed: true` |
+| `reorder_acl_rules` | Set the ACL rule evaluation order — requires `confirmed: true` |
+| `delete_acl_rule` | Permanently delete an ACL rule — requires `confirmed: true` |
+
+> **Why are all ACL writes destructive-gated?** Unlike firewall zones (organisational
+> containers), any ACL mutation directly controls which traffic is allowed or blocked.
+> A misplaced `BLOCK` rule — or a reorder that promotes one — can cause a complete
+> network outage. Gating every write on `UNIFI_ALLOW_DESTRUCTIVE=true` ensures that
+> an AI session without the flag cannot issue any ACL write at all. The `confirmed: true`
+> field is a secondary per-call guard; the env flag is the primary one.
 
 ---
 
