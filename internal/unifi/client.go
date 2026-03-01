@@ -28,15 +28,6 @@ type Client struct {
 	httpClient *http.Client
 }
 
-// v1ListResponse wraps the integration v1 API paginated list envelope.
-type v1ListResponse[T any] struct {
-	Data       []T `json:"data"`
-	TotalCount int `json:"totalCount"`
-	Offset     int `json:"offset"`
-	Limit      int `json:"limit"`
-	Count      int `json:"count"`
-}
-
 // NewClient creates a UniFi Integration API client.
 // baseURL should be the full proxy/network base, e.g. "https://192.168.1.1/proxy/network".
 // siteID is the site UUID (from Settings → Sites) used when tools omit the site_id parameter.
@@ -96,6 +87,30 @@ func (c *Client) site(siteID string) string {
 // get performs a GET request to the given path (relative to baseURL).
 func (c *Client) get(ctx context.Context, path string) ([]byte, error) {
 	return c.do(ctx, http.MethodGet, path, nil)
+}
+
+// getWithQuery performs a GET request appending optional offset/limit query parameters.
+// A value of 0 means "omit the parameter and let the API use its default".
+// Negative values are invalid and return an error.
+func (c *Client) getWithQuery(ctx context.Context, path string, offset, limit int) ([]byte, error) {
+	if offset < 0 || limit < 0 {
+		return nil, fmt.Errorf("getWithQuery: offset and limit must be >= 0 (got offset=%d, limit=%d)", offset, limit)
+	}
+	if offset == 0 && limit == 0 {
+		return c.get(ctx, path)
+	}
+	q := url.Values{}
+	if offset > 0 {
+		q.Set("offset", fmt.Sprintf("%d", offset))
+	}
+	if limit > 0 {
+		q.Set("limit", fmt.Sprintf("%d", limit))
+	}
+	sep := "?"
+	if strings.Contains(path, "?") {
+		sep = "&"
+	}
+	return c.do(ctx, http.MethodGet, path+sep+q.Encode(), nil)
 }
 
 // post performs a POST request with no body to the given path.
@@ -174,11 +189,11 @@ func decodeV1[T any](data []byte) (T, error) {
 	return result, nil
 }
 
-// decodeV1List decodes an integration v1 paginated list envelope.
-func decodeV1List[T any](data []byte) ([]T, error) {
-	var resp v1ListResponse[T]
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return nil, fmt.Errorf("decode v1 list response: %w", err)
+// decodeV1List decodes an integration v1 paginated list envelope into a Page[T].
+func decodeV1List[T any](data []byte) (Page[T], error) {
+	var page Page[T]
+	if err := json.Unmarshal(data, &page); err != nil {
+		return page, fmt.Errorf("decode v1 list response: %w", err)
 	}
-	return resp.Data, nil
+	return page, nil
 }

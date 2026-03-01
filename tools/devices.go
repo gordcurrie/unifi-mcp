@@ -12,6 +12,8 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Offset int    `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int    `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
 	}
 	type deviceInput struct {
 		SiteID   string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
@@ -25,10 +27,10 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_devices",
-		Description: "List all adopted devices (APs, switches, gateways) for a site.",
+		Description: "List adopted devices (APs, switches, gateways) for a site. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		devices, err := client.ListDevices(ctx, input.SiteID)
+		devices, err := client.ListDevices(ctx, input.SiteID, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_devices: %w", err))
 		}
@@ -84,10 +86,14 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_pending_devices",
-		Description: "List devices visible on the network that have not yet been adopted.",
+		Description: "List devices visible on the network that have not yet been adopted. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
-		devices, err := client.ListPendingDevices(ctx)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+	},
+	) (*mcp.CallToolResult, any, error) {
+		devices, err := client.ListPendingDevices(ctx, input.Offset, input.Limit)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_pending_devices: %w", err))
 		}

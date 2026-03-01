@@ -5,19 +5,19 @@ import (
 	"fmt"
 )
 
-// ListDevices returns all adopted devices from GET /integration/v1/sites/{siteID}/devices.
-// Pass an empty siteID to use the client default.
-func (c *Client) ListDevices(ctx context.Context, siteID string) ([]Device, error) {
+// ListDevices returns one page of adopted devices from GET /integration/v1/sites/{siteID}/devices.
+// Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListDevices(ctx context.Context, siteID string, offset, limit int) (Page[Device], error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices", id))
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices", id), offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListDevices %s: %w", id, err)
+		return Page[Device]{}, fmt.Errorf("ListDevices %s: %w", id, err)
 	}
-	devices, err := decodeV1List[Device](data)
+	page, err := decodeV1List[Device](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListDevices %s: %w", id, err)
+		return Page[Device]{}, fmt.Errorf("ListDevices %s: %w", id, err)
 	}
-	return devices, nil
+	return page, nil
 }
 
 // GetDevice returns a single device from GET /integration/v1/sites/{siteID}/devices/{deviceID}.
@@ -66,16 +66,17 @@ func (c *Client) PowerCyclePort(ctx context.Context, siteID, deviceID string, po
 
 // ListPendingDevices returns devices visible on the network but not yet adopted from
 // GET /integration/v1/pending-devices. This endpoint is not site-scoped.
-func (c *Client) ListPendingDevices(ctx context.Context) ([]PendingDevice, error) {
-	data, err := c.get(ctx, "/integration/v1/pending-devices")
+// offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListPendingDevices(ctx context.Context, offset, limit int) (Page[PendingDevice], error) {
+	data, err := c.getWithQuery(ctx, "/integration/v1/pending-devices", offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListPendingDevices: %w", err)
+		return Page[PendingDevice]{}, fmt.Errorf("ListPendingDevices: %w", err)
 	}
-	devices, err := decodeV1List[PendingDevice](data)
+	page, err := decodeV1List[PendingDevice](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListPendingDevices: %w", err)
+		return Page[PendingDevice]{}, fmt.Errorf("ListPendingDevices: %w", err)
 	}
-	return devices, nil
+	return page, nil
 }
 
 // GetDeviceStats returns the latest statistics for a device from

@@ -210,7 +210,7 @@ Low-priority but useful for firewall policy creation context.
 - `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
 - New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`, `list_radius_profiles`
 
-### 4m — Pagination refactor (cross-cutting)
+### ✅ 4m — Pagination refactor (cross-cutting)
 
 Consistent pagination support across all list tools. Breaking change — do as a dedicated PR before adding further tools.
 

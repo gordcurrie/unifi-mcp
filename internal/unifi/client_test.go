@@ -85,15 +85,18 @@ func TestListSites(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		sites, err := client.ListSites(context.Background())
+		sites, err := client.ListSites(context.Background(), 0, 0)
 		if err != nil {
 			t.Fatalf("ListSites: %v", err)
 		}
-		if len(sites) != 2 {
-			t.Fatalf("got %d sites, want 2", len(sites))
+		if len(sites.Data) != 2 {
+			t.Fatalf("got %d sites, want 2", len(sites.Data))
 		}
-		if sites[0].ID != "site-1" {
-			t.Errorf("got site[0].ID %q, want %q", sites[0].ID, "site-1")
+		if sites.Data[0].ID != "site-1" {
+			t.Errorf("got site[0].ID %q, want %q", sites.Data[0].ID, "site-1")
+		}
+		if sites.TotalCount != 2 {
+			t.Errorf("got TotalCount %d, want 2", sites.TotalCount)
 		}
 	})
 }
@@ -131,5 +134,49 @@ func TestSiteFallback(t *testing.T) {
 	}
 	if got := client.site("override"); got != "override" {
 		t.Errorf(`site("override") = %q, want %q`, got, "override")
+	}
+}
+
+func TestGetWithQuery(t *testing.T) {
+	cases := []struct {
+		name      string
+		path      string
+		offset    int
+		limit     int
+		wantQuery string // expected raw query string (empty = no query params)
+		wantErr   bool
+	}{
+		{"zero/zero omits params", "/integration/v1/sites", 0, 0, "", false},
+		{"offset only", "/integration/v1/sites", 10, 0, "offset=10", false},
+		{"limit only", "/integration/v1/sites", 0, 25, "limit=25", false},
+		{"both", "/integration/v1/sites", 10, 25, "limit=25&offset=10", false},
+		{"path with existing query", "/integration/v1/sites?foo=bar", 5, 10, "foo=bar&limit=10&offset=5", false},
+		{"negative offset returns error", "/integration/v1/sites", -1, 0, "", true},
+		{"negative limit returns error", "/integration/v1/sites", 0, -1, "", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotQuery string
+			client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				gotQuery = r.URL.RawQuery
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"data": []map[string]any{}, "totalCount": 0,
+				})
+			})
+			_, err := client.getWithQuery(context.Background(), tc.path, tc.offset, tc.limit)
+			if tc.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if gotQuery != tc.wantQuery {
+				t.Errorf("RawQuery = %q, want %q", gotQuery, tc.wantQuery)
+			}
+		})
 	}
 }

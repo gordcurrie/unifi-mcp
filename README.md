@@ -102,30 +102,53 @@ export UNIFI_SITE_ID=your-site-uuid
 
 ## Tools Reference
 
+### Pagination
+
+All `list_*` tools support optional pagination via `offset` and `limit` fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `offset` | `int` | Number of items to skip (0 = use API default, i.e. return from the start) |
+| `limit` | `int` | Maximum number of items to return (0 = use API default page size) |
+
+All list tools return a `Page[T]` object containing:
+
+```json
+{
+  "data": [...],
+  "totalCount": 42,
+  "offset": 0,
+  "limit": 25,
+  "count": 25
+}
+```
+
+Omit both fields (or pass `0`) to fetch the API's default first page.
+
 ### Sites
 
 | Tool | Description |
 |---|---|
 | `get_application_info` | UniFi application version and build info |
-| `list_sites` | All sites on the console |
+| `list_sites` | Sites on the console (paginated) |
 | `get_site` | Details for a single site (defaults to `UNIFI_SITE_ID`) |
 
 ### Devices
 
 | Tool | Description |
 |---|---|
-| `list_devices` | All managed devices (APs, switches, gateways) |
+| `list_devices` | Managed devices — APs, switches, gateways (paginated) |
 | `get_device` | Details for a single device by ID |
 | `restart_device` | Restart a device by ID — requires `confirmed: true` |
 | `get_device_stats` | Latest CPU, memory, and uptime stats for a device |
-| `list_pending_devices` | Devices visible on the network not yet adopted |
+| `list_pending_devices` | Devices visible on the network not yet adopted (paginated) |
 | `power_cycle_port` | Power-cycle a single PoE port on a switch — requires `confirmed: true` |
 
 ### Clients
 
 | Tool | Description |
 |---|---|
-| `list_clients` | All currently connected clients |
+| `list_clients` | Currently connected clients (paginated) |
 | `get_client` | Details for a single connected client by ID |
 | `authorize_guest_client` | Authorize a connected client for guest network access — requires `confirmed: true` |
 
@@ -133,36 +156,36 @@ export UNIFI_SITE_ID=your-site-uuid
 
 | Tool | Description |
 |---|---|
-| `list_wifi_broadcasts` | All WiFi broadcast (SSID) configurations |
+| `list_wifi_broadcasts` | WiFi broadcast (SSID) configurations (paginated) |
 | `get_wifi_broadcast` | Details for a single WiFi broadcast (SSID) by ID |
 | `set_wifi_broadcast_enabled` | Enable or disable a WiFi broadcast (SSID) — requires `confirmed: true` |
 | `list_networks` | LAN/VLAN network configurations |
-| `list_firewall_policies` | All firewall policies |
+| `list_firewall_policies` | Firewall policies (paginated) |
 | `get_firewall_policy` | Details for a single firewall policy by ID |
 | `set_firewall_policy_enabled` | Enable or disable a firewall policy — requires `confirmed: true` |
-| `list_firewall_zones` | All firewall zones |
+| `list_firewall_zones` | Firewall zones (paginated) |
 | `get_firewall_zone` | Details for a single firewall zone by ID |
 | `create_firewall_zone` | Create a new firewall zone |
 | `update_firewall_zone` | Update an existing firewall zone by ID |
-| `list_acl_rules` | All ACL rules |
+| `list_acl_rules` | ACL rules (paginated) |
 | `get_acl_rule` | Details for a single ACL rule by ID |
 | `get_acl_rule_ordering` | Current ACL rule evaluation order |
-| `list_traffic_matching_lists` | All traffic matching lists (IP/port sets used by firewall policies) |
+| `list_traffic_matching_lists` | Traffic matching lists — IP/port sets used by firewall policies (paginated) |
 | `get_traffic_matching_list` | Details for a single traffic matching list by ID |
-| `list_wans` | All WAN interface definitions |
-| `list_vpn_tunnels` | All site-to-site VPN tunnels |
-| `list_vpn_servers` | All VPN server configurations |
-| `list_dns_policies` | All local DNS A-record policies |
+| `list_wans` | WAN interface definitions (paginated) |
+| `list_vpn_tunnels` | Site-to-site VPN tunnels (paginated) |
+| `list_vpn_servers` | VPN server configurations (paginated) |
+| `list_dns_policies` | Local DNS A-record policies (paginated) |
 | `get_dns_policy` | Details for a single DNS policy by ID |
 | `create_dns_policy` | Create a new local DNS A-record policy |
 | `update_dns_policy` | Update an existing DNS policy by ID |
-| `list_vouchers` | All hotspot vouchers |
+| `list_vouchers` | Hotspot vouchers (paginated) |
 | `get_voucher` | Details for a single hotspot voucher by ID |
 | `create_vouchers` | Generate one or more hotspot vouchers — requires `confirmed: true` |
-| `list_device_tags` | All device tags defined for the site |
-| `list_dpi_categories` | All DPI application categories (used in firewall matching rules) |
-| `list_dpi_applications` | All DPI applications (used in firewall matching rules) |
-| `list_radius_profiles` | All RADIUS profiles configured for the site |
+| `list_device_tags` | Device tags defined for the site (paginated) |
+| `list_dpi_categories` | DPI application categories used in firewall matching rules (paginated) |
+| `list_dpi_applications` | DPI applications used in firewall matching rules (paginated) |
+| `list_radius_profiles` | RADIUS profiles configured for the site (paginated) |
 
 ### Destructive (requires `UNIFI_ALLOW_DESTRUCTIVE=true`)
 

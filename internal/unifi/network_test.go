@@ -24,17 +24,17 @@ func TestListWiFiBroadcasts(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		broadcasts, err := client.ListWiFiBroadcasts(context.Background(), "")
+		broadcasts, err := client.ListWiFiBroadcasts(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListWiFiBroadcasts: %v", err)
 		}
-		if len(broadcasts) != 2 {
-			t.Fatalf("got %d broadcasts, want 2", len(broadcasts))
+		if len(broadcasts.Data) != 2 {
+			t.Fatalf("got %d broadcasts, want 2", len(broadcasts.Data))
 		}
-		if broadcasts[0].Name != "HomeNet" {
-			t.Errorf("got Name %q, want HomeNet", broadcasts[0].Name)
+		if broadcasts.Data[0].Name != "HomeNet" {
+			t.Errorf("got Name %q, want HomeNet", broadcasts.Data[0].Name)
 		}
-		if broadcasts[1].Enabled {
+		if broadcasts.Data[1].Enabled {
 			t.Error("expected broadcasts[1].Enabled false")
 		}
 	})
@@ -56,15 +56,15 @@ func TestListNetworks(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		nets, err := client.ListNetworks(context.Background(), "")
+		nets, err := client.ListNetworks(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListNetworks: %v", err)
 		}
-		if len(nets) != 2 {
-			t.Fatalf("got %d networks, want 2", len(nets))
+		if len(nets.Data) != 2 {
+			t.Fatalf("got %d networks, want 2", len(nets.Data))
 		}
-		if nets[1].VLANID != 10 {
-			t.Errorf("got VLANID %d, want 10", nets[1].VLANID)
+		if nets.Data[1].VLANID != 10 {
+			t.Errorf("got VLANID %d, want 10", nets.Data[1].VLANID)
 		}
 	})
 }
@@ -84,15 +84,15 @@ func TestListFirewallPolicies(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		policies, err := client.ListFirewallPolicies(context.Background(), "")
+		policies, err := client.ListFirewallPolicies(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListFirewallPolicies: %v", err)
 		}
-		if len(policies) != 1 {
-			t.Fatalf("got %d policies, want 1", len(policies))
+		if len(policies.Data) != 1 {
+			t.Fatalf("got %d policies, want 1", len(policies.Data))
 		}
-		if policies[0].Name != "block-iot-out" {
-			t.Errorf("got Name %q, want block-iot-out", policies[0].Name)
+		if policies.Data[0].Name != "block-iot-out" {
+			t.Errorf("got Name %q, want block-iot-out", policies.Data[0].Name)
 		}
 	})
 }
@@ -113,18 +113,18 @@ func TestListFirewallZones(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		zones, err := client.ListFirewallZones(context.Background(), "")
+		zones, err := client.ListFirewallZones(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListFirewallZones: %v", err)
 		}
-		if len(zones) != 2 {
-			t.Fatalf("got %d zones, want 2", len(zones))
+		if len(zones.Data) != 2 {
+			t.Fatalf("got %d zones, want 2", len(zones.Data))
 		}
-		if zones[0].Name != "Internal" {
-			t.Errorf("got Name %q, want Internal", zones[0].Name)
+		if zones.Data[0].Name != "Internal" {
+			t.Errorf("got Name %q, want Internal", zones.Data[0].Name)
 		}
-		if len(zones[0].NetworkIDs) != 2 {
-			t.Errorf("got %d networkIDs, want 2", len(zones[0].NetworkIDs))
+		if len(zones.Data[0].NetworkIDs) != 2 {
+			t.Errorf("got %d networkIDs, want 2", len(zones.Data[0].NetworkIDs))
 		}
 	})
 }
@@ -144,15 +144,15 @@ func TestListACLRules(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		rules, err := client.ListACLRules(context.Background(), "")
+		rules, err := client.ListACLRules(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListACLRules: %v", err)
 		}
-		if len(rules) != 1 {
-			t.Fatalf("got %d rules, want 1", len(rules))
+		if len(rules.Data) != 1 {
+			t.Fatalf("got %d rules, want 1", len(rules.Data))
 		}
-		if rules[0].Action != "ALLOW" {
-			t.Errorf("got Action %q, want ALLOW", rules[0].Action)
+		if rules.Data[0].Action != "ALLOW" {
+			t.Errorf("got Action %q, want ALLOW", rules.Data[0].Action)
 		}
 	})
 }
@@ -306,18 +306,18 @@ func TestListTrafficMatchingLists(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		lists, err := client.ListTrafficMatchingLists(context.Background(), "")
+		lists, err := client.ListTrafficMatchingLists(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListTrafficMatchingLists: %v", err)
 		}
-		if len(lists) != 2 {
-			t.Fatalf("got %d lists, want 2", len(lists))
+		if len(lists.Data) != 2 {
+			t.Fatalf("got %d lists, want 2", len(lists.Data))
 		}
-		if lists[0].Name != "BlockedIPs" {
-			t.Errorf("got Name %q, want BlockedIPs", lists[0].Name)
+		if lists.Data[0].Name != "BlockedIPs" {
+			t.Errorf("got Name %q, want BlockedIPs", lists.Data[0].Name)
 		}
-		if len(lists[0].Entries) != 2 {
-			t.Errorf("got %d entries, want 2", len(lists[0].Entries))
+		if len(lists.Data[0].Entries) != 2 {
+			t.Errorf("got %d entries, want 2", len(lists.Data[0].Entries))
 		}
 	})
 }
@@ -373,18 +373,18 @@ func TestListWANs(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		wans, err := client.ListWANs(context.Background(), "")
+		wans, err := client.ListWANs(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListWANs: %v", err)
 		}
-		if len(wans) != 1 {
-			t.Fatalf("got %d WANs, want 1", len(wans))
+		if len(wans.Data) != 1 {
+			t.Fatalf("got %d WANs, want 1", len(wans.Data))
 		}
-		if wans[0].Name != "WAN1" {
-			t.Errorf("got Name %q, want WAN1", wans[0].Name)
+		if wans.Data[0].Name != "WAN1" {
+			t.Errorf("got Name %q, want WAN1", wans.Data[0].Name)
 		}
-		if wans[0].State != "CONNECTED" {
-			t.Errorf("got State %q, want CONNECTED", wans[0].State)
+		if wans.Data[0].State != "CONNECTED" {
+			t.Errorf("got State %q, want CONNECTED", wans.Data[0].State)
 		}
 	})
 }
@@ -404,15 +404,15 @@ func TestListVPNTunnels(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		tunnels, err := client.ListVPNTunnels(context.Background(), "")
+		tunnels, err := client.ListVPNTunnels(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListVPNTunnels: %v", err)
 		}
-		if len(tunnels) != 1 {
-			t.Fatalf("got %d tunnels, want 1", len(tunnels))
+		if len(tunnels.Data) != 1 {
+			t.Fatalf("got %d tunnels, want 1", len(tunnels.Data))
 		}
-		if tunnels[0].Name != "OfficeVPN" {
-			t.Errorf("got Name %q, want OfficeVPN", tunnels[0].Name)
+		if tunnels.Data[0].Name != "OfficeVPN" {
+			t.Errorf("got Name %q, want OfficeVPN", tunnels.Data[0].Name)
 		}
 	})
 }
@@ -432,15 +432,15 @@ func TestListVPNServers(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		servers, err := client.ListVPNServers(context.Background(), "")
+		servers, err := client.ListVPNServers(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListVPNServers: %v", err)
 		}
-		if len(servers) != 1 {
-			t.Fatalf("got %d servers, want 1", len(servers))
+		if len(servers.Data) != 1 {
+			t.Fatalf("got %d servers, want 1", len(servers.Data))
 		}
-		if servers[0].Type != "WIREGUARD" {
-			t.Errorf("got Type %q, want WIREGUARD", servers[0].Type)
+		if servers.Data[0].Type != "WIREGUARD" {
+			t.Errorf("got Type %q, want WIREGUARD", servers.Data[0].Type)
 		}
 	})
 }
@@ -461,17 +461,17 @@ func TestListDNSPolicies(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		policies, err := client.ListDNSPolicies(context.Background(), "")
+		policies, err := client.ListDNSPolicies(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListDNSPolicies: %v", err)
 		}
-		if len(policies) != 2 {
-			t.Fatalf("got %d policies, want 2", len(policies))
+		if len(policies.Data) != 2 {
+			t.Fatalf("got %d policies, want 2", len(policies.Data))
 		}
-		if policies[0].Domain != "nas.home" {
-			t.Errorf("got Domain %q, want nas.home", policies[0].Domain)
+		if policies.Data[0].Domain != "nas.home" {
+			t.Errorf("got Domain %q, want nas.home", policies.Data[0].Domain)
 		}
-		if policies[1].Enabled {
+		if policies.Data[1].Enabled {
 			t.Error("expected policies[1].Enabled false")
 		}
 	})
@@ -1236,12 +1236,12 @@ func TestListVouchers(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		vouchers, err := client.ListVouchers(context.Background(), "")
+		vouchers, err := client.ListVouchers(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListVouchers: %v", err)
 		}
-		if len(vouchers) != 1 || vouchers[0].ID != "v-1" || vouchers[0].Code != "ABC123" {
-			t.Errorf("got %+v, want [{ID:v-1 Code:ABC123 ...}]", vouchers)
+		if len(vouchers.Data) != 1 || vouchers.Data[0].ID != "v-1" || vouchers.Data[0].Code != "ABC123" {
+			t.Errorf("got %+v, want [{ID:v-1 Code:ABC123 ...}]", vouchers.Data)
 		}
 	})
 
@@ -1249,7 +1249,7 @@ func TestListVouchers(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.ListVouchers(context.Background(), "")
+		_, err := client.ListVouchers(context.Background(), "", 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1376,12 +1376,12 @@ func TestListDeviceTags(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		tags, err := client.ListDeviceTags(context.Background(), "")
+		tags, err := client.ListDeviceTags(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListDeviceTags: %v", err)
 		}
-		if len(tags) != 2 || tags[0].ID != "dt-1" {
-			t.Errorf("got %+v, want [{ID:dt-1 ...}]", tags)
+		if len(tags.Data) != 2 || tags.Data[0].ID != "dt-1" {
+			t.Errorf("got %+v, want [{ID:dt-1 ...}]", tags.Data)
 		}
 	})
 
@@ -1389,7 +1389,7 @@ func TestListDeviceTags(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListDeviceTags(context.Background(), "")
+		_, err := client.ListDeviceTags(context.Background(), "", 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1412,12 +1412,12 @@ func TestListDPICategories(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		cats, err := client.ListDPICategories(context.Background())
+		cats, err := client.ListDPICategories(context.Background(), 0, 0)
 		if err != nil {
 			t.Fatalf("ListDPICategories: %v", err)
 		}
-		if len(cats) != 2 || cats[0].ID != 0 || cats[1].Name != "Media streaming services" {
-			t.Errorf("unexpected categories: %+v", cats)
+		if len(cats.Data) != 2 || cats.Data[0].ID != 0 || cats.Data[1].Name != "Media streaming services" {
+			t.Errorf("unexpected categories: %+v", cats.Data)
 		}
 	})
 
@@ -1425,7 +1425,7 @@ func TestListDPICategories(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListDPICategories(context.Background())
+		_, err := client.ListDPICategories(context.Background(), 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1448,12 +1448,12 @@ func TestListDPIApplications(t *testing.T) {
 				"totalCount": 2,
 			})
 		})
-		apps, err := client.ListDPIApplications(context.Background())
+		apps, err := client.ListDPIApplications(context.Background(), 0, 0)
 		if err != nil {
 			t.Fatalf("ListDPIApplications: %v", err)
 		}
-		if len(apps) != 2 || apps[0].ID != 39 || apps[0].CategoryID != 17 {
-			t.Errorf("unexpected applications: %+v", apps)
+		if len(apps.Data) != 2 || apps.Data[0].ID != 39 || apps.Data[0].CategoryID != 17 {
+			t.Errorf("unexpected applications: %+v", apps.Data)
 		}
 	})
 
@@ -1461,7 +1461,7 @@ func TestListDPIApplications(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListDPIApplications(context.Background())
+		_, err := client.ListDPIApplications(context.Background(), 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1483,15 +1483,15 @@ func TestListRADIUSProfiles(t *testing.T) {
 				"totalCount": 1,
 			})
 		})
-		profiles, err := client.ListRADIUSProfiles(context.Background(), "")
+		profiles, err := client.ListRADIUSProfiles(context.Background(), "", 0, 0)
 		if err != nil {
 			t.Fatalf("ListRADIUSProfiles: %v", err)
 		}
-		if len(profiles) != 1 || profiles[0].ID != "rp-1" || profiles[0].Metadata == nil {
-			t.Errorf("unexpected profiles: %+v", profiles)
+		if len(profiles.Data) != 1 || profiles.Data[0].ID != "rp-1" || profiles.Data[0].Metadata == nil {
+			t.Errorf("unexpected profiles: %+v", profiles.Data)
 		}
-		if profiles[0].Metadata.Origin != "SYSTEM_DEFINED" {
-			t.Errorf("got origin %q, want SYSTEM_DEFINED", profiles[0].Metadata.Origin)
+		if profiles.Data[0].Metadata.Origin != "SYSTEM_DEFINED" {
+			t.Errorf("got origin %q, want SYSTEM_DEFINED", profiles.Data[0].Metadata.Origin)
 		}
 	})
 
@@ -1499,7 +1499,7 @@ func TestListRADIUSProfiles(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.ListRADIUSProfiles(context.Background(), "")
+		_, err := client.ListRADIUSProfiles(context.Background(), "", 0, 0)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}

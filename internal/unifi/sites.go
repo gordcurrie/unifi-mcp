@@ -22,30 +22,40 @@ func (c *Client) GetInfo(ctx context.Context) (ApplicationInfo, error) {
 	return info, nil
 }
 
-// ListSites returns all sites from GET /integration/v1/sites.
-func (c *Client) ListSites(ctx context.Context) ([]Site, error) {
-	data, err := c.get(ctx, "/integration/v1/sites")
+// ListSites returns one page of sites from GET /integration/v1/sites.
+// offset and limit control pagination; 0 means use the API default.
+func (c *Client) ListSites(ctx context.Context, offset, limit int) (Page[Site], error) {
+	data, err := c.getWithQuery(ctx, "/integration/v1/sites", offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("ListSites: %w", err)
+		return Page[Site]{}, fmt.Errorf("ListSites: %w", err)
 	}
-	sites, err := decodeV1List[Site](data)
+	page, err := decodeV1List[Site](data)
 	if err != nil {
-		return nil, fmt.Errorf("ListSites: %w", err)
+		return Page[Site]{}, fmt.Errorf("ListSites: %w", err)
 	}
-	return sites, nil
+	return page, nil
 }
 
 // GetSite returns a single site by ID from GET /integration/v1/sites (no single-get endpoint).
 // Pass an empty siteID to use the client default.
+// GetSite paginates through all pages until the site is found.
 func (c *Client) GetSite(ctx context.Context, siteID string) (Site, error) {
 	id := c.site(siteID)
-	sites, err := c.ListSites(ctx)
-	if err != nil {
-		return Site{}, fmt.Errorf("GetSite %s: %w", id, err)
-	}
-	for _, s := range sites {
-		if s.ID == id {
-			return s, nil
+	const pageSize = 25
+	offset := 0
+	for {
+		page, err := c.ListSites(ctx, offset, pageSize)
+		if err != nil {
+			return Site{}, fmt.Errorf("GetSite %s: %w", id, err)
+		}
+		for _, s := range page.Data {
+			if s.ID == id {
+				return s, nil
+			}
+		}
+		offset += len(page.Data)
+		if len(page.Data) == 0 || offset >= page.TotalCount {
+			break
 		}
 	}
 	return Site{}, fmt.Errorf("GetSite %s: %w", id, ErrSiteNotFound)
