@@ -112,6 +112,9 @@ func registerDeviceTools(s *mcp.Server, client unifiClient) {
 		if input.DeviceID == "" {
 			return errorResult(fmt.Errorf("power_cycle_port: device_id is required"))
 		}
+		if input.PortIdx <= 0 {
+			return errorResult(fmt.Errorf("power_cycle_port: port_idx is required and must be greater than 0"))
+		}
 		if err := client.PowerCyclePort(ctx, input.SiteID, input.DeviceID, input.PortIdx); err != nil {
 			return errorResult(fmt.Errorf("power_cycle_port: %w", err))
 		}
