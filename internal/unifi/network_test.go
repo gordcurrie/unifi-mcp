@@ -3,6 +3,7 @@ package unifi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 )
@@ -1105,7 +1106,8 @@ func TestSetACLRuleEnabled(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			if callCount == 1 {
 				if r.Method != http.MethodGet {
-					t.Fatalf("first call method = %s, want GET", r.Method)
+					http.Error(w, fmt.Sprintf("first call method = %s, want GET", r.Method), http.StatusBadRequest)
+					return
 				}
 				_ = json.NewEncoder(w).Encode(map[string]any{
 					"id": "ar-1", "type": "IPV4", "name": "my-rule",
@@ -1114,7 +1116,8 @@ func TestSetACLRuleEnabled(t *testing.T) {
 				return
 			}
 			if r.Method != http.MethodPut {
-				t.Fatalf("second call method = %s, want PUT", r.Method)
+				http.Error(w, fmt.Sprintf("second call method = %s, want PUT", r.Method), http.StatusBadRequest)
+				return
 			}
 			var body ACLRuleRequest
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {

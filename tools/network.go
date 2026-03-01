@@ -111,18 +111,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		return jsonResult(zones)
 	})
 
-	mcp.AddTool(s, &mcp.Tool{
-		Name:        "list_acl_rules",
-		Description: "List all ACL rules for a site.",
-		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, input siteInput) (*mcp.CallToolResult, any, error) {
-		rules, err := client.ListACLRules(ctx, input.SiteID)
-		if err != nil {
-			return errorResult(fmt.Errorf("list_acl_rules: %w", err))
-		}
-		return jsonResult(rules)
-	})
-
 	type trafficMatchingListInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		ListID string `json:"list_id"           jsonschema:"traffic matching list ID"`
