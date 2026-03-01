@@ -419,7 +419,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	type firewallZoneMutateInput struct {
 		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		Name       string   `json:"name"               jsonschema:"zone name"`
-		NetworkIDs []string `json:"network_ids"        jsonschema:"list of network IDs to assign to this zone"`
+		NetworkIDs []string `json:"network_ids,omitempty" jsonschema:"list of network IDs to assign to this zone; omit or pass empty array for no networks"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -447,7 +447,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		ZoneID     string   `json:"zone_id"            jsonschema:"firewall zone ID"`
 		Name       string   `json:"name"               jsonschema:"zone name"`
-		NetworkIDs []string `json:"network_ids"        jsonschema:"list of network IDs to assign to this zone"`
+		NetworkIDs []string `json:"network_ids,omitempty" jsonschema:"list of network IDs to assign to this zone; omit or pass empty array for no networks"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
