@@ -107,7 +107,7 @@ chmod +x <binary-name>
 mv <binary-name> /usr/local/bin/unifi-mcp
 ```
 
-> Windows users: rename the `.exe` and add it to a directory on your `%PATH%`.
+> Windows users: rename `unifi-mcp_windows_amd64.exe` to `unifi-mcp.exe` and place it in a directory on your `%PATH%`.
 
 ### Build from source
 
@@ -144,6 +144,8 @@ set -a && source .env && set +a
 ### stdio (default — for local MCP clients)
 
 ```bash
+unifi-mcp
+# or, if running directly from a source build:
 ./bin/unifi-mcp
 ```
 
@@ -152,7 +154,7 @@ set -a && source .env && set +a
 > The HTTP transport has no built-in authentication. Use a loopback address or place it behind a reverse proxy before exposing it on a shared network.
 
 ```bash
-./bin/unifi-mcp --transport http --addr 127.0.0.1:8080
+unifi-mcp --transport http --addr 127.0.0.1:8080
 ```
 
 ## VS Code Copilot configuration
