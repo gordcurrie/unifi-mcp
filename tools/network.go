@@ -770,7 +770,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Count < 1 {
 			return errorResult(fmt.Errorf("create_vouchers: count must be at least 1"))
 		}
-		vouchers, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
+		voucher, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
 			Count:            input.Count,
 			Name:             input.Name,
 			TimeLimitMinutes: input.TimeLimitMinutes,
@@ -779,7 +779,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if err != nil {
 			return errorResult(fmt.Errorf("create_vouchers: %w", err))
 		}
-		return jsonResult(vouchers)
+		return jsonResult(voucher)
 	})
 
 	if allowDestructive {

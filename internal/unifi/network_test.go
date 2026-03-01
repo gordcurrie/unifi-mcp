@@ -1289,7 +1289,7 @@ func TestGetVoucher(t *testing.T) {
 }
 
 func TestCreateVouchers(t *testing.T) {
-	t.Run("sends count and returns list", func(t *testing.T) {
+	t.Run("sends count and returns voucher", func(t *testing.T) {
 		var gotBody VoucherRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
@@ -1302,19 +1302,16 @@ func TestCreateVouchers(t *testing.T) {
 				return
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"data": []map[string]any{
-					{"id": "v-2", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes},
-				},
-				"totalCount": 1,
+				"id": "v-2", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes,
 			})
 		})
 		req := VoucherRequest{Count: 1, Name: "test", TimeLimitMinutes: 120}
-		vouchers, err := client.CreateVouchers(context.Background(), "", req)
+		voucher, err := client.CreateVouchers(context.Background(), "", req)
 		if err != nil {
 			t.Fatalf("CreateVouchers: %v", err)
 		}
-		if len(vouchers) != 1 || vouchers[0].ID != "v-2" {
-			t.Errorf("got %+v, want [{ID:v-2 ...}]", vouchers)
+		if voucher.ID != "v-2" {
+			t.Errorf("got ID %q, want v-2", voucher.ID)
 		}
 		if gotBody.Count != 1 || gotBody.Name != "test" || gotBody.TimeLimitMinutes != 120 {
 			t.Errorf("sent body %+v, want {Count:1 Name:test TimeLimitMinutes:120}", gotBody)
