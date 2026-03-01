@@ -32,7 +32,14 @@ type unifiClient interface {
 	SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastID string, enabled bool) (unifi.WiFiBroadcast, error)
 	ListNetworks(ctx context.Context, siteID string) ([]unifi.NetworkConf, error)
 	ListFirewallPolicies(ctx context.Context, siteID string) ([]unifi.FirewallPolicy, error)
+	GetFirewallPolicy(ctx context.Context, siteID, policyID string) (unifi.FirewallPolicy, error)
+	SetFirewallPolicyEnabled(ctx context.Context, siteID, policyID string, enabled bool) (unifi.FirewallPolicy, error)
+	DeleteFirewallPolicy(ctx context.Context, siteID, policyID string) error
 	ListFirewallZones(ctx context.Context, siteID string) ([]unifi.FirewallZone, error)
+	GetFirewallZone(ctx context.Context, siteID, zoneID string) (unifi.FirewallZone, error)
+	CreateFirewallZone(ctx context.Context, siteID string, req unifi.FirewallZoneRequest) (unifi.FirewallZone, error)
+	UpdateFirewallZone(ctx context.Context, siteID, zoneID string, req unifi.FirewallZoneRequest) (unifi.FirewallZone, error)
+	DeleteFirewallZone(ctx context.Context, siteID, zoneID string) error
 	ListACLRules(ctx context.Context, siteID string) ([]unifi.ACLRule, error)
 	ListTrafficMatchingLists(ctx context.Context, siteID string) ([]unifi.TrafficMatchingList, error)
 	GetTrafficMatchingList(ctx context.Context, siteID, listID string) (unifi.TrafficMatchingList, error)

@@ -319,4 +319,182 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			return textResult(fmt.Sprintf("DNS policy %s deleted", input.PolicyID))
 		})
 	}
+
+	// ── Firewall policies ────────────────────────────────────────────────────
+
+	type firewallPolicyInput struct {
+		SiteID   string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		PolicyID string `json:"policy_id"          jsonschema:"firewall policy ID"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_firewall_policy",
+		Description: "Get details for a specific firewall policy by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallPolicyInput) (*mcp.CallToolResult, any, error) {
+		if input.PolicyID == "" {
+			return errorResult(fmt.Errorf("get_firewall_policy: policy_id is required"))
+		}
+		policy, err := client.GetFirewallPolicy(ctx, input.SiteID, input.PolicyID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_firewall_policy: %w", err))
+		}
+		return jsonResult(policy)
+	})
+
+	type setFirewallPolicyEnabledInput struct {
+		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		PolicyID  string `json:"policy_id"          jsonschema:"firewall policy ID"`
+		Enabled   *bool  `json:"enabled"            jsonschema:"true to enable the policy, false to disable"`
+		Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the change"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "set_firewall_policy_enabled",
+		Description: "Enable or disable a firewall policy. Set confirmed=true to proceed.",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input setFirewallPolicyEnabledInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("set_firewall_policy_enabled: set confirmed=true to confirm the change"))
+		}
+		if input.PolicyID == "" {
+			return errorResult(fmt.Errorf("set_firewall_policy_enabled: policy_id is required"))
+		}
+		if input.Enabled == nil {
+			return errorResult(fmt.Errorf("set_firewall_policy_enabled: enabled is required"))
+		}
+		policy, err := client.SetFirewallPolicyEnabled(ctx, input.SiteID, input.PolicyID, *input.Enabled)
+		if err != nil {
+			return errorResult(fmt.Errorf("set_firewall_policy_enabled: %w", err))
+		}
+		return jsonResult(policy)
+	})
+
+	if allowDestructive {
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "delete_firewall_policy",
+			Description: "Permanently delete a firewall policy by ID. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			PolicyID  string `json:"policy_id"          jsonschema:"firewall policy ID"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the deletion"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("delete_firewall_policy: set confirmed=true to confirm the deletion"))
+			}
+			if input.PolicyID == "" {
+				return errorResult(fmt.Errorf("delete_firewall_policy: policy_id is required"))
+			}
+			if err := client.DeleteFirewallPolicy(ctx, input.SiteID, input.PolicyID); err != nil {
+				return errorResult(fmt.Errorf("delete_firewall_policy: %w", err))
+			}
+			return textResult(fmt.Sprintf("Firewall policy %s deleted", input.PolicyID))
+		})
+	}
+
+	// ── Firewall zones ───────────────────────────────────────────────────────
+
+	type firewallZoneInput struct {
+		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ZoneID string `json:"zone_id"            jsonschema:"firewall zone ID"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "get_firewall_zone",
+		Description: "Get details for a specific firewall zone by ID.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallZoneInput) (*mcp.CallToolResult, any, error) {
+		if input.ZoneID == "" {
+			return errorResult(fmt.Errorf("get_firewall_zone: zone_id is required"))
+		}
+		zone, err := client.GetFirewallZone(ctx, input.SiteID, input.ZoneID)
+		if err != nil {
+			return errorResult(fmt.Errorf("get_firewall_zone: %w", err))
+		}
+		return jsonResult(zone)
+	})
+
+	type firewallZoneMutateInput struct {
+		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Name       string   `json:"name"               jsonschema:"zone name"`
+		NetworkIDs []string `json:"network_ids"        jsonschema:"list of network IDs to assign to this zone"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "create_firewall_zone",
+		Description: "Create a new firewall zone.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallZoneMutateInput) (*mcp.CallToolResult, any, error) {
+		if input.Name == "" {
+			return errorResult(fmt.Errorf("create_firewall_zone: name is required"))
+		}
+		networkIDs := input.NetworkIDs
+		if networkIDs == nil {
+			networkIDs = []string{}
+		}
+		zone, err := client.CreateFirewallZone(ctx, input.SiteID, unifi.FirewallZoneRequest{
+			Name:       input.Name,
+			NetworkIDs: networkIDs,
+		})
+		if err != nil {
+			return errorResult(fmt.Errorf("create_firewall_zone: %w", err))
+		}
+		return jsonResult(zone)
+	})
+
+	type updateFirewallZoneInput struct {
+		SiteID     string   `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ZoneID     string   `json:"zone_id"            jsonschema:"firewall zone ID"`
+		Name       string   `json:"name"               jsonschema:"zone name"`
+		NetworkIDs []string `json:"network_ids"        jsonschema:"list of network IDs to assign to this zone"`
+	}
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "update_firewall_zone",
+		Description: "Update an existing firewall zone by ID.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateFirewallZoneInput) (*mcp.CallToolResult, any, error) {
+		if input.ZoneID == "" {
+			return errorResult(fmt.Errorf("update_firewall_zone: zone_id is required"))
+		}
+		if input.Name == "" {
+			return errorResult(fmt.Errorf("update_firewall_zone: name is required"))
+		}
+		networkIDs := input.NetworkIDs
+		if networkIDs == nil {
+			networkIDs = []string{}
+		}
+		zone, err := client.UpdateFirewallZone(ctx, input.SiteID, input.ZoneID, unifi.FirewallZoneRequest{
+			Name:       input.Name,
+			NetworkIDs: networkIDs,
+		})
+		if err != nil {
+			return errorResult(fmt.Errorf("update_firewall_zone: %w", err))
+		}
+		return jsonResult(zone)
+	})
+
+	if allowDestructive {
+		mcp.AddTool(s, &mcp.Tool{
+			Name:        "delete_firewall_zone",
+			Description: "Permanently delete a firewall zone by ID. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
+			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
+		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
+			SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			ZoneID    string `json:"zone_id"            jsonschema:"firewall zone ID"`
+			Confirmed bool   `json:"confirmed"          jsonschema:"must be true to confirm the deletion"`
+		},
+		) (*mcp.CallToolResult, any, error) {
+			if !input.Confirmed {
+				return errorResult(fmt.Errorf("delete_firewall_zone: set confirmed=true to confirm the deletion"))
+			}
+			if input.ZoneID == "" {
+				return errorResult(fmt.Errorf("delete_firewall_zone: zone_id is required"))
+			}
+			if err := client.DeleteFirewallZone(ctx, input.SiteID, input.ZoneID); err != nil {
+				return errorResult(fmt.Errorf("delete_firewall_zone: %w", err))
+			}
+			return textResult(fmt.Sprintf("Firewall zone %s deleted", input.ZoneID))
+		})
+	}
 }

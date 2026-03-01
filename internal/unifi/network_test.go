@@ -625,3 +625,295 @@ func TestDeleteDNSPolicy(t *testing.T) {
 		}
 	})
 }
+
+func TestGetFirewallPolicy(t *testing.T) {
+	t.Run("decodes single policy", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "fp-1", "name": "Allow LAN", "enabled": true, "index": 100,
+				"action":          map[string]any{"type": "ALLOW", "allowReturnTraffic": true},
+				"source":          map[string]any{"zoneId": "zone-a"},
+				"destination":     map[string]any{"zoneId": "zone-b"},
+				"ipProtocolScope": map[string]any{"ipVersion": "IPV4_AND_IPV6"},
+				"loggingEnabled":  false,
+				"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": true},
+			})
+		})
+		policy, err := client.GetFirewallPolicy(context.Background(), "", "fp-1")
+		if err != nil {
+			t.Fatalf("GetFirewallPolicy: %v", err)
+		}
+		if policy.Name != "Allow LAN" {
+			t.Errorf("got Name %q, want Allow LAN", policy.Name)
+		}
+		if policy.Action.Type != "ALLOW" {
+			t.Errorf("got Action.Type %q, want ALLOW", policy.Action.Type)
+		}
+		if policy.Source.ZoneID != "zone-a" {
+			t.Errorf("got Source.ZoneID %q, want zone-a", policy.Source.ZoneID)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "not found", http.StatusNotFound)
+		})
+		_, err := client.GetFirewallPolicy(context.Background(), "", "missing")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestSetFirewallPolicyEnabled(t *testing.T) {
+	t.Run("gets then puts with enabled flag set", func(t *testing.T) {
+		var putBody map[string]any
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			path := "/integration/v1/sites/test-site-id/firewall/policies/fp-1"
+			if r.URL.Path != path {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			if r.Method == http.MethodGet {
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "fp-1", "enabled": false, "name": "Block All",
+					"action":          map[string]any{"type": "BLOCK"},
+					"source":          map[string]any{"zoneId": "zone-a"},
+					"destination":     map[string]any{"zoneId": "zone-b"},
+					"ipProtocolScope": map[string]any{"ipVersion": "IPV4_AND_IPV6"},
+					"loggingEnabled":  false,
+					"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": true},
+				})
+				return
+			}
+			if r.Method == http.MethodPut {
+				if err := json.NewDecoder(r.Body).Decode(&putBody); err != nil {
+					http.Error(w, "decode error", http.StatusBadRequest)
+					return
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "fp-1", "enabled": true, "name": "Block All",
+					"action":          putBody["action"],
+					"source":          putBody["source"],
+					"destination":     putBody["destination"],
+					"ipProtocolScope": putBody["ipProtocolScope"],
+					"loggingEnabled":  false,
+				})
+				return
+			}
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		})
+		policy, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		if err != nil {
+			t.Fatalf("SetFirewallPolicyEnabled: %v", err)
+		}
+		if !policy.Enabled {
+			t.Error("expected policy.Enabled true")
+		}
+		if en, ok := putBody["enabled"].(bool); !ok || !en {
+			t.Errorf("PUT body enabled = %v, want true", putBody["enabled"])
+		}
+		if _, hasID := putBody["id"]; hasID {
+			t.Error("PUT body should not contain id")
+		}
+		if _, hasMeta := putBody["metadata"]; hasMeta {
+			t.Error("PUT body should not contain metadata")
+		}
+	})
+
+	t.Run("returns error on GET failure", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteFirewallPolicy(t *testing.T) {
+	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			w.WriteHeader(http.StatusNoContent)
+		})
+		if err := client.DeleteFirewallPolicy(context.Background(), "", "fp-1"); err != nil {
+			t.Fatalf("DeleteFirewallPolicy: %v", err)
+		}
+		if gotMethod != http.MethodDelete {
+			t.Errorf("got method %q, want DELETE", gotMethod)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+		})
+		if err := client.DeleteFirewallPolicy(context.Background(), "", "fp-1"); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestGetFirewallZone(t *testing.T) {
+	t.Run("decodes single zone", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "z-1", "name": "Internal",
+				"networkIds": []string{"net-a", "net-b"},
+				"metadata":   map[string]any{"origin": "SYSTEM_DEFINED", "configurable": true},
+			})
+		})
+		zone, err := client.GetFirewallZone(context.Background(), "", "z-1")
+		if err != nil {
+			t.Fatalf("GetFirewallZone: %v", err)
+		}
+		if zone.Name != "Internal" {
+			t.Errorf("got Name %q, want Internal", zone.Name)
+		}
+		if len(zone.NetworkIDs) != 2 {
+			t.Errorf("got %d network IDs, want 2", len(zone.NetworkIDs))
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "not found", http.StatusNotFound)
+		})
+		_, err := client.GetFirewallZone(context.Background(), "", "missing")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestCreateFirewallZone(t *testing.T) {
+	t.Run("posts and decodes created zone", func(t *testing.T) {
+		var gotBody FirewallZoneRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones" {
+				http.Error(w, "bad request", http.StatusBadRequest)
+				return
+			}
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "z-new", "name": gotBody.Name, "networkIds": gotBody.NetworkIDs,
+				"metadata": map[string]any{"origin": "USER_DEFINED", "configurable": true},
+			})
+		})
+		req := FirewallZoneRequest{Name: "MyZone", NetworkIDs: []string{"net-x"}}
+		zone, err := client.CreateFirewallZone(context.Background(), "", req)
+		if err != nil {
+			t.Fatalf("CreateFirewallZone: %v", err)
+		}
+		if zone.ID != "z-new" {
+			t.Errorf("got ID %q, want z-new", zone.ID)
+		}
+		if gotBody.Name != "MyZone" {
+			t.Errorf("POST body Name = %q, want MyZone", gotBody.Name)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.CreateFirewallZone(context.Background(), "", FirewallZoneRequest{Name: "X", NetworkIDs: []string{}})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestUpdateFirewallZone(t *testing.T) {
+	t.Run("puts and decodes updated zone", func(t *testing.T) {
+		var gotBody FirewallZoneRequest
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+				http.Error(w, "bad request", http.StatusBadRequest)
+				return
+			}
+			if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+				http.Error(w, "decode error", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "z-1", "name": gotBody.Name, "networkIds": gotBody.NetworkIDs,
+				"metadata": map[string]any{"origin": "USER_DEFINED", "configurable": true},
+			})
+		})
+		req := FirewallZoneRequest{Name: "UpdatedZone", NetworkIDs: []string{"net-a", "net-b"}}
+		zone, err := client.UpdateFirewallZone(context.Background(), "", "z-1", req)
+		if err != nil {
+			t.Fatalf("UpdateFirewallZone: %v", err)
+		}
+		if zone.Name != "UpdatedZone" {
+			t.Errorf("got Name %q, want UpdatedZone", zone.Name)
+		}
+		if gotBody.Name != "UpdatedZone" {
+			t.Errorf("PUT body Name = %q, want UpdatedZone", gotBody.Name)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.UpdateFirewallZone(context.Background(), "", "z-1", FirewallZoneRequest{Name: "X", NetworkIDs: []string{}})
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteFirewallZone(t *testing.T) {
+	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
+		var gotMethod string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			gotMethod = r.Method
+			w.WriteHeader(http.StatusNoContent)
+		})
+		if err := client.DeleteFirewallZone(context.Background(), "", "z-1"); err != nil {
+			t.Fatalf("DeleteFirewallZone: %v", err)
+		}
+		if gotMethod != http.MethodDelete {
+			t.Errorf("got method %q, want DELETE", gotMethod)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+		})
+		if err := client.DeleteFirewallZone(context.Background(), "", "z-1"); err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
+}
