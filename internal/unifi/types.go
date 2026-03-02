@@ -109,7 +109,36 @@ type FirewallPolicyAction struct {
 
 // FirewallPolicyZoneRef references a zone in a FirewallPolicy source or destination.
 type FirewallPolicyZoneRef struct {
-	ZoneID string `json:"zoneId"`
+	ZoneID        string                       `json:"zoneId"`
+	TrafficFilter *FirewallPolicyTrafficFilter `json:"trafficFilter,omitempty"`
+}
+
+// FirewallPolicyTrafficFilter is the optional traffic filter on a zone reference,
+// scoping a policy to specific IP addresses and/or ports.
+type FirewallPolicyTrafficFilter struct {
+	Type            string                         `json:"type"`
+	IPAddressFilter *FirewallPolicyIPAddressFilter `json:"ipAddressFilter,omitempty"`
+	PortFilter      *FirewallPolicyPortFilter      `json:"portFilter,omitempty"`
+}
+
+// FirewallPolicyIPAddressFilter holds the list of IP addresses to match.
+type FirewallPolicyIPAddressFilter struct {
+	Type          string                     `json:"type"`
+	MatchOpposite bool                       `json:"matchOpposite"`
+	Items         []FirewallPolicyFilterItem `json:"items,omitempty"`
+}
+
+// FirewallPolicyPortFilter holds the list of ports to match.
+type FirewallPolicyPortFilter struct {
+	Type          string                     `json:"type"`
+	MatchOpposite bool                       `json:"matchOpposite"`
+	Items         []FirewallPolicyFilterItem `json:"items,omitempty"`
+}
+
+// FirewallPolicyFilterItem is a single IP address or port entry in a filter list.
+type FirewallPolicyFilterItem struct {
+	Type  string `json:"type"`
+	Value any    `json:"value"`
 }
 
 // FirewallPolicyProtocol names a specific protocol within a protocol filter.
@@ -134,6 +163,7 @@ type FirewallPolicyIPScope struct {
 type FirewallPolicy struct {
 	ID                    string                   `json:"id"`
 	Name                  string                   `json:"name"`
+	Description           string                   `json:"description,omitempty"`
 	Enabled               bool                     `json:"enabled"`
 	Index                 int                      `json:"index"`
 	Action                FirewallPolicyAction     `json:"action"`
