@@ -123,22 +123,28 @@ type FirewallPolicyTrafficFilter struct {
 
 // FirewallPolicyIPAddressFilter holds the list of IP addresses to match.
 type FirewallPolicyIPAddressFilter struct {
-	Type          string                     `json:"type"`
-	MatchOpposite bool                       `json:"matchOpposite"`
-	Items         []FirewallPolicyFilterItem `json:"items,omitempty"`
+	Type          string                       `json:"type"`
+	MatchOpposite bool                         `json:"matchOpposite"`
+	Items         []FirewallPolicyIPFilterItem `json:"items,omitempty"`
 }
 
 // FirewallPolicyPortFilter holds the list of ports to match.
 type FirewallPolicyPortFilter struct {
-	Type          string                     `json:"type"`
-	MatchOpposite bool                       `json:"matchOpposite"`
-	Items         []FirewallPolicyFilterItem `json:"items,omitempty"`
+	Type          string                         `json:"type"`
+	MatchOpposite bool                           `json:"matchOpposite"`
+	Items         []FirewallPolicyPortFilterItem `json:"items,omitempty"`
 }
 
-// FirewallPolicyFilterItem is a single IP address or port entry in a filter list.
-type FirewallPolicyFilterItem struct {
+// FirewallPolicyIPFilterItem is a single IP address entry in a filter list.
+type FirewallPolicyIPFilterItem struct {
 	Type  string `json:"type"`
-	Value any    `json:"value"`
+	Value string `json:"value"`
+}
+
+// FirewallPolicyPortFilterItem is a single port number entry in a filter list.
+type FirewallPolicyPortFilterItem struct {
+	Type  string `json:"type"`
+	Value int    `json:"value"`
 }
 
 // FirewallPolicyProtocol names a specific protocol within a protocol filter.
