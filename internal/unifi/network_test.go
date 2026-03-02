@@ -660,6 +660,69 @@ func TestGetFirewallPolicy(t *testing.T) {
 		}
 	})
 
+	t.Run("decodes destination trafficFilter with IP and port scopes", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-2" {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "fp-2", "name": "Lab can reach PBS", "description": "scoped rule",
+				"enabled": true, "index": 10001,
+				"action": map[string]any{"type": "ALLOW", "allowReturnTraffic": true},
+				"source": map[string]any{"zoneId": "zone-lab"},
+				"destination": map[string]any{
+					"zoneId": "zone-internal",
+					"trafficFilter": map[string]any{
+						"type": "IP_ADDRESS",
+						"ipAddressFilter": map[string]any{
+							"type": "IP_ADDRESSES", "matchOpposite": false,
+							"items": []map[string]any{
+								{"type": "IP_ADDRESS", "value": "192.168.1.198"},
+							},
+						},
+						"portFilter": map[string]any{
+							"type": "PORTS", "matchOpposite": false,
+							"items": []map[string]any{
+								{"type": "PORT_NUMBER", "value": 8007},
+							},
+						},
+					},
+				},
+				"ipProtocolScope": map[string]any{"ipVersion": "IPV4_AND_IPV6"},
+				"loggingEnabled":  true,
+				"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": false},
+			})
+		})
+		policy, err := client.GetFirewallPolicy(context.Background(), "", "fp-2")
+		if err != nil {
+			t.Fatalf("GetFirewallPolicy: %v", err)
+		}
+		if policy.Description != "scoped rule" {
+			t.Errorf("got Description %q, want \"scoped rule\"", policy.Description)
+		}
+		if policy.Destination.ZoneID != "zone-internal" {
+			t.Errorf("got Destination.ZoneID %q, want \"zone-internal\"", policy.Destination.ZoneID)
+		}
+		tf := policy.Destination.TrafficFilter
+		if tf == nil {
+			t.Fatal("expected Destination.TrafficFilter to be non-nil")
+		}
+		if tf.IPAddressFilter == nil || len(tf.IPAddressFilter.Items) != 1 {
+			t.Fatalf("expected 1 IP address item, got %v", tf.IPAddressFilter)
+		}
+		if got := tf.IPAddressFilter.Items[0].Value; got != "192.168.1.198" {
+			t.Errorf("got IP value %q, want \"192.168.1.198\"", got)
+		}
+		if tf.PortFilter == nil || len(tf.PortFilter.Items) != 1 {
+			t.Fatalf("expected 1 port item, got %v", tf.PortFilter)
+		}
+		if got := tf.PortFilter.Items[0].Value; got != 8007 {
+			t.Errorf("got port value %d, want 8007", got)
+		}
+	})
+
 	t.Run("returns error on non-2xx", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "not found", http.StatusNotFound)
