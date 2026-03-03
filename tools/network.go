@@ -782,6 +782,9 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		if input.Count < 1 {
 			return errorResult(fmt.Errorf("create_vouchers: count must be at least 1"))
 		}
+		if input.Count > 100 {
+			return errorResult(fmt.Errorf("create_vouchers: count must be at most 100"))
+		}
 		vouchers, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
 			Count:            input.Count,
 			Name:             input.Name,

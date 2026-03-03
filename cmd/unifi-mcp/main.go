@@ -64,11 +64,12 @@ func run() error {
 	case "http":
 		httpServer := &http.Server{
 			Addr:              addr,
-			Handler:           mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server { return s }, nil),
+			Handler:           http.MaxBytesHandler(mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server { return s }, nil), 4<<20),
 			ReadHeaderTimeout: 10 * time.Second,
 			ReadTimeout:       30 * time.Second,
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       120 * time.Second,
+			MaxHeaderBytes:    1 << 20, // 1 MiB
 		}
 		go func() {
 			<-ctx.Done()

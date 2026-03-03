@@ -3,6 +3,7 @@ package unifi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -153,6 +154,8 @@ func TestGetWithQuery(t *testing.T) {
 		{"path with existing query", "/integration/v1/sites?foo=bar", 5, 10, "foo=bar&limit=10&offset=5", false},
 		{"negative offset returns error", "/integration/v1/sites", -1, 0, "", true},
 		{"negative limit returns error", "/integration/v1/sites", 0, -1, "", true},
+		{"limit at max is allowed", "/integration/v1/sites", 0, maxPageLimit, fmt.Sprintf("limit=%d", maxPageLimit), false},
+		{"limit over max returns error", "/integration/v1/sites", 0, maxPageLimit + 1, "", true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -176,6 +179,38 @@ func TestGetWithQuery(t *testing.T) {
 			}
 			if gotQuery != tc.wantQuery {
 				t.Errorf("RawQuery = %q, want %q", gotQuery, tc.wantQuery)
+			}
+		})
+	}
+}
+
+func TestPathTraversalRejection(t *testing.T) {
+	cases := []struct {
+		name    string
+		path    string
+		wantErr bool
+	}{
+		{"normal path is accepted", "/integration/v1/sites/abc-123/devices/dev-456", false},
+		{"dotdot traversal is rejected", "/integration/v1/sites/../admin", true},
+		{"encoded dotdot traversal is rejected", "/integration/v1/sites/%2e%2e/admin", true},
+		{"uppercase encoded dotdot traversal is rejected", "/integration/v1/sites/%2E%2E/admin", true},
+		{"single dot is rejected", "/integration/v1/sites/./devices", true},
+		{"encoded single dot is rejected", "/integration/v1/sites/%2e/devices", true},
+		{"dotdot in resource id is rejected", "/integration/v1/sites/site-id/devices/../../../other", true},
+		{"uuid path is accepted", "/integration/v1/sites/5f4d0e88-1234-5678-abcd-ef0123456789/devices/aabbccdd-1234-5678-abcd-ef0123456789", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(map[string]any{})
+			})
+			_, err := client.get(context.Background(), tc.path)
+			if tc.wantErr && err == nil {
+				t.Error("expected error for path traversal, got nil")
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("unexpected error for valid path: %v", err)
 			}
 		})
 	}
