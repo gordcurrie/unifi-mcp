@@ -8,6 +8,9 @@ import (
 // RegisterAll registers every enabled tool group with the MCP server.
 // Set allowDestructive to true (via UNIFI_ALLOW_DESTRUCTIVE=true) to also
 // register tools that permanently delete resources.
+// client must implement the unifiClient interface; *unifi.Client satisfies
+// it automatically. Set allowDestructive to true (via UNIFI_ALLOW_DESTRUCTIVE=true)
+// to also register tools that permanently delete resources.
 func RegisterAll(s *mcp.Server, client unifiClient, allowDestructive bool) {
 	registerSiteTools(s, client)
 	registerDeviceTools(s, client)
