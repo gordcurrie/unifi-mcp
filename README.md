@@ -4,7 +4,7 @@ An [MCP](https://modelcontextprotocol.io) server that exposes [UniFi Network](ht
 
 ## Tools
 
-> All `list_*` tools accept optional `offset` and `limit` parameters for pagination and return a `Page[T]` object with `data`, `totalCount`, `offset`, `limit`, and `count` fields. Most tools also accept an optional `site_id`; omit it to use the default configured via `UNIFI_SITE_ID`.
+> All `list_*` tools accept optional `offset` and `limit` parameters for pagination and return a `Page[T]` object with `data`, `totalCount`, `offset`, `limit`, and `count` fields. `limit` must be ≤ 1000 (values above 1000 are rejected with an error). Most tools also accept an optional `site_id`; omit it to use the default configured via `UNIFI_SITE_ID`.
 
 ### Sites
 

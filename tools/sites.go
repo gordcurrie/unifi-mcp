@@ -13,7 +13,7 @@ func registerSiteTools(s *mcp.Server, client unifiClient) {
 	}
 	type pageInput struct {
 		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{

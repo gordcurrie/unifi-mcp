@@ -18,12 +18,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	type sitePageInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		Offset int    `json:"offset,omitempty"  jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit  int    `json:"limit,omitempty"   jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+		Limit  int    `json:"limit,omitempty"   jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
 	}
 	// dpiPageInput is used by list_dpi_categories and list_dpi_applications (no site ID).
 	type dpiPageInput struct {
 		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
 	}
 	type broadcastInput struct {
 		SiteID      string `json:"site_id,omitempty"   jsonschema:"site ID; omit to use default"`
