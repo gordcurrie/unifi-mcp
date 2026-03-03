@@ -211,6 +211,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		IPv4Address string `json:"ipv4_address,omitempty" jsonschema:"IPv4 address the domain maps to"`
 		TTLSeconds  int    `json:"ttl_seconds"            jsonschema:"TTL in seconds; required by the API (send 0 to use the server default)"`
 		Enabled     *bool  `json:"enabled"                jsonschema:"true to activate the policy, false to disable"`
+		Confirmed   bool   `json:"confirmed"              jsonschema:"must be true to confirm the change"`
 	}
 	type deleteDNSPolicyInput struct {
 		SiteID    string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
@@ -274,8 +275,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "update_dns_policy",
-		Description: "Update an existing local DNS policy by ID.",
+		Description: "Update an existing local DNS policy by ID. Set confirmed=true to proceed.",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateDNSPolicyInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("update_dns_policy: set confirmed=true to confirm the change"))
+		}
 		if input.PolicyID == "" {
 			return errorResult(fmt.Errorf("update_dns_policy: policy_id is required"))
 		}
@@ -455,16 +460,21 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type updateFirewallZoneInput struct {
-		SiteID     string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		ZoneID     string  `json:"zone_id"            jsonschema:"firewall zone ID"`
-		Name       string  `json:"name"               jsonschema:"zone name"`
+		SiteID     string  `json:"site_id,omitempty"     jsonschema:"site ID; omit to use default"`
+		ZoneID     string  `json:"zone_id"               jsonschema:"firewall zone ID"`
+		Name       string  `json:"name"                  jsonschema:"zone name"`
 		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit to preserve existing assignments; set to empty string to clear all networks"`
+		Confirmed  bool    `json:"confirmed"             jsonschema:"must be true to confirm the change"`
 	}
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "update_firewall_zone",
-		Description: "Update an existing firewall zone by ID. network_ids replaces the full list; omit to preserve existing assignments.",
+		Description: "Update an existing firewall zone by ID. network_ids replaces the full list; omit to preserve existing assignments. Set confirmed=true to proceed.",
+		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input updateFirewallZoneInput) (*mcp.CallToolResult, any, error) {
+		if !input.Confirmed {
+			return errorResult(fmt.Errorf("update_firewall_zone: set confirmed=true to confirm the change"))
+		}
 		if input.ZoneID == "" {
 			return errorResult(fmt.Errorf("update_firewall_zone: zone_id is required"))
 		}
