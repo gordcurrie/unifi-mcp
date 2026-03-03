@@ -192,7 +192,7 @@ Full CRUD for guest Hotspot vouchers (time/data-limited access codes).
 Useful if running a guest or hotspot network.
 - `GET /v1/sites/{id}/hotspot/vouchers` — list
 - `GET /v1/sites/{id}/hotspot/vouchers/{id}` — get single
-- `POST /v1/sites/{id}/hotspot/vouchers` — generate (`count`, `name`, `timeLimitMinutes`, optional limits)
+- `POST /v1/sites/{id}/hotspot/vouchers` — generate (`count` 1–100, `name`, `timeLimitMinutes`, optional limits)
 - `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
 - New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
 
