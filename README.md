@@ -62,7 +62,7 @@ An [MCP](https://modelcontextprotocol.io) server that exposes [UniFi Network](ht
 | `update_dns_policy` | Update an existing DNS policy | `policy_id`, `type`, `domain`, `ipv4_address` (optional), `ttl_seconds`, `enabled` |
 | `list_vouchers` | Hotspot vouchers | `offset`, `limit` (optional) |
 | `get_voucher` | Details for a specific hotspot voucher | `voucher_id` |
-| `create_vouchers` | Generate one or more hotspot vouchers | `count`, `name` (optional), `time_limit_minutes` (optional), `data_limit_mb` (optional), `confirmed` (must be `true`) |
+| `create_vouchers` | Generate one or more hotspot vouchers | `count` (1–100), `name` (optional), `time_limit_minutes` (optional), `data_limit_mb` (optional), `confirmed` (must be `true`) |
 | `list_device_tags` | Device tags for the site | `offset`, `limit` (optional) |
 | `list_dpi_categories` | DPI application categories used in firewall matching | `offset`, `limit` (optional) |
 | `list_dpi_applications` | DPI applications used in firewall matching | `offset`, `limit` (optional) |
