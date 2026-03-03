@@ -6,9 +6,9 @@ import (
 	"github.com/gordcurrie/unifi-mcp/internal/unifi"
 )
 
-// unifiClient is the interface the tools layer requires from the UniFi client.
+// UnifiClient is the interface the tools layer requires from the UniFi client.
 // *unifi.Client satisfies this interface automatically.
-type unifiClient interface {
+type UnifiClient interface {
 	// Sites
 	GetInfo(ctx context.Context) (unifi.ApplicationInfo, error)
 	ListSites(ctx context.Context, offset, limit int) (unifi.Page[unifi.Site], error)

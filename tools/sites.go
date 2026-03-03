@@ -7,7 +7,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func registerSiteTools(s *mcp.Server, client unifiClient) {
+func registerSiteTools(s *mcp.Server, client UnifiClient) {
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 	}
