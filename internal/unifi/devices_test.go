@@ -69,6 +69,16 @@ func TestGetDevice(t *testing.T) {
 			t.Errorf("got ID %q, want dev-99", dev.ID)
 		}
 	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		_, err := client.GetDevice(context.Background(), "", "dev-99")
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
 }
 
 func TestRestartDevice(t *testing.T) {
@@ -92,6 +102,15 @@ func TestRestartDevice(t *testing.T) {
 		}
 		if gotAction != "RESTART" {
 			t.Errorf("got action %q, want RESTART", gotAction)
+		}
+	})
+
+	t.Run("returns error on non-2xx", func(t *testing.T) {
+		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "error", http.StatusInternalServerError)
+		})
+		if err := client.RestartDevice(context.Background(), "", "dev-1"); err == nil {
+			t.Error("expected error, got nil")
 		}
 	})
 }
