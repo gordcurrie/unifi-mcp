@@ -248,7 +248,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "create_dns_policy",
 		Description: "Create a new local DNS A-record policy mapping a domain to an IP address.",
-		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input createDNSPolicyInput) (*mcp.CallToolResult, any, error) {
 		if input.Type == "" {
 			return errorResult(fmt.Errorf("create_dns_policy: type is required"))
@@ -442,7 +441,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "create_firewall_zone",
 		Description: "Create a new firewall zone.",
-		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallZoneMutateInput) (*mcp.CallToolResult, any, error) {
 		if input.Name == "" {
 			return errorResult(fmt.Errorf("create_firewall_zone: name is required"))
@@ -771,7 +769,6 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "create_vouchers",
 		Description: "Generate one or more hotspot vouchers. count is required (minimum 1). time_limit_minutes and data_limit_mb are optional (0 = unlimited). Set confirmed=true to proceed.",
-		Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
 		SiteID           string `json:"site_id,omitempty"       jsonschema:"site ID; omit to use default"`
 		Count            int    `json:"count"                   jsonschema:"number of vouchers to generate (minimum 1)"`
