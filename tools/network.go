@@ -9,7 +9,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func registerNetworkTools(s *mcp.Server, client UnifiClient, allowDestructive bool) {
+func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bool) {
 	// siteInput is used by non-list tools that only need a site ID (no pagination).
 	type siteInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`

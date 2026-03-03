@@ -7,7 +7,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func registerDeviceTools(s *mcp.Server, client UnifiClient) {
+func registerDeviceTools(s *mcp.Server, client unifiClient) {
 	destructiveTrue := true
 
 	type siteInput struct {
