@@ -1210,6 +1210,32 @@ func TestSetACLRuleEnabled(t *testing.T) {
 			t.Error("expected error, got nil")
 		}
 	})
+
+	t.Run("returns error on PUT failure", func(t *testing.T) {
+		callCount := 0
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			callCount++
+			w.Header().Set("Content-Type", "application/json")
+			if callCount == 1 {
+				if r.Method != http.MethodGet {
+					t.Fatalf("first request method = %s, want GET", r.Method)
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"id": "ar-1", "type": "IPV4", "name": "my-rule",
+					"action": "ALLOW", "enabled": false, "index": 0,
+				})
+				return
+			}
+			if r.Method != http.MethodPut {
+				t.Fatalf("second request method = %s, want PUT", r.Method)
+			}
+			http.Error(w, "server error", http.StatusInternalServerError)
+		})
+		_, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		if err == nil {
+			t.Error("expected error, got nil")
+		}
+	})
 }
 
 func TestGetACLRuleOrdering(t *testing.T) {
