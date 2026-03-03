@@ -18,12 +18,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	type sitePageInput struct {
 		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
 		Offset int    `json:"offset,omitempty"  jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit  int    `json:"limit,omitempty"   jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+		Limit  int    `json:"limit,omitempty"   jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
 	}
 	// dpiPageInput is used by list_dpi_categories and list_dpi_applications (no site ID).
 	type dpiPageInput struct {
 		Offset int `json:"offset,omitempty" jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return; omit or 0 to use the API default"`
+		Limit  int `json:"limit,omitempty"  jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
 	}
 	type broadcastInput struct {
 		SiteID      string `json:"site_id,omitempty"   jsonschema:"site ID; omit to use default"`
@@ -776,10 +776,10 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "create_vouchers",
-		Description: "Generate one or more hotspot vouchers. count is required (minimum 1). time_limit_minutes and data_limit_mb are optional (0 = unlimited). Set confirmed=true to proceed.",
+		Description: "Generate one or more hotspot vouchers. count is required (minimum 1, maximum 100). time_limit_minutes and data_limit_mb are optional (0 = unlimited). Set confirmed=true to proceed.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
 		SiteID           string `json:"site_id,omitempty"       jsonschema:"site ID; omit to use default"`
-		Count            int    `json:"count"                   jsonschema:"number of vouchers to generate (minimum 1)"`
+		Count            int    `json:"count"                   jsonschema:"number of vouchers to generate (minimum 1, maximum 100)"`
 		Name             string `json:"name,omitempty"          jsonschema:"optional label for the vouchers"`
 		TimeLimitMinutes int    `json:"time_limit_minutes,omitempty" jsonschema:"access duration in minutes; 0 or omit for unlimited"`
 		DataLimitMb      int    `json:"data_limit_mb,omitempty" jsonschema:"data cap in MB; 0 or omit for unlimited"`
@@ -791,6 +791,9 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		}
 		if input.Count < 1 {
 			return errorResult(fmt.Errorf("create_vouchers: count must be at least 1"))
+		}
+		if input.Count > 100 {
+			return errorResult(fmt.Errorf("create_vouchers: count must be at most 100"))
 		}
 		vouchers, err := client.CreateVouchers(ctx, input.SiteID, unifi.VoucherRequest{
 			Count:            input.Count,

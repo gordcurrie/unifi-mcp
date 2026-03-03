@@ -21,6 +21,11 @@ import (
 // 10 MiB is well above any realistic UniFi response payload.
 const maxResponseBytes = 10 << 20 // 10 MiB
 
+// maxPageLimit is the maximum value accepted for the limit pagination parameter.
+// It prevents callers from requesting arbitrarily large pages that could
+// exhaust memory or cause excessive load on the UniFi controller.
+const maxPageLimit = 1000
+
 // Client is a UniFi Network API client.
 type Client struct {
 	baseURL    string
@@ -92,10 +97,13 @@ func (c *Client) get(ctx context.Context, path string) ([]byte, error) {
 
 // getWithQuery performs a GET request appending optional offset/limit query parameters.
 // A value of 0 means "omit the parameter and let the API use its default".
-// Negative values are invalid and return an error.
+// Negative values are invalid and return an error. limit must not exceed maxPageLimit.
 func (c *Client) getWithQuery(ctx context.Context, path string, offset, limit int) ([]byte, error) {
 	if offset < 0 || limit < 0 {
 		return nil, fmt.Errorf("getWithQuery: offset and limit must be >= 0 (got offset=%d, limit=%d)", offset, limit)
+	}
+	if limit > maxPageLimit {
+		return nil, fmt.Errorf("getWithQuery: limit must be <= %d (got %d)", maxPageLimit, limit)
 	}
 	if offset == 0 && limit == 0 {
 		return c.get(ctx, path)
@@ -149,6 +157,16 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 	parsedURL, err := url.ParseRequestURI(c.baseURL + path)
 	if err != nil {
 		return nil, fmt.Errorf("build request URL: %w", err)
+	}
+
+	// Reject path traversal sequences. Each decoded path segment must not be
+	// "." or ".." which could redirect the request to an unintended API endpoint.
+	// parsedURL.Path is the decoded path, so percent-encoded variants like %2e%2e
+	// are also caught after decoding.
+	for seg := range strings.SplitSeq(parsedURL.Path, "/") {
+		if seg == ".." || seg == "." {
+			return nil, fmt.Errorf("build request URL: path contains an invalid traversal sequence")
+		}
 	}
 	req, err := http.NewRequestWithContext(ctx, method, parsedURL.String(), reqBody)
 	if err != nil {
