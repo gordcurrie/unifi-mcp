@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -109,10 +110,10 @@ func (c *Client) getWithQuery(ctx context.Context, path string, offset, limit in
 	}
 	q := url.Values{}
 	if offset > 0 {
-		q.Set("offset", fmt.Sprintf("%d", offset))
+		q.Set("offset", strconv.Itoa(offset))
 	}
 	if limit > 0 {
-		q.Set("limit", fmt.Sprintf("%d", limit))
+		q.Set("limit", strconv.Itoa(limit))
 	}
 	sep := "?"
 	if strings.Contains(path, "?") {

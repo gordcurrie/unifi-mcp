@@ -47,7 +47,7 @@ An [MCP](https://modelcontextprotocol.io) server that exposes [UniFi Network](ht
 | `list_firewall_zones` | Firewall zones | `offset`, `limit` (optional) |
 | `get_firewall_zone` | Details for a specific firewall zone | `zone_id` |
 | `create_firewall_zone` | Create a new firewall zone | `name`, `network_ids` (optional, comma-separated) |
-| `update_firewall_zone` | Update an existing firewall zone | `zone_id`, `name`, `network_ids` (optional, comma-separated) |
+| `update_firewall_zone` | Update an existing firewall zone | `zone_id`, `name`, `network_ids` (optional, comma-separated), `confirmed` (must be `true`) |
 | `list_acl_rules` | ACL rules | `offset`, `limit` (optional) |
 | `get_acl_rule` | Details for a specific ACL rule | `rule_id` |
 | `get_acl_rule_ordering` | Current ACL rule evaluation order | — |
@@ -59,7 +59,7 @@ An [MCP](https://modelcontextprotocol.io) server that exposes [UniFi Network](ht
 | `list_dns_policies` | Local DNS A-record policies | `offset`, `limit` (optional) |
 | `get_dns_policy` | Details for a specific DNS policy | `policy_id` |
 | `create_dns_policy` | Create a new local DNS A-record policy | `type`, `domain`, `ipv4_address` (optional), `ttl_seconds`, `enabled` |
-| `update_dns_policy` | Update an existing DNS policy | `policy_id`, `type`, `domain`, `ipv4_address` (optional), `ttl_seconds`, `enabled` |
+| `update_dns_policy` | Update an existing DNS policy | `policy_id`, `type`, `domain`, `ipv4_address` (optional), `ttl_seconds`, `enabled`, `confirmed` (must be `true`) |
 | `list_vouchers` | Hotspot vouchers | `offset`, `limit` (optional) |
 | `get_voucher` | Details for a specific hotspot voucher | `voucher_id` |
 | `create_vouchers` | Generate one or more hotspot vouchers | `count` (1–100), `name` (optional), `time_limit_minutes` (optional), `data_limit_mb` (optional), `confirmed` (must be `true`) |
