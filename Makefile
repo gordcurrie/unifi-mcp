@@ -49,7 +49,7 @@ test:
 ## build – compile the binary
 build:
 	@mkdir -p bin
-	go build -o $(BINARY) $(CMD)
+	go build -ldflags "-X main.version=$(shell git describe --tags --always --dirty 2>/dev/null || echo dev)" -o $(BINARY) $(CMD)
 
 ## check – run all quality gates in order (pre-commit gate)
 check: fix fmt vet lint sec vulncheck test build

@@ -20,6 +20,10 @@ import (
 	"github.com/gordcurrie/unifi-mcp/tools"
 )
 
+// version is set at build time via -ldflags "-X main.version=<tag>".
+// Falls back to "dev" when built without ldflags (e.g. go run or go build locally).
+var version = "dev"
+
 func main() {
 	if err := run(); err != nil {
 		slog.Error("fatal", "err", err)
@@ -48,7 +52,7 @@ func run() error {
 
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "unifi-mcp",
-		Version: "0.3.0",
+		Version: version,
 	}, nil)
 
 	tools.RegisterAll(s, client, allowDestructive)

@@ -423,8 +423,12 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type firewallZoneMutateInput struct {
-		SiteID     string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
-		Name       string  `json:"name"               jsonschema:"zone name"`
+		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		Name   string `json:"name"               jsonschema:"zone name"`
+		// NetworkIDs is *string (comma-separated) rather than []string because
+		// jsonschema-go@v0.4.2 generates "type":["null","array"] for all Go slices,
+		// which causes validation failures in MCP clients. A *string produces
+		// ["null","string"], which all clients accept. splitIDs handles the parsing.
 		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit for no networks"`
 	}
 
@@ -460,9 +464,11 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	})
 
 	type updateFirewallZoneInput struct {
-		SiteID     string  `json:"site_id,omitempty"     jsonschema:"site ID; omit to use default"`
-		ZoneID     string  `json:"zone_id"               jsonschema:"firewall zone ID"`
-		Name       string  `json:"name"                  jsonschema:"zone name"`
+		SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+		ZoneID string `json:"zone_id"           jsonschema:"firewall zone ID"`
+		Name   string `json:"name"              jsonschema:"zone name"`
+		// NetworkIDs is *string (comma-separated) rather than []string — see NetworkIDs
+		// comment in firewallZoneMutateInput for the jsonschema-go v0.4.2 reason.
 		NetworkIDs *string `json:"network_ids,omitempty" jsonschema:"comma-separated list of network IDs to assign to this zone; omit to preserve existing assignments; set to empty string to clear all networks"`
 		Confirmed  bool    `json:"confirmed"             jsonschema:"must be true to confirm the change"`
 	}
@@ -699,7 +705,9 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			Description: "Set the ACL rule evaluation order. Provide rule_ids as a comma-separated list of rule IDs in the desired order. Requires UNIFI_ALLOW_DESTRUCTIVE=true. Set confirmed=true to proceed.",
 			Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue},
 		}, func(ctx context.Context, _ *mcp.CallToolRequest, input struct {
-			SiteID    string  `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			SiteID string `json:"site_id,omitempty" jsonschema:"site ID; omit to use default"`
+			// RuleIDs is *string (comma-separated) rather than []string — see NetworkIDs
+			// comment in firewallZoneMutateInput for the jsonschema-go v0.4.2 reason.
 			RuleIDs   *string `json:"rule_ids"           jsonschema:"comma-separated list of ACL rule IDs in the desired evaluation order"`
 			Confirmed bool    `json:"confirmed"          jsonschema:"must be true to confirm the change"`
 		},
