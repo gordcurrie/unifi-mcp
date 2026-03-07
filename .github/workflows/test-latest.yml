@@ -1,0 +1,29 @@
+name: test-latest
+
+on:
+  schedule: # daily at 10:22 UTC
+    - cron: '22 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-latest:
+    name: test against latest deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Update to latest dependencies
+        run: go get -u -t ./...
+
+      - name: Test
+        run: go test -race ./...

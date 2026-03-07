@@ -1,6 +1,6 @@
 module github.com/gordcurrie/unifi-mcp
 
-go 1.26.0
+go 1.26.1
 
 require github.com/modelcontextprotocol/go-sdk v1.4.0
 
