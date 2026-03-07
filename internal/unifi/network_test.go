@@ -45,23 +45,39 @@ func TestListWiFiBroadcasts(t *testing.T) {
 		if broadcasts.Data[0].Name != "HomeNet" {
 			t.Errorf("got Name %q, want HomeNet", broadcasts.Data[0].Name)
 		}
-		if broadcasts.Data[0].SecurityConfiguration == nil || broadcasts.Data[0].SecurityConfiguration.Type != "WPA2_WPA3_PERSONAL" {
-			t.Errorf("got SecurityConfiguration.Type %v, want WPA2_WPA3_PERSONAL", broadcasts.Data[0].SecurityConfiguration)
+		if sc := broadcasts.Data[0].SecurityConfiguration; sc == nil || sc.Type != "WPA2_WPA3_PERSONAL" {
+			gotType := "<nil>"
+			if sc != nil {
+				gotType = sc.Type
+			}
+			t.Errorf("got SecurityConfiguration.Type %q, want WPA2_WPA3_PERSONAL", gotType)
 		}
-		if broadcasts.Data[0].Network == nil || broadcasts.Data[0].Network.Type != "NATIVE" {
-			t.Errorf("got Network.Type %v, want NATIVE", broadcasts.Data[0].Network)
+		if n := broadcasts.Data[0].Network; n == nil || n.Type != "NATIVE" {
+			gotType := "<nil>"
+			if n != nil {
+				gotType = n.Type
+			}
+			t.Errorf("got Network.Type %q, want NATIVE", gotType)
 		}
 		if !broadcasts.Data[1].Enabled {
 			t.Error("expected broadcasts[1].Enabled true")
 		}
-		if broadcasts.Data[1].SecurityConfiguration == nil || broadcasts.Data[1].SecurityConfiguration.Type != "OPEN" {
-			t.Errorf("got SecurityConfiguration.Type %v, want OPEN", broadcasts.Data[1].SecurityConfiguration)
+		if sc := broadcasts.Data[1].SecurityConfiguration; sc == nil || sc.Type != "OPEN" {
+			gotType := "<nil>"
+			if sc != nil {
+				gotType = sc.Type
+			}
+			t.Errorf("got SecurityConfiguration.Type %q, want OPEN", gotType)
 		}
 		if !broadcasts.Data[1].ClientIsolationEnabled {
 			t.Error("expected broadcasts[1].ClientIsolationEnabled true")
 		}
-		if broadcasts.Data[1].HotspotConfiguration == nil || broadcasts.Data[1].HotspotConfiguration.Type != "CAPTIVE_PORTAL" {
-			t.Errorf("got HotspotConfiguration.Type %v, want CAPTIVE_PORTAL", broadcasts.Data[1].HotspotConfiguration)
+		if hc := broadcasts.Data[1].HotspotConfiguration; hc == nil || hc.Type != "CAPTIVE_PORTAL" {
+			gotType := "<nil>"
+			if hc != nil {
+				gotType = hc.Type
+			}
+			t.Errorf("got HotspotConfiguration.Type %q, want CAPTIVE_PORTAL", gotType)
 		}
 	})
 }
@@ -221,8 +237,10 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		if !bc.SecurityConfiguration.FastRoamingEnabled {
 			t.Error("got FastRoamingEnabled false, want true")
 		}
-		if bc.Network == nil || bc.Network.NetworkID != "net-1" {
-			t.Errorf("got Network.NetworkID %v, want net-1", bc.Network)
+		if bc.Network == nil {
+			t.Error("got Network nil, want Network.NetworkID net-1")
+		} else if bc.Network.NetworkID != "net-1" {
+			t.Errorf("got Network.NetworkID %q, want net-1", bc.Network.NetworkID)
 		}
 	})
 

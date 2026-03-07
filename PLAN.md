@@ -104,8 +104,9 @@ shape (discovered by probing the live endpoint with curl — see RTFM guidance i
 Four gaps identified in the skill instructions:
 
 1. **WiFi encryption now automatable** (unblocked by 5a) — update Section 3 to
-   check `security`, `isGuest`, `clientIsolation`, `networkId` directly from the
-   API response instead of deferring to manual review
+   check `securityConfiguration.type`, `network.networkId`, `clientIsolationEnabled`
+   (and related nested fields) directly from the API response instead of deferring
+   to manual review
 2. **Proactive device stats** — Section 2 currently calls `get_device_stats` only
    for devices that "appear unhealthy", but there is no way to determine that without
    calling it. Change to: call `get_device_stats` for every adopted device
@@ -114,5 +115,5 @@ Four gaps identified in the skill instructions:
    all policy objects reference zones by UUID only
 4. **Pagination guidance** — replace vague "paginate until all pages retrieved" with
    concrete instructions: check `totalCount` on the first response, then loop with
-   `offset += count` until `offset >= totalCount`
+   `offset += len(data)` until `offset >= totalCount`
 

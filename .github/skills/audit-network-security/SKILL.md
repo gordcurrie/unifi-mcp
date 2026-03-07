@@ -112,7 +112,7 @@ known CVEs.
   `[MEDIUM]`; prefer `WPA2_WPA3_PERSONAL` or `WPA3_PERSONAL`
 - Any SSID that has a `hotspotConfiguration` (captive portal / guest) but
   `clientIsolationEnabled: false` — flag `[HIGH]`; guest clients can reach each other
-- If **all** enabled SSIDs have `type: WIRELESS` yet the Section 1 client list
+- If one or more SSIDs are `enabled: true` yet the Section 1 client list
   contains **zero** `type: WIRELESS` clients at all — flag `[LOW]`; suggests either
   no wireless devices are active or the audit was run at an unusual time. Note:
   the `list_clients` response does not include which specific SSID a client is
@@ -122,7 +122,7 @@ known CVEs.
 - `[CRITICAL]` Open SSIDs
 - `[HIGH]` Guest/captive-portal SSIDs without client isolation
 - `[MEDIUM]` WPA2-only SSIDs (no WPA3)
-- `[LOW]` Enabled but unused SSIDs
+- `[LOW]` Possibly unused WiFi surface (enabled SSIDs but no wireless clients observed)
 
 ---
 
