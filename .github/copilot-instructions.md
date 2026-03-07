@@ -13,7 +13,26 @@ internal/unifi/                # custom UniFi HTTP client package (no third-part
 tools/                         # MCP tool registration
 ```
 
-## UniFi API
+## UniFi API — RTFM: Always verify the real response before writing structs
+
+**Before defining or modifying any Go struct that maps to a v1 API response, call the
+real endpoint with curl to see the actual field names, types, and nesting.** Do not
+assume field shape from documentation, legacy API responses, or prior art — the v1 API
+frequently uses nested objects where flat fields might be expected.
+
+```bash
+# Probe any v1 endpoint — substitute path and ID as needed
+curl -sk \
+  -H "X-API-Key: $UNIFI_API_KEY" \
+  "$UNIFI_BASE_URL/integration/v1/sites/$UNIFI_SITE_ID/<resource>/<id>" \
+  | python3 -m json.tool
+```
+
+The env vars `UNIFI_BASE_URL`, `UNIFI_API_KEY`, and `UNIFI_SITE_ID` are always set in the
+dev environment. This costs one curl call and prevents entire phases of work being based
+on wrong assumptions (e.g. `WiFiBroadcast` had flat `security`/`isGuest` fields invented
+from the legacy API; the real v1 response has nested `securityConfiguration.type`,
+`clientIsolationEnabled`, `network.type`, etc.).
 
 Two API path styles are used under the same `X-API-Key` auth header on UCG-Max:
 
