@@ -22,7 +22,7 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Install tools
+        run: make install-tools
 
-      - run: govulncheck ./...
+      - run: make vulncheck
