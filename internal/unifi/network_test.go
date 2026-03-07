@@ -212,8 +212,11 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		if !bc.HideName {
 			t.Error("got HideName false, want true")
 		}
-		if bc.SecurityConfiguration == nil || bc.SecurityConfiguration.Type != "WPA3_PERSONAL" {
-			t.Errorf("got SecurityConfiguration.Type %v, want WPA3_PERSONAL", bc.SecurityConfiguration)
+		if bc.SecurityConfiguration == nil {
+			t.Fatalf("got nil SecurityConfiguration, want non-nil with type WPA3_PERSONAL")
+		}
+		if bc.SecurityConfiguration.Type != "WPA3_PERSONAL" {
+			t.Errorf("got SecurityConfiguration.Type %q, want WPA3_PERSONAL", bc.SecurityConfiguration.Type)
 		}
 		if !bc.SecurityConfiguration.FastRoamingEnabled {
 			t.Error("got FastRoamingEnabled false, want true")

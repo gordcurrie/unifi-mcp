@@ -52,6 +52,7 @@ versioned, undocumented, and will be removed in a future Network release.
 | `network.go`  | `list_vpn_servers`            | ✅        |
 | `network.go`  | `list_vouchers`               | ✅        |
 | `network.go`  | `get_voucher`                 | ✅        |
+| `network.go`  | `delete_voucher`              | ✅        |
 | `network.go`  | `create_vouchers`             |           |
 | `network.go`  | `list_radius_profiles`        | ✅        |
 | `network.go`  | `list_device_tags`            | ✅        |
@@ -61,7 +62,8 @@ versioned, undocumented, and will be removed in a future Network release.
 Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
 `restart_device`, `power_cycle_port`, `set_wifi_broadcast_enabled`,
 `set_firewall_policy_enabled`, `create_firewall_zone`, `update_firewall_zone`,
-`create_dns_policy`, `update_dns_policy`, `create_vouchers`, `authorize_guest_client`.
+`create_dns_policy`, `update_dns_policy`, `create_vouchers`, `delete_voucher`,
+`authorize_guest_client`.
 
 ---
 
@@ -70,7 +72,6 @@ Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
 - `POST /v1/sites/{id}/firewall/policies` — create firewall policy (schema too complex; manual creation in UI is safer)
 - `DELETE` on any resource except vouchers — too high blast radius for a home lab MCP; use the UI
 - ACL rule write operations (`create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`) — any mutation directly controls traffic; deferred until there is a clear use case
-- `delete_voucher` — deferred; `create_vouchers` covers the primary use case
 
 ---
 
@@ -78,25 +79,25 @@ Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
 
 Driven by gaps found during the first live security audit (2026-03-07).
 
-### 5a — WiFi broadcast security fields
+### 5a — WiFi broadcast security fields ✅
 
-The v1 WiFi broadcasts endpoint returns security/encryption metadata that the
-`WiFiBroadcast` struct currently does not map. Without these fields the
-`audit-network-security` skill cannot programmatically check encryption strength,
-guest isolation, or SSID-to-network assignment.
+The v1 WiFi broadcasts endpoint returns security/encryption metadata using a nested
+object structure. The `WiFiBroadcast` struct was updated to reflect the real v1 API
+shape (discovered by probing the live endpoint with curl — see RTFM guidance in
+`copilot-instructions.md`).
 
-**Changes:**
-- Add fields to `WiFiBroadcast` in `internal/unifi/types.go`:
-  - `Security string` — encryption mode (e.g. `wpapsk`, `wpa2psk`, `wpa3`, `open`)
-  - `IsGuest bool` — whether this SSID is flagged as a guest network
-  - `HiddenSsid bool` — whether the SSID is hidden
-  - `NetworkID string` — the network (VLAN) this SSID is assigned to
-  - `ClientIsolation bool` — whether client-to-client traffic is blocked
-  - `RadiusProfileID string` — RADIUS profile assigned (empty if PSK)
-- Update `TestListWiFiBroadcasts` and `TestGetWiFiBroadcast` in `network_test.go`
-  to assert on the new fields
-- Update `audit-network-security` SKILL.md to remove the manual-review caveat for
-  Section 3 (WiFi) and replace it with automated checks
+**Changes made:**
+- Expanded `WiFiBroadcast` in `internal/unifi/types.go` with nested types:
+  - `WiFiBroadcastNetwork` — `type` (`NATIVE`/`SPECIFIC`) and `networkId`
+  - `WiFiSecurityConfiguration` — `type` (e.g. `WPA2_WPA3_PERSONAL`, `WPA3_PERSONAL`,
+    `OPEN`), `fastRoamingEnabled`, `pmfMode`
+  - `WiFiHotspotConfiguration` — `type` (e.g. `CAPTIVE_PORTAL`)
+  - `clientIsolationEnabled` (flat bool), `hideName` (flat bool)
+  - Note: `passphrase` is intentionally NOT mapped to avoid credential exposure via MCP
+- Updated `TestListWiFiBroadcasts` and `TestGetWiFiBroadcast` in `network_test.go`
+  with fixtures matching the real v1 nested response shape
+- Updated `audit-network-security` SKILL.md Section 3 to use the correct nested field
+  paths (`securityConfiguration.type`, `network.networkId`, etc.) for automated checks
 
 ### 5b — SKILL.md audit process improvements
 

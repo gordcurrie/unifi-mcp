@@ -36,8 +36,10 @@ audit may surface items you want to remediate in the same session. The optional
 ### Pagination
 
 Every list tool that returns a `totalCount` field must be fully paginated. After
-the first call: if `totalCount > count`, repeat the call with `offset += count`
-until `offset >= totalCount`. Collect all pages before analysing results.
+the first call: if `totalCount > len(data)`, repeat the call with `offset += len(data)`
+(where `len(data)` is the number of items returned on the previous page) until
+`offset >= totalCount`. Do not rely on the `count` field to increment the offset—it
+may be absent or zero on some responses. Collect all pages before analysing results.
 
 ---
 
@@ -110,8 +112,11 @@ known CVEs.
   `[MEDIUM]`; prefer `WPA2_WPA3_PERSONAL` or `WPA3_PERSONAL`
 - Any SSID that has a `hotspotConfiguration` (captive portal / guest) but
   `clientIsolationEnabled: false` — flag `[HIGH]`; guest clients can reach each other
-- Any SSID that is `enabled: true` but has no connected clients in the Section 1
-  client list — flag `[LOW]`; unnecessary broadcast surface
+- If **all** enabled SSIDs have `type: WIRELESS` yet the Section 1 client list
+  contains **zero** `type: WIRELESS` clients at all — flag `[LOW]`; suggests either
+  no wireless devices are active or the audit was run at an unusual time. Note:
+  the `list_clients` response does not include which specific SSID a client is
+  connected to, so per-SSID utilisation cannot be determined programmatically.
 
 **Findings to raise:**
 - `[CRITICAL]` Open SSIDs
@@ -161,7 +166,7 @@ rules that undermine segmentation.
 3. Call `list_acl_rules` and `get_acl_rule_ordering`. Note the evaluation order
    — rules are evaluated top-down and the first match wins.
 
-3. Call `list_traffic_matching_lists` to understand what IP/port sets the
+4. Call `list_traffic_matching_lists` to understand what IP/port sets the
    policies reference.
 
 **Check for:**
@@ -271,7 +276,7 @@ access to the UniFi console UI or syslog:
 
 | Data type | Where to find it |
 |---|---|
-| WiFi security / encryption settings | UniFi UI → WiFi → [each SSID] → Security |
+| WiFi passphrases and RADIUS/802.1X credentials | UniFi UI → WiFi → [each SSID] → Security |
 | RADIUS profile → SSID assignment | UniFi UI → WiFi → [each SSID] → Security |
 | IDS/IPS threat alerts | UniFi UI → Security → Threat Management |
 | Traffic anomaly alerts | UniFi UI → Security → Traffic Anomalies |
