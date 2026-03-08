@@ -59,6 +59,9 @@ func TestListWiFiBroadcasts(t *testing.T) {
 			}
 			t.Errorf("got Network.Type %q, want NATIVE", gotType)
 		}
+		if broadcasts.Data[0].ClientIsolationEnabled == nil || *broadcasts.Data[0].ClientIsolationEnabled {
+			t.Error("expected broadcasts[0].ClientIsolationEnabled false")
+		}
 		if !broadcasts.Data[1].Enabled {
 			t.Error("expected broadcasts[1].Enabled true")
 		}
@@ -241,6 +244,9 @@ func TestGetWiFiBroadcast(t *testing.T) {
 			t.Error("got Network nil, want Network.NetworkID net-1")
 		} else if bc.Network.NetworkID != "net-1" {
 			t.Errorf("got Network.NetworkID %q, want net-1", bc.Network.NetworkID)
+		}
+		if bc.ClientIsolationEnabled == nil || *bc.ClientIsolationEnabled {
+			t.Error("expected ClientIsolationEnabled false")
 		}
 	})
 

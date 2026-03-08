@@ -234,12 +234,13 @@ unexpected tunnels exist.
 **Goal:** Ensure no stale vouchers grant persistent or unintended network access.
 
 1. Call `list_vouchers` (paginate until complete). Note any vouchers with:
-   - No expiry (`time_limit_minutes: 0`) — unlimited time vouchers are risky
-   - No data cap (`data_limit_mb: 0`) — unlimited data vouchers can be abused
-   - No bandwidth limit — unlimited bandwidth vouchers can saturate the WAN
+   - No expiry (`timeLimitMinutes: 0`) — unlimited time vouchers are risky
+   - No data cap (`dataLimitMb: 0`) — unlimited data vouchers can be abused
+   - Bandwidth limits are not exposed in `list_vouchers` output — if needed,
+     review voucher bandwidth settings manually in the UniFi controller UI
 
 **Findings to raise:**
-- `[MEDIUM]` Vouchers with unlimited time and no data/bandwidth cap
+- `[MEDIUM]` Vouchers with unlimited time and no data cap
 - `[LOW]` Large number of unused vouchers — if destructive tools are enabled
   (`UNIFI_ALLOW_DESTRUCTIVE=true`) and you have appropriate authorization,
   consider revoking them with `delete_voucher`

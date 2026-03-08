@@ -92,7 +92,7 @@ shape (discovered by probing the live endpoint with curl — see RTFM guidance i
   - `WiFiSecurityConfiguration` — `type` (e.g. `WPA2_WPA3_PERSONAL`, `WPA3_PERSONAL`,
     `OPEN`), `fastRoamingEnabled`, `pmfMode`
   - `WiFiHotspotConfiguration` — `type` (e.g. `CAPTIVE_PORTAL`)
-  - `clientIsolationEnabled` (flat bool), `hideName` (flat bool)
+  - `clientIsolationEnabled` and `hideName` as optional bool fields (mapped as `*bool` in Go)
   - Note: `passphrase` is intentionally NOT mapped to avoid credential exposure via MCP
 - Updated `TestListWiFiBroadcasts` and `TestGetWiFiBroadcast` in `network_test.go`
   with fixtures matching the real v1 nested response shape
