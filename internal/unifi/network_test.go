@@ -18,8 +18,19 @@ func TestListWiFiBroadcasts(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "b-1", "name": "HomeNet", "enabled": true, "type": "2g"},
-					{"id": "b-2", "name": "IoT", "enabled": false, "type": "5g"},
+					{
+						"id": "b-1", "name": "HomeNet", "enabled": true, "type": "STANDARD",
+						"clientIsolationEnabled": false,
+						"network":                map[string]any{"type": "NATIVE"},
+						"securityConfiguration":  map[string]any{"type": "WPA2_WPA3_PERSONAL"},
+					},
+					{
+						"id": "b-2", "name": "Guest", "enabled": true, "type": "STANDARD",
+						"clientIsolationEnabled": true,
+						"network":                map[string]any{"type": "SPECIFIC", "networkId": "net-2"},
+						"securityConfiguration":  map[string]any{"type": "OPEN"},
+						"hotspotConfiguration":   map[string]any{"type": "CAPTIVE_PORTAL"},
+					},
 				},
 				"totalCount": 2,
 			})
@@ -34,8 +45,42 @@ func TestListWiFiBroadcasts(t *testing.T) {
 		if broadcasts.Data[0].Name != "HomeNet" {
 			t.Errorf("got Name %q, want HomeNet", broadcasts.Data[0].Name)
 		}
-		if broadcasts.Data[1].Enabled {
-			t.Error("expected broadcasts[1].Enabled false")
+		if sc := broadcasts.Data[0].SecurityConfiguration; sc == nil || sc.Type != "WPA2_WPA3_PERSONAL" {
+			gotType := "<nil>"
+			if sc != nil {
+				gotType = sc.Type
+			}
+			t.Errorf("got SecurityConfiguration.Type %q, want WPA2_WPA3_PERSONAL", gotType)
+		}
+		if n := broadcasts.Data[0].Network; n == nil || n.Type != "NATIVE" {
+			gotType := "<nil>"
+			if n != nil {
+				gotType = n.Type
+			}
+			t.Errorf("got Network.Type %q, want NATIVE", gotType)
+		}
+		if broadcasts.Data[0].ClientIsolationEnabled == nil || *broadcasts.Data[0].ClientIsolationEnabled {
+			t.Error("expected broadcasts[0].ClientIsolationEnabled false")
+		}
+		if !broadcasts.Data[1].Enabled {
+			t.Error("expected broadcasts[1].Enabled true")
+		}
+		if sc := broadcasts.Data[1].SecurityConfiguration; sc == nil || sc.Type != "OPEN" {
+			gotType := "<nil>"
+			if sc != nil {
+				gotType = sc.Type
+			}
+			t.Errorf("got SecurityConfiguration.Type %q, want OPEN", gotType)
+		}
+		if broadcasts.Data[1].ClientIsolationEnabled == nil || !*broadcasts.Data[1].ClientIsolationEnabled {
+			t.Error("expected broadcasts[1].ClientIsolationEnabled true")
+		}
+		if hc := broadcasts.Data[1].HotspotConfiguration; hc == nil || hc.Type != "CAPTIVE_PORTAL" {
+			gotType := "<nil>"
+			if hc != nil {
+				gotType = hc.Type
+			}
+			t.Errorf("got HotspotConfiguration.Type %q, want CAPTIVE_PORTAL", gotType)
 		}
 	})
 }
@@ -167,6 +212,10 @@ func TestGetWiFiBroadcast(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+				"hideName":               true,
+				"clientIsolationEnabled": false,
+				"network":                map[string]any{"type": "SPECIFIC", "networkId": "net-1"},
+				"securityConfiguration":  map[string]any{"type": "WPA3_PERSONAL", "fastRoamingEnabled": true},
 			})
 		})
 		bc, err := client.GetWiFiBroadcast(context.Background(), "", "bc-1")
@@ -178,6 +227,26 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		}
 		if !bc.Enabled {
 			t.Error("got Enabled false, want true")
+		}
+		if bc.HideName == nil || !*bc.HideName {
+			t.Error("got HideName false, want true")
+		}
+		if bc.SecurityConfiguration == nil {
+			t.Fatalf("got nil SecurityConfiguration, want non-nil with type WPA3_PERSONAL")
+		}
+		if bc.SecurityConfiguration.Type != "WPA3_PERSONAL" {
+			t.Errorf("got SecurityConfiguration.Type %q, want WPA3_PERSONAL", bc.SecurityConfiguration.Type)
+		}
+		if bc.SecurityConfiguration.FastRoamingEnabled == nil || !*bc.SecurityConfiguration.FastRoamingEnabled {
+			t.Error("got FastRoamingEnabled false, want true")
+		}
+		if bc.Network == nil {
+			t.Error("got Network nil, want Network.NetworkID net-1")
+		} else if bc.Network.NetworkID != "net-1" {
+			t.Errorf("got Network.NetworkID %q, want net-1", bc.Network.NetworkID)
+		}
+		if bc.ClientIsolationEnabled == nil || *bc.ClientIsolationEnabled {
+			t.Error("expected ClientIsolationEnabled false")
 		}
 	})
 

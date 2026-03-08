@@ -79,10 +79,38 @@ type PendingDevice struct {
 
 // WiFiBroadcast is returned by GET /integration/v1/sites/{siteId}/wifi/broadcasts.
 type WiFiBroadcast struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
+	ID                     string                     `json:"id"`
+	Type                   string                     `json:"type"`
+	Name                   string                     `json:"name"`
+	Enabled                bool                       `json:"enabled"`
+	HideName               *bool                      `json:"hideName,omitempty"`
+	ClientIsolationEnabled *bool                      `json:"clientIsolationEnabled,omitempty"`
+	Network                *WiFiBroadcastNetwork      `json:"network,omitempty"`
+	SecurityConfiguration  *WiFiSecurityConfiguration `json:"securityConfiguration,omitempty"`
+	HotspotConfiguration   *WiFiHotspotConfiguration  `json:"hotspotConfiguration,omitempty"`
+}
+
+// WiFiBroadcastNetwork identifies which UniFi network (VLAN) an SSID is mapped to.
+type WiFiBroadcastNetwork struct {
+	// Type is "NATIVE" (management VLAN) or "SPECIFIC" (a named VLAN).
+	Type      string `json:"type"`
+	NetworkID string `json:"networkId,omitempty"`
+}
+
+// WiFiSecurityConfiguration describes the encryption settings for a WiFi broadcast.
+// The Passphrase field is intentionally omitted to avoid credential exposure.
+type WiFiSecurityConfiguration struct {
+	// Type is the security protocol, e.g. WPA2_WPA3_PERSONAL, WPA3_PERSONAL,
+	// WPA2_PERSONAL, WPA2_ENTERPRISE, OPEN.
+	Type               string `json:"type"`
+	FastRoamingEnabled *bool  `json:"fastRoamingEnabled,omitempty"`
+	PMFMode            string `json:"pmfMode,omitempty"`
+}
+
+// WiFiHotspotConfiguration describes any captive-portal / guest hotspot settings.
+type WiFiHotspotConfiguration struct {
+	// Type is the portal variety, e.g. CAPTIVE_PORTAL.
+	Type string `json:"type"`
 }
 
 // NetworkConf is returned by GET /integration/v1/sites/{siteId}/networks.

@@ -5,220 +5,115 @@
 MCP server in Go exposing UniFi home network operations as tools.
 Stack: `modelcontextprotocol/go-sdk`, custom UniFi HTTP client, API key auth, `golangci-lint` / `gosec` / `govulncheck`.
 
----
-
-## ✅ Completed — v0.1.0 + v0.2.0
-
-### Infrastructure (v0.1.0)
-- Go module `github.com/gordcurrie/unifi-mcp`, `modelcontextprotocol/go-sdk v1.4.0`
-- `Makefile`: `build`, `fix`, `fmt`, `vet`, `lint`, `sec`, `vulncheck`, `test`, `check`
-- `.golangci.yml` with `gosec`, `govet`, `staticcheck`, `errcheck`, `bodyclose`,
-  `noctx`, `gofumpt`, `revive`, `gocritic`, `unparam`, `unconvert`
-- `internal/unifi/client.go` — `get`, `post`, `postWithBody`, `put`; `X-API-Key` auth,
-  TLS-skip opt-in, 10 MiB response cap, 30 s timeout
-- `tools/helpers.go` — `jsonResult`, `textResult`
-- `cmd/unifi-mcp/main.go` — env var bootstrap, `--transport stdio|http`, `--addr`,
-  `SIGINT`/`SIGTERM` graceful shutdown
-- `httptest`-based unit tests for client auth, error propagation, JSON decoding
-
-### v1 API Rewrite (v0.2.0) — path prefix `/proxy/network/integration/v1`
-- Dropped all legacy `/api/s/{site}/...` usage entirely
-- `UNIFI_SITE_ID` is now a UUID (not slug); `ErrSiteNotFound` sentinel added
-- **13 tools shipped and live-tested against UCG-Max running Network 10.1.85:**
-
-| File              | Tool                    | Read-only |
-|-------------------|-------------------------|-----------|
-| `sites.go`        | `get_application_info`  | ✅        |
-| `sites.go`        | `list_sites`            | ✅        |
-| `sites.go`        | `get_site`              | ✅        |
-| `devices.go`      | `list_devices`          | ✅        |
-| `devices.go`      | `get_device`            | ✅        |
-| `devices.go`      | `get_device_stats`      | ✅        |
-| `devices.go`      | `restart_device`        |           |
-| `clients.go`      | `list_clients`          | ✅        |
-| `network.go`      | `list_wifi_broadcasts`  | ✅        |
-| `network.go`      | `list_networks`         | ✅        |
-| `network.go`      | `list_firewall_policies`| ✅        |
-| `network.go`      | `list_firewall_zones`   | ✅        |
-| `network.go`      | `list_acl_rules`        | ✅        |
-
-- `.env.example`, `README.md` tool tables, `PLAN.md` all kept in sync per PR convention
-- `make check` clean; tagged `v0.2.0`; GitHub release published
+Only the v1 API (`/proxy/network/integration/v1/...`) is used. The legacy
+`/api/s/{site}/...` path is not supported and will not be added — it is not
+versioned, undocumented, and will be removed in a future Network release.
 
 ---
 
-## ✅ Phase 3 — MCP Correctness & Security Hardening
+## Current tool inventory
 
-Findings from MCP spec review (2025-06-18). Must pass `make check` before committing.
-Target tag: `v0.3.0`.
+| File          | Tool                          | Read-only |
+|---------------|-------------------------------|-----------|
+| `sites.go`    | `get_application_info`        | ✅        |
+| `sites.go`    | `list_sites`                  | ✅        |
+| `sites.go`    | `get_site`                    | ✅        |
+| `devices.go`  | `list_devices`                | ✅        |
+| `devices.go`  | `get_device`                  | ✅        |
+| `devices.go`  | `get_device_stats`            | ✅        |
+| `devices.go`  | `list_pending_devices`        | ✅        |
+| `devices.go`  | `restart_device`              |           |
+| `devices.go`  | `power_cycle_port`            |           |
+| `clients.go`  | `list_clients`                | ✅        |
+| `clients.go`  | `get_client`                  | ✅        |
+| `clients.go`  | `authorize_guest_client`      |           |
+| `network.go`  | `list_wifi_broadcasts`        | ✅        |
+| `network.go`  | `get_wifi_broadcast`          | ✅        |
+| `network.go`  | `set_wifi_broadcast_enabled`  |           |
+| `network.go`  | `list_networks`               | ✅        |
+| `network.go`  | `list_firewall_policies`      | ✅        |
+| `network.go`  | `get_firewall_policy`         | ✅        |
+| `network.go`  | `set_firewall_policy_enabled` |           |
+| `network.go`  | `list_firewall_zones`         | ✅        |
+| `network.go`  | `get_firewall_zone`           | ✅        |
+| `network.go`  | `create_firewall_zone`        |           |
+| `network.go`  | `update_firewall_zone`        |           |
+| `network.go`  | `list_acl_rules`              | ✅        |
+| `network.go`  | `get_acl_rule`                | ✅        |
+| `network.go`  | `get_acl_rule_ordering`       | ✅        |
+| `network.go`  | `list_traffic_matching_lists` | ✅        |
+| `network.go`  | `get_traffic_matching_list`   | ✅        |
+| `network.go`  | `list_dns_policies`           | ✅        |
+| `network.go`  | `get_dns_policy`              | ✅        |
+| `network.go`  | `create_dns_policy`           |           |
+| `network.go`  | `update_dns_policy`           |           |
+| `network.go`  | `list_wans`                   | ✅        |
+| `network.go`  | `list_vpn_tunnels`            | ✅        |
+| `network.go`  | `list_vpn_servers`            | ✅        |
+| `network.go`  | `list_vouchers`               | ✅        |
+| `network.go`  | `get_voucher`                 | ✅        |
+| `network.go`  | `delete_voucher`              |           |
+| `network.go`  | `create_vouchers`             |           |
+| `network.go`  | `list_radius_profiles`        | ✅        |
+| `network.go`  | `list_device_tags`            | ✅        |
+| `network.go`  | `list_dpi_categories`         | ✅        |
+| `network.go`  | `list_dpi_applications`       | ✅        |
 
-### 3a — isError semantics (spec §6) ✅
-
-MCP spec distinguishes protocol errors (unknown tool, bad schema) from tool execution
-errors. API/business failures must be returned as `isError: true` results, not as Go
-errors that bubble up as protocol-level failures.
-
-- Add `errorResult(err error)` helper to `tools/helpers.go`
-- Change every `return nil, nil, fmt.Errorf("tool: %w", err)` in all tool files to
-  `return errorResult(fmt.Errorf("tool: %w", err))`
-- Files: `tools/devices.go`, `tools/sites.go`, `tools/clients.go`, `tools/network.go`
-
-### 3b — Required input validation (spec §7) ✅
-
-Spec §7: servers MUST validate all tool inputs. Empty `device_id` produces malformed
-URLs (`.../devices//statistics/latest`) and confusing downstream errors.
-
-- In `get_device`, `restart_device`, `get_device_stats` handlers, guard:
-  ```go
-  if input.DeviceID == "" {
-      return errorResult(fmt.Errorf("get_device: device_id is required"))
-  }
-  ```
-
-### 3c — `DestructiveHint` on `restart_device` ✅
-
-`ReadOnlyHint: false` is not the same as `DestructiveHint: true`. The spec uses
-`DestructiveHint` as the mechanism for MCP clients to trigger a confirmation step
-("human in the loop") before invocation.
-
-- Change `restart_device` annotation to `Annotations: &mcp.ToolAnnotations{DestructiveHint: &destructiveTrue}`
-
-### 3d — HTTP transport auth warning ✅
-
-When `--transport http` is used there is no authentication layer. Anyone reaching the
-port can invoke `restart_device`. Add a visible runtime warning.
-
-- In `cmd/unifi-mcp/main.go` `http` case, before `ListenAndServe`:
-  ```go
-  slog.Warn("HTTP transport has no authentication — restrict network access to trusted hosts only")
-  ```
+Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
+`restart_device`, `power_cycle_port`, `set_wifi_broadcast_enabled`,
+`set_firewall_policy_enabled`, `create_firewall_zone`, `update_firewall_zone`,
+`create_dns_policy`, `update_dns_policy`, `create_vouchers`, `delete_voucher`,
+`authorize_guest_client`.
 
 ---
 
-## Phase 4 — Expand Functionality
+## Deferred (intentionally not implemented)
 
-Candidates in rough priority order. Each item requires `make check` + README/PLAN.md
-updates before merging.
+- `POST /v1/sites/{id}/firewall/policies` — create firewall policy (schema too complex; manual creation in UI is safer)
+- `DELETE` on any resource except vouchers — too high blast radius for a home lab MCP; use the UI
+- ACL rule write operations (`create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`) — any mutation directly controls traffic; deferred until there is a clear use case
 
-> **API path note:** All `/v1/...` paths below are relative to the client's `baseURL`,
-> which is `https://<console>/proxy/network/integration`. The full resolved path is
-> `https://<console>/proxy/network/integration/v1/...` — identical to the existing tools.
+---
 
-### ✅ 4a — WiFi broadcast mutation
+## Phase 5 — Audit skill improvements
 
-Enable/disable a WiFi broadcast (WLAN on/off for a given SSID).
-- `GET /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — get single ✅ (shipped in Phase 4 PR 1)
-- `PUT /v1/sites/{id}/wifi/broadcasts/{broadcastId}` — full update; set `enabled` field
-- New tools: `set_wifi_broadcast_enabled` (mutating, `confirmed bool`)
+Driven by gaps found during the first live security audit (2026-03-07).
 
-### 4b — Client lookup by ID ✅
+### 5a — WiFi broadcast security fields ✅
 
-Direct single-client lookup is confirmed in the API (`GET /v1/sites/{id}/clients/{clientId}`).
-The v1 filtering syntax also supports querying by property (e.g. `macAddress.eq(...)`).
-- New tool: `get_client` (read-only, `client_id` required)
+The v1 WiFi broadcasts endpoint returns security/encryption metadata using a nested
+object structure. The `WiFiBroadcast` struct was updated to reflect the real v1 API
+shape (discovered by probing the live endpoint with curl — see RTFM guidance in
+`copilot-instructions.md`).
 
-### ✅ 4c — Port power cycle (PoE reboot)
+**Changes made:**
+- Expanded `WiFiBroadcast` in `internal/unifi/types.go` with nested types:
+  - `WiFiBroadcastNetwork` — `type` (`NATIVE`/`SPECIFIC`) and `networkId`
+  - `WiFiSecurityConfiguration` — `type` (e.g. `WPA2_WPA3_PERSONAL`, `WPA3_PERSONAL`,
+    `OPEN`), `fastRoamingEnabled`, `pmfMode`
+  - `WiFiHotspotConfiguration` — `type` (e.g. `CAPTIVE_PORTAL`)
+  - `clientIsolationEnabled` and `hideName` as optional bool fields (mapped as `*bool` in Go)
+  - Note: `passphrase` is intentionally NOT mapped to avoid credential exposure via MCP
+- Updated `TestListWiFiBroadcasts` and `TestGetWiFiBroadcast` in `network_test.go`
+  with fixtures matching the real v1 nested response shape
+- Updated `audit-network-security` SKILL.md Section 3 to use the correct nested field
+  paths (`securityConfiguration.type`, `network.networkId`, etc.) for automated checks
 
-Power-cycle a single PoE port on a switch without restarting the whole device.
-Very useful for rebooting cameras, APs, or other PoE devices.
-- `POST /v1/sites/{id}/devices/{deviceId}/interfaces/ports/{portIdx}/actions` body `{"action":"POWER_CYCLE"}`
-- New tool: `power_cycle_port` (mutating, `confirmed bool`, `device_id`, `port_idx`)
+### 5b — SKILL.md audit process improvements
 
-### 4d — Pending device discovery ✅
+Four gaps identified in the skill instructions:
 
-List devices visible on the network but not yet adopted.
-- `GET /v1/pending-devices`
-- New tool: `list_pending_devices` (read-only)
-
-### ✅ 4e — DNS policies
-
-Local DNS A-record management — map hostnames to IPs on the site (e.g. `nas.home → 192.168.1.100`).
-High value for home lab.
-- `GET /v1/sites/{id}/dns/policies` — list
-- `GET /v1/sites/{id}/dns/policies/{id}` — get single
-- `POST /v1/sites/{id}/dns/policies` — create (`type`, `domain`, `ipv4Address`, `ttlSeconds`, `enabled`)
-- `PUT /v1/sites/{id}/dns/policies/{id}` — update
-- `DELETE /v1/sites/{id}/dns/policies/{id}` — delete (destructive, `confirmed bool`)
-- New tools: `list_dns_policies`, `get_dns_policy`, `create_dns_policy`, `update_dns_policy`, `delete_dns_policy`
-
-### ✅ 4f — Firewall policy & zone CRUD
-
-Extend beyond read-only to full create/enable-disable/delete.
-The API also provides `PATCH` for just `loggingEnabled` and a dedicated ordering endpoint.
-- `PUT /v1/sites/{id}/firewall/policies/{id}` — full update (includes `enabled`) ✅
-- `DELETE /v1/sites/{id}/firewall/policies/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`) ✅
-- `POST /v1/sites/{id}/firewall/zones` — create custom zone ✅
-- `PUT /v1/sites/{id}/firewall/zones/{id}` — update zone (`name`, `networkIds`) ✅
-- `DELETE /v1/sites/{id}/firewall/zones/{id}` — delete custom zone (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`) ✅
-- Deferred: `POST /v1/sites/{id}/firewall/policies` — create (complex schema)
-- Deferred: `PATCH /v1/sites/{id}/firewall/policies/{id}` — partial update
-- Deferred: `GET/PUT /v1/sites/{id}/firewall/policies/ordering` — reorder policies
-- New tools: `get_firewall_policy`, `set_firewall_policy_enabled`, `delete_firewall_policy`, `get_firewall_zone`, `create_firewall_zone`, `update_firewall_zone`, `delete_firewall_zone`
-
-### ✅ 4g — ACL rule CRUD
-
-Extend beyond read-only to full create/enable-disable/delete/reorder.
-- `POST /v1/sites/{id}/acl-rules` — create
-- `PUT /v1/sites/{id}/acl-rules/{id}` — full update (includes `enabled`)
-- `DELETE /v1/sites/{id}/acl-rules/{id}` — delete (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
-- `GET/PUT /v1/sites/{id}/acl-rules/ordering` — reorder
-- New tools: `get_acl_rule`, `create_acl_rule`, `update_acl_rule`, `delete_acl_rule`, `reorder_acl_rules`, `set_acl_rule_enabled`, `get_acl_rule_ordering`
-
-> **Safety note:** All ACL write tools (`create`, `update`, `set_enabled`, `reorder`, `delete`)
-> are gated on `UNIFI_ALLOW_DESTRUCTIVE=true`, not just delete. Unlike firewall zones
-> (organisational containers), any ACL mutation directly controls traffic flow; a misplaced
-> BLOCK rule or a bad reorder can cause a full network outage. The flag is the primary guard;
-> `confirmed: true` is secondary.
-
-### ✅ 4h — Traffic matching lists (read-only)
-
-Port/IP address lists referenced by firewall policies. Read-only surface is enough to
-let the AI understand existing policy configurations.
-- `GET /v1/sites/{id}/traffic-matching-lists` — list
-- `GET /v1/sites/{id}/traffic-matching-lists/{id}` — get single
-- New tools: `list_traffic_matching_lists`, `get_traffic_matching_list`
-
-### ✅ 4i — WAN interfaces & VPN (read-only)
-
-Useful for context when reasoning about firewall rules and routing.
-- `GET /v1/sites/{id}/wans` — list WAN interface definitions
-- `GET /v1/sites/{id}/vpn/site-to-site-tunnels` — list S2S tunnels
-- `GET /v1/sites/{id}/vpn/servers` — list VPN servers
-- New tools: `list_wans`, `list_vpn_tunnels`, `list_vpn_servers`
-
-### ✅ 4j — Hotspot vouchers
-
-Full CRUD for guest Hotspot vouchers (time/data-limited access codes).
-Useful if running a guest or hotspot network.
-- `GET /v1/sites/{id}/hotspot/vouchers` — list
-- `GET /v1/sites/{id}/hotspot/vouchers/{id}` — get single
-- `POST /v1/sites/{id}/hotspot/vouchers` — generate (`count` 1–100, `name`, `timeLimitMinutes`, optional limits)
-- `DELETE /v1/sites/{id}/hotspot/vouchers/{id}` — revoke single (destructive, `confirmed bool`, requires `UNIFI_ALLOW_DESTRUCTIVE`)
-- New tools: `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_voucher` (destructive, `confirmed bool`)
-
-### ✅ 4k — Guest client authorization
-
-Authorize or revoke guest network access for a connected client.
-- `POST /v1/sites/{id}/clients/{clientId}/actions` body `{"action":"AUTHORIZE_GUEST_ACCESS", ...}`
-- New tool: `authorize_guest_client` (mutating, `confirmed bool`, optional time/data/rate limits)
-
-### ✅ 4l — Supporting reference data (read-only)
-
-Low-priority but useful for firewall policy creation context.
-- `GET /v1/sites/{id}/device-tags` — device tags (used in WiFi broadcast device filters)
-- `GET /v1/dpi/categories` + `/v1/dpi/applications` — DPI app categories (firewall matching)
-- `GET /v1/sites/{id}/radius/profiles` — RADIUS profiles
-- New tools: `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`, `list_radius_profiles`
-
-### ✅ 4m — Pagination refactor (cross-cutting)
-
-Consistent pagination support across all list tools. Breaking change — do as a dedicated PR before adding further tools.
-
-- Add `Page[T]` response wrapper type (`data`, `totalCount`, `offset`, `limit`, `count`)
-- Change `decodeV1List` to return `Page[T]` instead of `[]T`
-- Change all list client methods to return `(Page[T], error)`
-- Add optional `offset` + `limit` params to all list tool inputs (default: API default page size)
-- Update all tests to assert on `Page[T]` shape
-- Document pagination behaviour in README
-
+1. **WiFi encryption now automatable** (unblocked by 5a) — update Section 3 to
+   check `securityConfiguration.type`, `network.networkId`, `clientIsolationEnabled`
+   (and related nested fields) directly from the API response instead of deferring
+   to manual review
+2. **Proactive device stats** — Section 2 currently calls `get_device_stats` only
+   for devices that "appear unhealthy", but there is no way to determine that without
+   calling it. Change to: call `get_device_stats` for every adopted device
+3. **Zone ID map** — Section 5 should explicitly instruct the auditor to build a
+   `zoneId → name` map from `list_firewall_zones` before analysing policies, since
+   all policy objects reference zones by UUID only
+4. **Pagination guidance** — replace vague "paginate until all pages retrieved" with
+   concrete instructions: check `totalCount` on the first response, then loop with
+   `offset += len(data)` until `offset >= totalCount`
 

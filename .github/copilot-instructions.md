@@ -13,16 +13,35 @@ internal/unifi/                # custom UniFi HTTP client package (no third-part
 tools/                         # MCP tool registration
 ```
 
-## UniFi API
+## UniFi API — RTFM: Always verify the real response before writing structs
 
-Two API path styles are used under the same `X-API-Key` auth header on UCG-Max:
+**Before defining or modifying any Go struct that maps to a v1 API response, call the
+real endpoint with curl to see the actual field names, types, and nesting.** Do not
+assume field shape from documentation, legacy API responses, or prior art — the v1 API
+frequently uses nested objects where flat fields might be expected.
 
-- **v1 API** (`/v1/sites/{siteID}/...`) — sites, devices, clients, statistics
-- **Legacy API** (`/api/s/{site}/...`) — management commands (devmgr, stamgr) and
-  network config (wlanconf, firewallrule, portforward) not yet in v1
+```bash
+# Probe any v1 endpoint — substitute path and ID as needed
+# -k skips TLS certificate verification; required because the UniFi console
+# uses a self-signed certificate in this home lab environment.
+curl -sk \
+  -H "X-API-Key: $UNIFI_API_KEY" \
+  "$UNIFI_BASE_URL/integration/v1/sites/$UNIFI_SITE_ID/<resource>/<id>" \
+  | python3 -m json.tool
+```
 
-The base URL is always `https://<console-ip>/proxy/network`. Both path styles are
-appended relative to this base.
+The env vars `UNIFI_BASE_URL`, `UNIFI_API_KEY`, and `UNIFI_SITE_ID` are always set in the
+dev environment. This costs one curl call and prevents entire phases of work being based
+on wrong assumptions (e.g. `WiFiBroadcast` had flat `security`/`isGuest` fields invented
+from the legacy API; the real v1 response has nested `securityConfiguration.type`,
+`clientIsolationEnabled`, `network.type`, etc.).
+
+Only the **v1 API** (`/proxy/network/integration/v1/sites/{siteID}/...`) is used.
+The legacy API (`/api/s/{site}/...`) is intentionally not supported — all tools
+must use v1 paths only.
+
+The base URL is always `https://<console-ip>/proxy/network`, configured via
+`UNIFI_BASE_URL`. The v1 path is appended relative to this base.
 
 The default site is configured via the `UNIFI_SITE_ID` env var on the `unifi.Client`
 struct so tools don't need to require it as a parameter for single-site home lab use.
