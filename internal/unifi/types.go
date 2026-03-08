@@ -83,8 +83,8 @@ type WiFiBroadcast struct {
 	Type                   string                     `json:"type"`
 	Name                   string                     `json:"name"`
 	Enabled                bool                       `json:"enabled"`
-	HideName               bool                       `json:"hideName,omitempty"`
-	ClientIsolationEnabled bool                       `json:"clientIsolationEnabled,omitempty"`
+	HideName               *bool                      `json:"hideName,omitempty"`
+	ClientIsolationEnabled *bool                      `json:"clientIsolationEnabled,omitempty"`
 	Network                *WiFiBroadcastNetwork      `json:"network,omitempty"`
 	SecurityConfiguration  *WiFiSecurityConfiguration `json:"securityConfiguration,omitempty"`
 	HotspotConfiguration   *WiFiHotspotConfiguration  `json:"hotspotConfiguration,omitempty"`
@@ -103,7 +103,7 @@ type WiFiSecurityConfiguration struct {
 	// Type is the security protocol, e.g. WPA2_WPA3_PERSONAL, WPA3_PERSONAL,
 	// WPA2_PERSONAL, WPA2_ENTERPRISE, OPEN.
 	Type               string `json:"type"`
-	FastRoamingEnabled bool   `json:"fastRoamingEnabled,omitempty"`
+	FastRoamingEnabled *bool  `json:"fastRoamingEnabled,omitempty"`
 	PMFMode            string `json:"pmfMode,omitempty"`
 }
 

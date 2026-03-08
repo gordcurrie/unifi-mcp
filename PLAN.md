@@ -52,7 +52,7 @@ versioned, undocumented, and will be removed in a future Network release.
 | `network.go`  | `list_vpn_servers`            | ✅        |
 | `network.go`  | `list_vouchers`               | ✅        |
 | `network.go`  | `get_voucher`                 | ✅        |
-| `network.go`  | `delete_voucher`              | ✅        |
+| `network.go`  | `delete_voucher`              |           |
 | `network.go`  | `create_vouchers`             |           |
 | `network.go`  | `list_radius_profiles`        | ✅        |
 | `network.go`  | `list_device_tags`            | ✅        |

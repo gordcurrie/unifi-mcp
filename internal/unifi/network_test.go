@@ -69,7 +69,7 @@ func TestListWiFiBroadcasts(t *testing.T) {
 			}
 			t.Errorf("got SecurityConfiguration.Type %q, want OPEN", gotType)
 		}
-		if !broadcasts.Data[1].ClientIsolationEnabled {
+		if broadcasts.Data[1].ClientIsolationEnabled == nil || !*broadcasts.Data[1].ClientIsolationEnabled {
 			t.Error("expected broadcasts[1].ClientIsolationEnabled true")
 		}
 		if hc := broadcasts.Data[1].HotspotConfiguration; hc == nil || hc.Type != "CAPTIVE_PORTAL" {
@@ -225,7 +225,7 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		if !bc.Enabled {
 			t.Error("got Enabled false, want true")
 		}
-		if !bc.HideName {
+		if bc.HideName == nil || !*bc.HideName {
 			t.Error("got HideName false, want true")
 		}
 		if bc.SecurityConfiguration == nil {
@@ -234,7 +234,7 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		if bc.SecurityConfiguration.Type != "WPA3_PERSONAL" {
 			t.Errorf("got SecurityConfiguration.Type %q, want WPA3_PERSONAL", bc.SecurityConfiguration.Type)
 		}
-		if !bc.SecurityConfiguration.FastRoamingEnabled {
+		if bc.SecurityConfiguration.FastRoamingEnabled == nil || !*bc.SecurityConfiguration.FastRoamingEnabled {
 			t.Error("got FastRoamingEnabled false, want true")
 		}
 		if bc.Network == nil {
