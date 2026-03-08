@@ -31,6 +31,5 @@ make check   # fix → fmt → vet → lint → sec → vulncheck → test → b
 
 ## Network security audit
 
-To perform a security audit of the UniFi network, follow the step-by-step
-instructions in [`.github/skills/audit-network-security/SKILL.md`](.github/skills/audit-network-security/SKILL.md).
-Work through each section in order and produce a Prioritised Findings Report.
+Use the `audit-network-security` skill. Ask to audit, review, or assess the
+network security posture and the skill will be loaded automatically.
