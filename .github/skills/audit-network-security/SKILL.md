@@ -10,8 +10,7 @@ description: >
 license: MIT
 ---
 
-# Skill: Audit
-Network Security (UniFi via unifi-mcp)
+# Skill: Audit Network Security (UniFi via unifi-mcp)
 
 This skill performs a structured security audit of a UniFi network using the
 tools exposed by [gordcurrie/unifi-mcp](https://github.com/gordcurrie/unifi-mcp).
