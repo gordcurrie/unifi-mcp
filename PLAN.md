@@ -75,6 +75,24 @@ Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
 
 ---
 
+## Phase 6 — Token optimisation
+
+Three changes to reduce MCP response token cost:
+
+1. **Compact JSON** — switched `json.MarshalIndent` to `json.Marshal` in `tools/helpers.go`.
+   Eliminates all indentation whitespace from every tool response (~15–20% reduction across the board).
+
+2. **`list_firewall_policies` user-only filter** — added `user_only` parameter (default `true`).
+   Filters out `SYSTEM_DEFINED` and `DERIVED` boilerplate, reducing a typical response from
+   ~121 entries to ~10. Set `user_only=false` to see all policies.
+
+3. **Omit firewall metadata in responses** — changed `FirewallPolicy.Metadata` and
+   `FirewallZone.Metadata` from value to pointer with `omitempty`. The `metadata` block
+   (`origin`, `configurable`) is not needed for read/audit workflows and is now omitted
+   when absent from the API response.
+
+---
+
 ## Phase 5 — Audit skill improvements
 
 Driven by gaps found during the first live security audit (2026-03-07).
