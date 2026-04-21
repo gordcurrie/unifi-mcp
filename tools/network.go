@@ -132,7 +132,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 			}
 		}
 		total := len(filtered)
-		offset := min(input.Offset, total)
+		offset := max(0, min(input.Offset, total))
 		end := total
 		if input.Limit > 0 && offset+input.Limit < total {
 			end = offset + input.Limit
