@@ -111,22 +111,40 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		Description: "List firewall policies for a site. By default returns only user-defined policies (user_only=true); set user_only=false to include system-defined and derived policies. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallPolicyPageInput) (*mcp.CallToolResult, any, error) {
-		policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
+		userOnly := input.UserOnly == nil || *input.UserOnly
+		if !userOnly {
+			policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
+			if err != nil {
+				return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
+			}
+			return jsonResult(policies)
+		}
+		// Fetch all policies then filter and paginate client-side so that
+		// system-defined entries don't displace user-defined ones across pages.
+		all, err := client.ListFirewallPolicies(ctx, input.SiteID, 0, 1000)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
 		}
-		userOnly := input.UserOnly == nil || *input.UserOnly
-		if userOnly {
-			filtered := policies.Data[:0]
-			for i := range policies.Data {
-				if policies.Data[i].Metadata != nil && policies.Data[i].Metadata.Origin == "USER_DEFINED" {
-					filtered = append(filtered, policies.Data[i])
-				}
+		filtered := make([]unifi.FirewallPolicy, 0, len(all.Data))
+		for i := range all.Data {
+			if all.Data[i].Metadata == nil || all.Data[i].Metadata.Origin == "USER_DEFINED" {
+				filtered = append(filtered, all.Data[i])
 			}
-			policies.Data = filtered
-			policies.Count = len(filtered)
 		}
-		return jsonResult(policies)
+		total := len(filtered)
+		offset := min(input.Offset, total)
+		end := total
+		if input.Limit > 0 && offset+input.Limit < total {
+			end = offset + input.Limit
+		}
+		page := filtered[offset:end]
+		return jsonResult(unifi.Page[unifi.FirewallPolicy]{
+			Data:       page,
+			TotalCount: total,
+			Offset:     offset,
+			Limit:      end - offset,
+			Count:      len(page),
+		})
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
