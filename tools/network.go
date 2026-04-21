@@ -102,7 +102,7 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 	type firewallPolicyPageInput struct {
 		SiteID   string `json:"site_id,omitempty"  jsonschema:"site ID; omit to use default"`
 		Offset   int    `json:"offset,omitempty"   jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
-		Limit    int    `json:"limit,omitempty"    jsonschema:"maximum number of items to return (max 1000); omit or 0 to use the API default"`
+		Limit    int    `json:"limit,omitempty"    jsonschema:"maximum number of items to return (max 1000); omit or 0 to return all results (when user_only=true) or use the API default (when user_only=false)"`
 		UserOnly *bool  `json:"user_only,omitempty" jsonschema:"when true (default), return only user-defined policies and omit system-defined and derived boilerplate; set false to see all policies"`
 	}
 
