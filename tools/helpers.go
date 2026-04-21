@@ -9,7 +9,7 @@ import (
 
 // jsonResult marshals v to a JSON TextContent result.
 func jsonResult(v any) (*mcp.CallToolResult, any, error) {
-	b, err := json.MarshalIndent(v, "", "  ")
+	b, err := json.Marshal(v)
 	if err != nil {
 		return errorResult(fmt.Errorf("marshal result: %w", err))
 	}

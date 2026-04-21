@@ -195,26 +195,26 @@ type FirewallPolicyIPScope struct {
 
 // FirewallPolicy is returned by GET /integration/v1/sites/{siteId}/firewall/policies.
 type FirewallPolicy struct {
-	ID                    string                   `json:"id"`
-	Name                  string                   `json:"name"`
-	Description           string                   `json:"description,omitempty"`
-	Enabled               bool                     `json:"enabled"`
-	Index                 int                      `json:"index"`
-	Action                FirewallPolicyAction     `json:"action"`
-	Source                FirewallPolicyZoneRef    `json:"source"`
-	Destination           FirewallPolicyZoneRef    `json:"destination"`
-	IPProtocolScope       FirewallPolicyIPScope    `json:"ipProtocolScope"`
-	ConnectionStateFilter []string                 `json:"connectionStateFilter,omitempty"`
-	LoggingEnabled        bool                     `json:"loggingEnabled"`
-	Metadata              FirewallResourceMetadata `json:"metadata"`
+	ID                    string                    `json:"id"`
+	Name                  string                    `json:"name"`
+	Description           string                    `json:"description,omitempty"`
+	Enabled               bool                      `json:"enabled"`
+	Index                 int                       `json:"index"`
+	Action                FirewallPolicyAction      `json:"action"`
+	Source                FirewallPolicyZoneRef     `json:"source"`
+	Destination           FirewallPolicyZoneRef     `json:"destination"`
+	IPProtocolScope       FirewallPolicyIPScope     `json:"ipProtocolScope"`
+	ConnectionStateFilter []string                  `json:"connectionStateFilter,omitempty"`
+	LoggingEnabled        bool                      `json:"loggingEnabled"`
+	Metadata              *FirewallResourceMetadata `json:"metadata,omitempty"`
 }
 
 // FirewallZone is returned by GET /integration/v1/sites/{siteId}/firewall/zones.
 type FirewallZone struct {
-	ID         string                   `json:"id"`
-	Name       string                   `json:"name"`
-	NetworkIDs []string                 `json:"networkIds,omitempty"`
-	Metadata   FirewallResourceMetadata `json:"metadata"`
+	ID         string                    `json:"id"`
+	Name       string                    `json:"name"`
+	NetworkIDs []string                  `json:"networkIds,omitempty"`
+	Metadata   *FirewallResourceMetadata `json:"metadata,omitempty"`
 }
 
 // FirewallZoneRequest is the body for POST and PUT to /integration/v1/sites/{siteId}/firewall/zones.

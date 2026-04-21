@@ -41,7 +41,7 @@ An [MCP](https://modelcontextprotocol.io) server that exposes [UniFi Network](ht
 | `get_wifi_broadcast` | Details for a specific WiFi broadcast | `broadcast_id` |
 | `set_wifi_broadcast_enabled` | Enable or disable a WiFi broadcast | `broadcast_id`, `enabled`, `confirmed` (must be `true`) |
 | `list_networks` | LAN/VLAN network configurations | `offset`, `limit` (optional) |
-| `list_firewall_policies` | Firewall policies | `offset`, `limit` (optional) |
+| `list_firewall_policies` | Firewall policies (user-defined only by default) | `offset`, `limit`, `user_only` (optional; default `true`) |
 | `get_firewall_policy` | Details for a specific firewall policy | `policy_id` |
 | `set_firewall_policy_enabled` | Enable or disable a firewall policy | `policy_id`, `enabled`, `confirmed` (must be `true`) |
 | `list_firewall_zones` | Firewall zones | `offset`, `limit` (optional) |

@@ -99,16 +99,52 @@ func registerNetworkTools(s *mcp.Server, client unifiClient, allowDestructive bo
 		return jsonResult(nets)
 	})
 
+	type firewallPolicyPageInput struct {
+		SiteID   string `json:"site_id,omitempty"  jsonschema:"site ID; omit to use default"`
+		Offset   int    `json:"offset,omitempty"   jsonschema:"pagination offset (0-based); omit or 0 to start from the beginning"`
+		Limit    int    `json:"limit,omitempty"    jsonschema:"maximum number of items to return (max 1000); omit or 0 to return all results (when user_only=true) or use the API default (when user_only=false)"`
+		UserOnly *bool  `json:"user_only,omitempty" jsonschema:"when true (default), return only user-defined policies and omit system-defined and derived boilerplate; set false to see all policies"`
+	}
+
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_firewall_policies",
-		Description: "List firewall policies for a site. Use offset/limit to paginate.",
+		Description: "List firewall policies for a site. By default returns only user-defined policies (user_only=true); set user_only=false to include system-defined and derived policies. Use offset/limit to paginate.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sitePageInput) (*mcp.CallToolResult, any, error) {
-		policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, input firewallPolicyPageInput) (*mcp.CallToolResult, any, error) {
+		userOnly := input.UserOnly == nil || *input.UserOnly
+		if !userOnly {
+			policies, err := client.ListFirewallPolicies(ctx, input.SiteID, input.Offset, input.Limit)
+			if err != nil {
+				return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
+			}
+			return jsonResult(policies)
+		}
+		// Fetch all policies then filter and paginate client-side so that
+		// system-defined entries don't displace user-defined ones across pages.
+		all, err := client.ListFirewallPolicies(ctx, input.SiteID, 0, 1000)
 		if err != nil {
 			return errorResult(fmt.Errorf("list_firewall_policies: %w", err))
 		}
-		return jsonResult(policies)
+		filtered := make([]unifi.FirewallPolicy, 0, len(all.Data))
+		for i := range all.Data {
+			if all.Data[i].Metadata == nil || all.Data[i].Metadata.Origin == "USER_DEFINED" {
+				filtered = append(filtered, all.Data[i])
+			}
+		}
+		total := len(filtered)
+		offset := max(0, min(input.Offset, total))
+		end := total
+		if input.Limit > 0 && offset+input.Limit < total {
+			end = offset + input.Limit
+		}
+		page := filtered[offset:end]
+		return jsonResult(unifi.Page[unifi.FirewallPolicy]{
+			Data:       page,
+			TotalCount: total,
+			Offset:     offset,
+			Limit:      end - offset,
+			Count:      len(page),
+		})
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
