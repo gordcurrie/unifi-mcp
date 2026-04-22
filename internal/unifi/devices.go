@@ -3,13 +3,14 @@ package unifi
 import (
 	"context"
 	"fmt"
+	"net/url"
 )
 
 // ListDevices returns one page of adopted devices from GET /integration/v1/sites/{siteID}/devices.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDevices(ctx context.Context, siteID string, offset, limit int) (Page[Device], error) {
 	id := c.site(siteID)
-	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices", id), offset, limit)
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[Device]{}, fmt.Errorf("ListDevices %s: %w", id, err)
 	}
@@ -24,7 +25,7 @@ func (c *Client) ListDevices(ctx context.Context, siteID string, offset, limit i
 // Pass an empty siteID to use the client default.
 func (c *Client) GetDevice(ctx context.Context, siteID, deviceID string) (Device, error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s", id, deviceID))
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s", url.PathEscape(id), url.PathEscape(deviceID)))
 	if err != nil {
 		return Device{}, fmt.Errorf("GetDevice %s %s: %w", id, deviceID, err)
 	}
@@ -40,7 +41,7 @@ func (c *Client) GetDevice(ctx context.Context, siteID, deviceID string) (Device
 func (c *Client) RestartDevice(ctx context.Context, siteID, deviceID string) error {
 	id := c.site(siteID)
 	_, err := c.postWithBody(ctx,
-		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/actions", id, deviceID),
+		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/actions", url.PathEscape(id), url.PathEscape(deviceID)),
 		deviceActionRequest{Action: "RESTART"},
 	)
 	if err != nil {
@@ -55,7 +56,7 @@ func (c *Client) RestartDevice(ctx context.Context, siteID, deviceID string) err
 func (c *Client) PowerCyclePort(ctx context.Context, siteID, deviceID string, portIdx int) error {
 	id := c.site(siteID)
 	_, err := c.postWithBody(ctx,
-		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/interfaces/ports/%d/actions", id, deviceID, portIdx),
+		fmt.Sprintf("/integration/v1/sites/%s/devices/%s/interfaces/ports/%d/actions", url.PathEscape(id), url.PathEscape(deviceID), portIdx),
 		deviceActionRequest{Action: "POWER_CYCLE"},
 	)
 	if err != nil {
@@ -84,7 +85,7 @@ func (c *Client) ListPendingDevices(ctx context.Context, offset, limit int) (Pag
 // Pass an empty siteID to use the client default.
 func (c *Client) GetDeviceStats(ctx context.Context, siteID, deviceID string) (DeviceStats, error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s/statistics/latest", id, deviceID))
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/devices/%s/statistics/latest", url.PathEscape(id), url.PathEscape(deviceID)))
 	if err != nil {
 		return DeviceStats{}, fmt.Errorf("GetDeviceStats %s %s: %w", id, deviceID, err)
 	}

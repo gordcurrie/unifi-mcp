@@ -67,6 +67,16 @@ Destructive tools (require `UNIFI_ALLOW_DESTRUCTIVE=true` + `confirmed: true`):
 
 ---
 
+## Hardening (Quality Parity with proxmox-mcp) ✅
+
+| Item | Detail |
+|---|---|
+| `SensitiveString` type ✅ | `type SensitiveString string` in `internal/unifi/types.go` with `Format`, `String`, `GoString`, `MarshalJSON`, `LogValue` all returning/producing `"[REDACTED]"`. `apiKey` field on `Client` changed from `string` to `SensitiveString`. Prevents accidental API key leakage via `%v`, `%#v`, `%x`, structured logging, or JSON marshalling. |
+| Typed `APIError` struct ✅ | `type APIError struct { StatusCode int; Body string }` in `internal/unifi/client.go`. `do()` returns `&APIError{...}` on non-2xx instead of `fmt.Errorf`. Callers can use `errors.As(err, &apiErr)` to inspect the HTTP status code without string parsing. |
+| `url.PathEscape()` for path parameters ✅ | All user-supplied path segment values (`siteID`, `deviceID`, `clientID`, and resource IDs) wrapped in `url.PathEscape()` in `devices.go`, `clients.go`, and `network.go`. Complements the existing `.`/`..` traversal check in `do()` by also encoding `/`, `%`, and spaces. |
+
+---
+
 ## Deferred (intentionally not implemented)
 
 - `POST /v1/sites/{id}/firewall/policies` — create firewall policy (schema too complex; manual creation in UI is safer)

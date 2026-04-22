@@ -216,3 +216,25 @@ func TestPowerCyclePort(t *testing.T) {
 		}
 	})
 }
+
+func TestPathEscaping(t *testing.T) {
+	// Verify that reserved characters in user-supplied IDs are percent-encoded
+	// in the outgoing request path and do not break URL routing.
+	t.Run("device ID with reserved characters is encoded", func(t *testing.T) {
+		var gotPath string
+		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+			gotPath = r.URL.EscapedPath()
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": "dev/1", "macAddress": "aa:bb:cc:dd:ee:ff", "state": "ONLINE",
+			})
+		})
+		if _, err := client.GetDevice(context.Background(), "", "dev/1"); err != nil {
+			t.Fatalf("GetDevice: %v", err)
+		}
+		want := "/integration/v1/sites/test-site-id/devices/dev%2F1"
+		if gotPath != want {
+			t.Errorf("path = %q, want %q", gotPath, want)
+		}
+	})
+}

@@ -1,5 +1,33 @@
 package unifi
 
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+)
+
+const sensitiveStringRedacted = "[REDACTED]"
+
+// SensitiveString is a string type whose value is redacted in fmt output,
+// structured logs, and JSON serialization.
+// Use string(s) for explicit access to the underlying value (e.g. when setting headers).
+type SensitiveString string
+
+// Format implements fmt.Formatter, redacting the value for all format verbs including %x/%X.
+func (s SensitiveString) Format(f fmt.State, _ rune) { _, _ = fmt.Fprint(f, sensitiveStringRedacted) }
+
+// String implements fmt.Stringer, returning a redacted placeholder for %s and %v.
+func (s SensitiveString) String() string { return sensitiveStringRedacted }
+
+// GoString returns a redacted placeholder to prevent leakage via %#v.
+func (s SensitiveString) GoString() string { return sensitiveStringRedacted }
+
+// MarshalJSON encodes a redacted placeholder to prevent leakage via JSON serialization.
+func (s SensitiveString) MarshalJSON() ([]byte, error) { return json.Marshal(sensitiveStringRedacted) }
+
+// LogValue returns a redacted slog.Value for structured logging.
+func (s SensitiveString) LogValue() slog.Value { return slog.StringValue(sensitiveStringRedacted) }
+
 // Page wraps a paginated v1 list response, exposing the data slice alongside
 // the server-reported pagination metadata (totalCount, offset, limit, count).
 // All list methods return Page[T] so callers can implement offset-based
