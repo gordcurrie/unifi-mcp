@@ -21,6 +21,10 @@ import (
 // 10 MiB is well above any realistic UniFi response payload.
 const maxResponseBytes = 10 << 20 // 10 MiB
 
+// maxErrBodyBytes caps how much of a non-2xx response body is stored in APIError.Body.
+// The full body is still read to drain the connection; only the stored portion is capped.
+const maxErrBodyBytes = 256
+
 // maxPageLimit is the maximum value accepted for the limit pagination parameter.
 // It prevents callers from requesting arbitrarily large pages that could
 // exhaust memory or cause excessive load on the UniFi controller.
@@ -206,7 +210,11 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, &APIError{StatusCode: resp.StatusCode, Body: string(data)}
+		body := string(data)
+		if len(body) > maxErrBodyBytes {
+			body = body[:maxErrBodyBytes] + "… (truncated)"
+		}
+		return nil, &APIError{StatusCode: resp.StatusCode, Body: body}
 	}
 	return data, nil
 }
