@@ -229,7 +229,9 @@ func TestPathEscaping(t *testing.T) {
 				"id": "dev/1", "macAddress": "aa:bb:cc:dd:ee:ff", "state": "ONLINE",
 			})
 		})
-		_, _ = client.GetDevice(context.Background(), "", "dev/1")
+		if _, err := client.GetDevice(context.Background(), "", "dev/1"); err != nil {
+			t.Fatalf("GetDevice: %v", err)
+		}
 		want := "/integration/v1/sites/test-site-id/devices/dev%2F1"
 		if gotPath != want {
 			t.Errorf("path = %q, want %q", gotPath, want)

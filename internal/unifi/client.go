@@ -22,7 +22,7 @@ import (
 const maxResponseBytes = 10 << 20 // 10 MiB
 
 // maxErrBodyBytes caps how much of a non-2xx response body is stored in APIError.Body.
-// The full body is still read to drain the connection; only the stored portion is capped.
+// Response reading still obeys maxResponseBytes via io.LimitReader; the stored error snippet is capped separately.
 const maxErrBodyBytes = 256
 
 // maxPageLimit is the maximum value accepted for the limit pagination parameter.

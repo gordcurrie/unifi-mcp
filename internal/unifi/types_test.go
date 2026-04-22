@@ -26,8 +26,8 @@ func TestSensitiveStringRedaction(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.got == "my-secret-api-key" {
-				t.Errorf("%s leaked the secret value", tc.name)
+			if tc.got != sensitiveStringRedacted {
+				t.Errorf("%s: got %q, want %q", tc.name, tc.got, sensitiveStringRedacted)
 			}
 		})
 	}
@@ -37,8 +37,9 @@ func TestSensitiveStringRedaction(t *testing.T) {
 		if err != nil {
 			t.Fatalf("MarshalJSON: %v", err)
 		}
-		if string(b) == `"my-secret-api-key"` {
-			t.Error("MarshalJSON leaked the secret value")
+		want := `"` + sensitiveStringRedacted + `"`
+		if string(b) != want {
+			t.Errorf("MarshalJSON: got %q, want %q", string(b), want)
 		}
 	})
 
