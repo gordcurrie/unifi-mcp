@@ -75,8 +75,8 @@ These items bring unifi-mcp to the same baseline as the proxmox-mcp reference im
 
 | Item | Detail |
 |---|---|
-| `SensitiveString` type | Add `type SensitiveString string` to `internal/unifi/types.go` with `String()` and `GoString()` returning `"[REDACTED]"`, `MarshalJSON()` marshalling the real value, and `LogValue()` returning a redacted `slog.Value`. Change `apiKey string` in `Client` to `apiKey SensitiveString`. Prevents accidental logging of the API key via `%v`, `%#v`, or structured logging. See `internal/proxmox/types.go` for the implementation reference. |
-| Typed `APIError` struct | Add `type APIError struct { StatusCode int; Body string }` with `Error() string`. Return `&APIError{...}` from `do()` on non-2xx instead of `fmt.Errorf("HTTP %d: %s", ...)`. Allows callers to use `errors.As(err, &apiErr)` to inspect the status code (e.g. distinguish 401 from 500 without string parsing). |
+| `SensitiveString` type | Add `type SensitiveString string` to `internal/unifi/types.go` with `String()` and `GoString()` returning `"[REDACTED]"`, `MarshalJSON()` marshalling the real value, and `LogValue()` returning a redacted `slog.Value`. Change `apiKey string` in `Client` to `apiKey SensitiveString`. Prevents accidental logging of the API key via `%v`, `%#v`, or structured logging. Implementation reference: [`internal/proxmox/types.go`](https://github.com/gordcurrie/proxmox-mcp/blob/main/internal/proxmox/types.go) in the proxmox-mcp repo. |
+| Typed `APIError` struct | Add `type APIError struct { StatusCode int; Body string }` with `Error() string`. Return `&APIError{...}` from `do()` on non-2xx instead of `fmt.Errorf("unexpected status %d: %s", ...)`. Allows callers to use `errors.As(err, &apiErr)` to inspect the status code (e.g. distinguish 401 from 500 without string parsing). |
 | `url.PathEscape()` for path parameters | Wrap user-supplied path segment values (siteID, deviceID, clientID, etc.) in `url.PathEscape()` when building API paths via `fmt.Sprintf`. The current traversal check in `do()` catches `..` and `.` but doesn't encode characters (`/`, `%`, spaces) that could break routing. |
 
 ---
