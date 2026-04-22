@@ -3,13 +3,14 @@ package unifi
 import (
 	"context"
 	"fmt"
+	"net/url"
 )
 
 // ListClients returns one page of currently connected clients from GET /integration/v1/sites/{siteID}/clients.
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListClients(ctx context.Context, siteID string, offset, limit int) (Page[NetworkClient], error) {
 	id := c.site(siteID)
-	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients", id), offset, limit)
+	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[NetworkClient]{}, fmt.Errorf("ListClients %s: %w", id, err)
 	}
@@ -24,7 +25,7 @@ func (c *Client) ListClients(ctx context.Context, siteID string, offset, limit i
 // Pass an empty siteID to use the client default.
 func (c *Client) GetClient(ctx context.Context, siteID, clientID string) (NetworkClient, error) {
 	id := c.site(siteID)
-	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s", id, clientID))
+	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s", url.PathEscape(id), url.PathEscape(clientID)))
 	if err != nil {
 		return NetworkClient{}, fmt.Errorf("GetClient %s %s: %w", id, clientID, err)
 	}
@@ -40,7 +41,7 @@ func (c *Client) GetClient(ctx context.Context, siteID, clientID string) (Networ
 // Pass an empty siteID to use the client default.
 func (c *Client) AuthorizeGuestClient(ctx context.Context, siteID, clientID string, req GuestAuthRequest) error {
 	id := c.site(siteID)
-	_, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s/actions", id, clientID), req)
+	_, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/clients/%s/actions", url.PathEscape(id), url.PathEscape(clientID)), req)
 	if err != nil {
 		return fmt.Errorf("AuthorizeGuestClient %s %s: %w", id, clientID, err)
 	}

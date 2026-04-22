@@ -26,10 +26,22 @@ const maxResponseBytes = 10 << 20 // 10 MiB
 // exhaust memory or cause excessive load on the UniFi controller.
 const maxPageLimit = 1000
 
+// APIError is returned by the HTTP client when the server responds with a non-2xx status.
+// Use errors.As to inspect the StatusCode without parsing the error string.
+type APIError struct {
+	StatusCode int
+	Body       string
+}
+
+// Error implements the error interface.
+func (e *APIError) Error() string {
+	return fmt.Sprintf("unexpected status %d: %s", e.StatusCode, e.Body)
+}
+
 // Client is a UniFi Network API client.
 type Client struct {
 	baseURL    string
-	apiKey     string
+	apiKey     SensitiveString
 	siteID     string
 	httpClient *http.Client
 }
@@ -73,7 +85,7 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 
 	return &Client{
 		baseURL: strings.TrimRight(baseURL, "/"),
-		apiKey:  apiKey,
+		apiKey:  SensitiveString(apiKey),
 		siteID:  siteID,
 		httpClient: &http.Client{
 			Transport: transport,
@@ -172,7 +184,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
-	req.Header.Set("X-API-Key", c.apiKey)
+	req.Header.Set("X-API-Key", string(c.apiKey))
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -194,7 +206,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any) (_ []byt
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(data))
+		return nil, &APIError{StatusCode: resp.StatusCode, Body: string(data)}
 	}
 	return data, nil
 }
