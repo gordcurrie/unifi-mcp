@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"uuid"
 )
 
 // maxResponseBytes caps how much data we read from any single API response.
@@ -64,6 +65,9 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 	if siteID == "" {
 		return nil, errors.New("UNIFI_SITE_ID is required")
 	}
+	if err := validateIDs(siteID); err != nil {
+		return nil, fmt.Errorf("UNIFI_SITE_ID: %w", err)
+	}
 
 	transport := http.DefaultTransport
 	if insecure {
@@ -96,6 +100,25 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 			Timeout:   30 * time.Second,
 		},
 	}, nil
+}
+
+// ErrInvalidID is returned when a resource ID is not a canonical UUID.
+// Every ID path parameter in the UniFi v1 API is a UUID. Other UUID
+// representations (braced, URN, no dashes) are rejected so only the
+// path-safe canonical form reaches a URL.
+var ErrInvalidID = errors.New("invalid ID: must be a UUID in canonical form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+
+// validateIDs reports an error wrapping ErrInvalidID for the first id that is
+// not a UUID in canonical hex-and-dash form. Rejecting anything else before a
+// request is built means only well-formed IDs reach URL paths.
+func validateIDs(ids ...string) error {
+	for _, id := range ids {
+		u, err := uuid.Parse(id)
+		if err != nil || u.String() != strings.ToLower(id) {
+			return fmt.Errorf("%w: %q", ErrInvalidID, id)
+		}
+	}
+	return nil
 }
 
 // site returns the provided siteID if non-empty, otherwise the client default.

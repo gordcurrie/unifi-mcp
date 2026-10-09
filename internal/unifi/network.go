@@ -12,6 +12,9 @@ import (
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string, offset, limit int) (Page[WiFiBroadcast], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[WiFiBroadcast]{}, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[WiFiBroadcast]{}, fmt.Errorf("ListWiFiBroadcasts %s: %w", id, err)
@@ -28,6 +31,9 @@ func (c *Client) ListWiFiBroadcasts(ctx context.Context, siteID string, offset, 
 // Pass an empty siteID to use the client default.
 func (c *Client) GetWiFiBroadcast(ctx context.Context, siteID, broadcastID string) (WiFiBroadcast, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, broadcastID); err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("GetWiFiBroadcast %s %s: %w", id, broadcastID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts/%s", url.PathEscape(id), url.PathEscape(broadcastID)))
 	if err != nil {
 		return WiFiBroadcast{}, fmt.Errorf("GetWiFiBroadcast %s %s: %w", id, broadcastID, err)
@@ -43,6 +49,9 @@ func (c *Client) GetWiFiBroadcast(ctx context.Context, siteID, broadcastID strin
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListNetworks(ctx context.Context, siteID string, offset, limit int) (Page[NetworkConf], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[NetworkConf]{}, fmt.Errorf("ListNetworks %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/networks", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[NetworkConf]{}, fmt.Errorf("ListNetworks %s: %w", id, err)
@@ -58,6 +67,9 @@ func (c *Client) ListNetworks(ctx context.Context, siteID string, offset, limit 
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string, offset, limit int) (Page[FirewallPolicy], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[FirewallPolicy]{}, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[FirewallPolicy]{}, fmt.Errorf("ListFirewallPolicies %s: %w", id, err)
@@ -73,6 +85,9 @@ func (c *Client) ListFirewallPolicies(ctx context.Context, siteID string, offset
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListFirewallZones(ctx context.Context, siteID string, offset, limit int) (Page[FirewallZone], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[FirewallZone]{}, fmt.Errorf("ListFirewallZones %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[FirewallZone]{}, fmt.Errorf("ListFirewallZones %s: %w", id, err)
@@ -89,6 +104,9 @@ func (c *Client) ListFirewallZones(ctx context.Context, siteID string, offset, l
 // Pass an empty siteID to use the client default.
 func (c *Client) GetFirewallPolicy(ctx context.Context, siteID, policyID string) (FirewallPolicy, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return FirewallPolicy{}, fmt.Errorf("GetFirewallPolicy %s %s: %w", id, policyID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", url.PathEscape(id), url.PathEscape(policyID)))
 	if err != nil {
 		return FirewallPolicy{}, fmt.Errorf("GetFirewallPolicy %s %s: %w", id, policyID, err)
@@ -107,6 +125,9 @@ func (c *Client) GetFirewallPolicy(ctx context.Context, siteID, policyID string)
 // Pass an empty siteID to use the client default.
 func (c *Client) SetFirewallPolicyEnabled(ctx context.Context, siteID, policyID string, enabled bool) (FirewallPolicy, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return FirewallPolicy{}, fmt.Errorf("SetFirewallPolicyEnabled %s %s: get: %w", id, policyID, err)
+	}
 	path := fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", url.PathEscape(id), url.PathEscape(policyID))
 
 	raw, err := c.get(ctx, path)
@@ -137,6 +158,9 @@ func (c *Client) SetFirewallPolicyEnabled(ctx context.Context, siteID, policyID 
 // Pass an empty siteID to use the client default.
 func (c *Client) DeleteFirewallPolicy(ctx context.Context, siteID, policyID string) error {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return fmt.Errorf("DeleteFirewallPolicy %s %s: %w", id, policyID, err)
+	}
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/policies/%s", url.PathEscape(id), url.PathEscape(policyID))); err != nil {
 		return fmt.Errorf("DeleteFirewallPolicy %s %s: %w", id, policyID, err)
 	}
@@ -148,6 +172,9 @@ func (c *Client) DeleteFirewallPolicy(ctx context.Context, siteID, policyID stri
 // Pass an empty siteID to use the client default.
 func (c *Client) GetFirewallZone(ctx context.Context, siteID, zoneID string) (FirewallZone, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, zoneID); err != nil {
+		return FirewallZone{}, fmt.Errorf("GetFirewallZone %s %s: %w", id, zoneID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", url.PathEscape(id), url.PathEscape(zoneID)))
 	if err != nil {
 		return FirewallZone{}, fmt.Errorf("GetFirewallZone %s %s: %w", id, zoneID, err)
@@ -164,6 +191,9 @@ func (c *Client) GetFirewallZone(ctx context.Context, siteID, zoneID string) (Fi
 // Pass an empty siteID to use the client default.
 func (c *Client) CreateFirewallZone(ctx context.Context, siteID string, req FirewallZoneRequest) (FirewallZone, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return FirewallZone{}, fmt.Errorf("CreateFirewallZone %s: %w", id, err)
+	}
 	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones", url.PathEscape(id)), req)
 	if err != nil {
 		return FirewallZone{}, fmt.Errorf("CreateFirewallZone %s: %w", id, err)
@@ -180,6 +210,9 @@ func (c *Client) CreateFirewallZone(ctx context.Context, siteID string, req Fire
 // Pass an empty siteID to use the client default.
 func (c *Client) UpdateFirewallZone(ctx context.Context, siteID, zoneID string, req FirewallZoneRequest) (FirewallZone, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, zoneID); err != nil {
+		return FirewallZone{}, fmt.Errorf("UpdateFirewallZone %s %s: %w", id, zoneID, err)
+	}
 	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", url.PathEscape(id), url.PathEscape(zoneID)), req)
 	if err != nil {
 		return FirewallZone{}, fmt.Errorf("UpdateFirewallZone %s %s: %w", id, zoneID, err)
@@ -196,6 +229,9 @@ func (c *Client) UpdateFirewallZone(ctx context.Context, siteID, zoneID string, 
 // Pass an empty siteID to use the client default.
 func (c *Client) DeleteFirewallZone(ctx context.Context, siteID, zoneID string) error {
 	id := c.site(siteID)
+	if err := validateIDs(id, zoneID); err != nil {
+		return fmt.Errorf("DeleteFirewallZone %s %s: %w", id, zoneID, err)
+	}
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/firewall/zones/%s", url.PathEscape(id), url.PathEscape(zoneID))); err != nil {
 		return fmt.Errorf("DeleteFirewallZone %s %s: %w", id, zoneID, err)
 	}
@@ -206,6 +242,9 @@ func (c *Client) DeleteFirewallZone(ctx context.Context, siteID, zoneID string) 
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListACLRules(ctx context.Context, siteID string, offset, limit int) (Page[ACLRule], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[ACLRule]{}, fmt.Errorf("ListACLRules %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[ACLRule]{}, fmt.Errorf("ListACLRules %s: %w", id, err)
@@ -222,6 +261,9 @@ func (c *Client) ListACLRules(ctx context.Context, siteID string, offset, limit 
 // Pass an empty siteID to use the client default.
 func (c *Client) GetACLRule(ctx context.Context, siteID, ruleID string) (ACLRule, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, ruleID); err != nil {
+		return ACLRule{}, fmt.Errorf("GetACLRule %s %s: %w", id, ruleID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", url.PathEscape(id), url.PathEscape(ruleID)))
 	if err != nil {
 		return ACLRule{}, fmt.Errorf("GetACLRule %s %s: %w", id, ruleID, err)
@@ -238,6 +280,9 @@ func (c *Client) GetACLRule(ctx context.Context, siteID, ruleID string) (ACLRule
 // Pass an empty siteID to use the client default.
 func (c *Client) CreateACLRule(ctx context.Context, siteID string, req ACLRuleRequest) (ACLRule, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return ACLRule{}, fmt.Errorf("CreateACLRule %s: %w", id, err)
+	}
 	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules", url.PathEscape(id)), req)
 	if err != nil {
 		return ACLRule{}, fmt.Errorf("CreateACLRule %s: %w", id, err)
@@ -254,6 +299,9 @@ func (c *Client) CreateACLRule(ctx context.Context, siteID string, req ACLRuleRe
 // Pass an empty siteID to use the client default.
 func (c *Client) UpdateACLRule(ctx context.Context, siteID, ruleID string, req ACLRuleRequest) (ACLRule, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, ruleID); err != nil {
+		return ACLRule{}, fmt.Errorf("UpdateACLRule %s %s: %w", id, ruleID, err)
+	}
 	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", url.PathEscape(id), url.PathEscape(ruleID)), req)
 	if err != nil {
 		return ACLRule{}, fmt.Errorf("UpdateACLRule %s %s: %w", id, ruleID, err)
@@ -270,6 +318,9 @@ func (c *Client) UpdateACLRule(ctx context.Context, siteID, ruleID string, req A
 // Pass an empty siteID to use the client default.
 func (c *Client) DeleteACLRule(ctx context.Context, siteID, ruleID string) error {
 	id := c.site(siteID)
+	if err := validateIDs(id, ruleID); err != nil {
+		return fmt.Errorf("DeleteACLRule %s %s: %w", id, ruleID, err)
+	}
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/%s", url.PathEscape(id), url.PathEscape(ruleID))); err != nil {
 		return fmt.Errorf("DeleteACLRule %s %s: %w", id, ruleID, err)
 	}
@@ -281,6 +332,9 @@ func (c *Client) DeleteACLRule(ctx context.Context, siteID, ruleID string) error
 // Pass an empty siteID to use the client default.
 func (c *Client) SetACLRuleEnabled(ctx context.Context, siteID, ruleID string, enabled bool) (ACLRule, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, ruleID); err != nil {
+		return ACLRule{}, fmt.Errorf("SetACLRuleEnabled %s %s: get: %w", id, ruleID, err)
+	}
 	existing, err := c.GetACLRule(ctx, siteID, ruleID)
 	if err != nil {
 		return ACLRule{}, fmt.Errorf("SetACLRuleEnabled %s %s: get: %w", id, ruleID, err)
@@ -303,6 +357,9 @@ func (c *Client) SetACLRuleEnabled(ctx context.Context, siteID, ruleID string, e
 // Pass an empty siteID to use the client default.
 func (c *Client) GetACLRuleOrdering(ctx context.Context, siteID string) (ACLRuleOrdering, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("GetACLRuleOrdering %s: %w", id, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/ordering", url.PathEscape(id)))
 	if err != nil {
 		return ACLRuleOrdering{}, fmt.Errorf("GetACLRuleOrdering %s: %w", id, err)
@@ -319,6 +376,9 @@ func (c *Client) GetACLRuleOrdering(ctx context.Context, siteID string) (ACLRule
 // Pass an empty siteID to use the client default.
 func (c *Client) ReorderACLRules(ctx context.Context, siteID string, orderedIDs []string) (ACLRuleOrdering, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return ACLRuleOrdering{}, fmt.Errorf("ReorderACLRules %s: %w", id, err)
+	}
 	body := ACLRuleOrdering{OrderedACLRuleIDs: orderedIDs}
 	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/acl-rules/ordering", url.PathEscape(id)), body)
 	if err != nil {
@@ -338,6 +398,9 @@ func (c *Client) ReorderACLRules(ctx context.Context, siteID string, orderedIDs 
 // Pass an empty siteID to use the client default.
 func (c *Client) SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastID string, enabled bool) (WiFiBroadcast, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, broadcastID); err != nil {
+		return WiFiBroadcast{}, fmt.Errorf("SetWiFiBroadcastEnabled %s %s: get: %w", id, broadcastID, err)
+	}
 	path := fmt.Sprintf("/integration/v1/sites/%s/wifi/broadcasts/%s", url.PathEscape(id), url.PathEscape(broadcastID))
 
 	// GET current state as raw map for the round-trip PUT.
@@ -370,6 +433,9 @@ func (c *Client) SetWiFiBroadcastEnabled(ctx context.Context, siteID, broadcastI
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string, offset, limit int) (Page[TrafficMatchingList], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[TrafficMatchingList]{}, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[TrafficMatchingList]{}, fmt.Errorf("ListTrafficMatchingLists %s: %w", id, err)
@@ -386,6 +452,9 @@ func (c *Client) ListTrafficMatchingLists(ctx context.Context, siteID string, of
 // Pass an empty siteID to use the client default.
 func (c *Client) GetTrafficMatchingList(ctx context.Context, siteID, listID string) (TrafficMatchingList, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, listID); err != nil {
+		return TrafficMatchingList{}, fmt.Errorf("GetTrafficMatchingList %s %s: %w", id, listID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/traffic-matching-lists/%s", url.PathEscape(id), url.PathEscape(listID)))
 	if err != nil {
 		return TrafficMatchingList{}, fmt.Errorf("GetTrafficMatchingList %s %s: %w", id, listID, err)
@@ -402,6 +471,9 @@ func (c *Client) GetTrafficMatchingList(ctx context.Context, siteID, listID stri
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListWANs(ctx context.Context, siteID string, offset, limit int) (Page[WAN], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[WAN]{}, fmt.Errorf("ListWANs %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/wans", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[WAN]{}, fmt.Errorf("ListWANs %s: %w", id, err)
@@ -418,6 +490,9 @@ func (c *Client) ListWANs(ctx context.Context, siteID string, offset, limit int)
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVPNTunnels(ctx context.Context, siteID string, offset, limit int) (Page[VPNTunnel], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[VPNTunnel]{}, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/site-to-site-tunnels", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[VPNTunnel]{}, fmt.Errorf("ListVPNTunnels %s: %w", id, err)
@@ -434,6 +509,9 @@ func (c *Client) ListVPNTunnels(ctx context.Context, siteID string, offset, limi
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVPNServers(ctx context.Context, siteID string, offset, limit int) (Page[VPNServer], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[VPNServer]{}, fmt.Errorf("ListVPNServers %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/vpn/servers", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[VPNServer]{}, fmt.Errorf("ListVPNServers %s: %w", id, err)
@@ -450,6 +528,9 @@ func (c *Client) ListVPNServers(ctx context.Context, siteID string, offset, limi
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDNSPolicies(ctx context.Context, siteID string, offset, limit int) (Page[DNSPolicy], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[DNSPolicy]{}, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[DNSPolicy]{}, fmt.Errorf("ListDNSPolicies %s: %w", id, err)
@@ -466,6 +547,9 @@ func (c *Client) ListDNSPolicies(ctx context.Context, siteID string, offset, lim
 // Pass an empty siteID to use the client default.
 func (c *Client) GetDNSPolicy(ctx context.Context, siteID, policyID string) (DNSPolicy, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return DNSPolicy{}, fmt.Errorf("GetDNSPolicy %s %s: %w", id, policyID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", url.PathEscape(id), url.PathEscape(policyID)))
 	if err != nil {
 		return DNSPolicy{}, fmt.Errorf("GetDNSPolicy %s %s: %w", id, policyID, err)
@@ -482,6 +566,9 @@ func (c *Client) GetDNSPolicy(ctx context.Context, siteID, policyID string) (DNS
 // Pass an empty siteID to use the client default.
 func (c *Client) CreateDNSPolicy(ctx context.Context, siteID string, req DNSPolicyRequest) (DNSPolicy, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return DNSPolicy{}, fmt.Errorf("CreateDNSPolicy %s: %w", id, err)
+	}
 	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies", url.PathEscape(id)), req)
 	if err != nil {
 		return DNSPolicy{}, fmt.Errorf("CreateDNSPolicy %s: %w", id, err)
@@ -498,6 +585,9 @@ func (c *Client) CreateDNSPolicy(ctx context.Context, siteID string, req DNSPoli
 // Pass an empty siteID to use the client default.
 func (c *Client) UpdateDNSPolicy(ctx context.Context, siteID, policyID string, req DNSPolicyRequest) (DNSPolicy, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return DNSPolicy{}, fmt.Errorf("UpdateDNSPolicy %s %s: %w", id, policyID, err)
+	}
 	data, err := c.put(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", url.PathEscape(id), url.PathEscape(policyID)), req)
 	if err != nil {
 		return DNSPolicy{}, fmt.Errorf("UpdateDNSPolicy %s %s: %w", id, policyID, err)
@@ -514,6 +604,9 @@ func (c *Client) UpdateDNSPolicy(ctx context.Context, siteID, policyID string, r
 // Pass an empty siteID to use the client default.
 func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) error {
 	id := c.site(siteID)
+	if err := validateIDs(id, policyID); err != nil {
+		return fmt.Errorf("DeleteDNSPolicy %s %s: %w", id, policyID, err)
+	}
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/dns/policies/%s", url.PathEscape(id), url.PathEscape(policyID))); err != nil {
 		return fmt.Errorf("DeleteDNSPolicy %s %s: %w", id, policyID, err)
 	}
@@ -525,6 +618,9 @@ func (c *Client) DeleteDNSPolicy(ctx context.Context, siteID, policyID string) e
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListVouchers(ctx context.Context, siteID string, offset, limit int) (Page[Voucher], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[Voucher]{}, fmt.Errorf("ListVouchers %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[Voucher]{}, fmt.Errorf("ListVouchers %s: %w", id, err)
@@ -541,6 +637,9 @@ func (c *Client) ListVouchers(ctx context.Context, siteID string, offset, limit 
 // Pass an empty siteID to use the client default.
 func (c *Client) GetVoucher(ctx context.Context, siteID, voucherID string) (Voucher, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id, voucherID); err != nil {
+		return Voucher{}, fmt.Errorf("GetVoucher %s %s: %w", id, voucherID, err)
+	}
 	data, err := c.get(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers/%s", url.PathEscape(id), url.PathEscape(voucherID)))
 	if err != nil {
 		return Voucher{}, fmt.Errorf("GetVoucher %s %s: %w", id, voucherID, err)
@@ -562,6 +661,9 @@ type voucherCreateResponse struct {
 // Pass an empty siteID to use the client default.
 func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherRequest) ([]Voucher, error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return nil, fmt.Errorf("CreateVouchers %s: %w", id, err)
+	}
 	data, err := c.postWithBody(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers", url.PathEscape(id)), req)
 	if err != nil {
 		return nil, fmt.Errorf("CreateVouchers %s: %w", id, err)
@@ -578,6 +680,9 @@ func (c *Client) CreateVouchers(ctx context.Context, siteID string, req VoucherR
 // Pass an empty siteID to use the client default.
 func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) error {
 	id := c.site(siteID)
+	if err := validateIDs(id, voucherID); err != nil {
+		return fmt.Errorf("DeleteVoucher %s %s: %w", id, voucherID, err)
+	}
 	if err := c.delete(ctx, fmt.Sprintf("/integration/v1/sites/%s/hotspot/vouchers/%s", url.PathEscape(id), url.PathEscape(voucherID))); err != nil {
 		return fmt.Errorf("DeleteVoucher %s %s: %w", id, voucherID, err)
 	}
@@ -589,6 +694,9 @@ func (c *Client) DeleteVoucher(ctx context.Context, siteID, voucherID string) er
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListDeviceTags(ctx context.Context, siteID string, offset, limit int) (Page[DeviceTag], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[DeviceTag]{}, fmt.Errorf("ListDeviceTags %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/device-tags", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[DeviceTag]{}, fmt.Errorf("ListDeviceTags %s: %w", id, err)
@@ -635,6 +743,9 @@ func (c *Client) ListDPIApplications(ctx context.Context, offset, limit int) (Pa
 // Pass an empty siteID to use the client default. offset and limit control pagination; 0 means use the API default.
 func (c *Client) ListRADIUSProfiles(ctx context.Context, siteID string, offset, limit int) (Page[RADIUSProfile], error) {
 	id := c.site(siteID)
+	if err := validateIDs(id); err != nil {
+		return Page[RADIUSProfile]{}, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)
+	}
 	data, err := c.getWithQuery(ctx, fmt.Sprintf("/integration/v1/sites/%s/radius/profiles", url.PathEscape(id)), offset, limit)
 	if err != nil {
 		return Page[RADIUSProfile]{}, fmt.Errorf("ListRADIUSProfiles %s: %w", id, err)

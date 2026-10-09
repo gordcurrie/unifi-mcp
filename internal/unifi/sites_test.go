@@ -40,14 +40,14 @@ func TestGetSite(t *testing.T) {
 
 	t.Run("falls back to client default site", func(t *testing.T) {
 		client := newTestClient(t, sitesListHandler([]map[string]any{
-			{"id": "test-site-id", "name": "home"},
+			{"id": "11111111-1111-4111-8111-111111111111", "name": "home"},
 		}))
 		site, err := client.GetSite(context.Background(), "")
 		if err != nil {
 			t.Fatalf("GetSite: %v", err)
 		}
-		if site.ID != "test-site-id" {
-			t.Errorf("got ID %q, want %q", site.ID, "test-site-id")
+		if site.ID != "11111111-1111-4111-8111-111111111111" {
+			t.Errorf("got ID %q, want %q", site.ID, "11111111-1111-4111-8111-111111111111")
 		}
 	})
 

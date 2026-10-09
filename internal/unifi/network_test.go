@@ -11,7 +11,7 @@ import (
 func TestListWiFiBroadcasts(t *testing.T) {
 	t.Run("decodes broadcast list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/wifi/broadcasts" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -88,7 +88,7 @@ func TestListWiFiBroadcasts(t *testing.T) {
 func TestListNetworks(t *testing.T) {
 	t.Run("decodes network list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/networks" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/networks" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -117,14 +117,14 @@ func TestListNetworks(t *testing.T) {
 func TestListFirewallPolicies(t *testing.T) {
 	t.Run("decodes policy list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/policies" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "p-1", "name": "block-iot-out", "enabled": true, "index": 0},
+					{"id": "00000000-0000-4000-8000-000000000014", "name": "block-iot-out", "enabled": true, "index": 0},
 				},
 				"totalCount": 1,
 			})
@@ -145,14 +145,14 @@ func TestListFirewallPolicies(t *testing.T) {
 func TestListFirewallZones(t *testing.T) {
 	t.Run("decodes zone list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/zones" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "z-1", "name": "Internal", "networkIds": []string{"net-1", "net-2"}},
+					{"id": "00000000-0000-4000-8000-000000000018", "name": "Internal", "networkIds": []string{"net-1", "net-2"}},
 					{"id": "z-2", "name": "External"},
 				},
 				"totalCount": 2,
@@ -177,7 +177,7 @@ func TestListFirewallZones(t *testing.T) {
 func TestListACLRules(t *testing.T) {
 	t.Run("decodes ACL rule list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -205,25 +205,25 @@ func TestListACLRules(t *testing.T) {
 func TestGetWiFiBroadcast(t *testing.T) {
 	t.Run("decodes single broadcast", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts/bc-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/wifi/broadcasts/00000000-0000-4000-8000-000000000006" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+				"id": "00000000-0000-4000-8000-000000000006", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
 				"hideName":               true,
 				"clientIsolationEnabled": false,
 				"network":                map[string]any{"type": "SPECIFIC", "networkId": "net-1"},
 				"securityConfiguration":  map[string]any{"type": "WPA3_PERSONAL", "fastRoamingEnabled": true},
 			})
 		})
-		bc, err := client.GetWiFiBroadcast(context.Background(), "", "bc-1")
+		bc, err := client.GetWiFiBroadcast(context.Background(), "", "00000000-0000-4000-8000-000000000006")
 		if err != nil {
 			t.Fatalf("GetWiFiBroadcast: %v", err)
 		}
-		if bc.ID != "bc-1" {
-			t.Errorf("got ID %q, want bc-1", bc.ID)
+		if bc.ID != "00000000-0000-4000-8000-000000000006" {
+			t.Errorf("got ID %q, want 00000000-0000-4000-8000-000000000006", bc.ID)
 		}
 		if !bc.Enabled {
 			t.Error("got Enabled false, want true")
@@ -254,7 +254,7 @@ func TestGetWiFiBroadcast(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.GetWiFiBroadcast(context.Background(), "", "bc-1")
+		_, err := client.GetWiFiBroadcast(context.Background(), "", "00000000-0000-4000-8000-000000000006")
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -265,7 +265,7 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 	t.Run("disables a broadcast", func(t *testing.T) {
 		var putEnabled any
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts/bc-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/wifi/broadcasts/00000000-0000-4000-8000-000000000006" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -273,7 +273,7 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 			switch r.Method {
 			case http.MethodGet:
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+					"id": "00000000-0000-4000-8000-000000000006", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
 				})
 			case http.MethodPut:
 				var body map[string]any
@@ -283,13 +283,13 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 				}
 				putEnabled = body["enabled"]
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": false,
+					"id": "00000000-0000-4000-8000-000000000006", "name": "HomeWiFi", "type": "STANDARD", "enabled": false,
 				})
 			default:
 				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			}
 		})
-		bc, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "bc-1", false)
+		bc, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000006", false)
 		if err != nil {
 			t.Fatalf("SetWiFiBroadcastEnabled: %v", err)
 		}
@@ -304,7 +304,7 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 	t.Run("enables a broadcast", func(t *testing.T) {
 		var putEnabled any
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/wifi/broadcasts/bc-2" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/wifi/broadcasts/00000000-0000-4000-8000-000000000007" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -312,7 +312,7 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 			switch r.Method {
 			case http.MethodGet:
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "bc-2", "name": "GuestWiFi", "type": "STANDARD", "enabled": false,
+					"id": "00000000-0000-4000-8000-000000000007", "name": "GuestWiFi", "type": "STANDARD", "enabled": false,
 				})
 			case http.MethodPut:
 				var body map[string]any
@@ -322,13 +322,13 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 				}
 				putEnabled = body["enabled"]
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "bc-2", "name": "GuestWiFi", "type": "STANDARD", "enabled": true,
+					"id": "00000000-0000-4000-8000-000000000007", "name": "GuestWiFi", "type": "STANDARD", "enabled": true,
 				})
 			default:
 				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			}
 		})
-		bc, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "bc-2", true)
+		bc, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000007", true)
 		if err != nil {
 			t.Fatalf("SetWiFiBroadcastEnabled: %v", err)
 		}
@@ -346,13 +346,13 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 			switch r.Method {
 			case http.MethodGet:
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "bc-1", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
+					"id": "00000000-0000-4000-8000-000000000006", "name": "HomeWiFi", "type": "STANDARD", "enabled": true,
 				})
 			case http.MethodPut:
 				http.Error(w, "internal error", http.StatusInternalServerError)
 			}
 		})
-		_, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "bc-1", false)
+		_, err := client.SetWiFiBroadcastEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000006", false)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -362,14 +362,14 @@ func TestSetWiFiBroadcastEnabled(t *testing.T) {
 func TestListTrafficMatchingLists(t *testing.T) {
 	t.Run("decodes list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/traffic-matching-lists" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/traffic-matching-lists" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "tml-1", "name": "BlockedIPs", "type": "IP", "entries": []string{"10.0.0.1", "10.0.0.2"}},
+					{"id": "00000000-0000-4000-8000-000000000015", "name": "BlockedIPs", "type": "IP", "entries": []string{"10.0.0.1", "10.0.0.2"}},
 					{"id": "tml-2", "name": "TrustedPorts", "type": "PORT"},
 				},
 				"totalCount": 2,
@@ -394,22 +394,22 @@ func TestListTrafficMatchingLists(t *testing.T) {
 func TestGetTrafficMatchingList(t *testing.T) {
 	t.Run("decodes single list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/traffic-matching-lists/tml-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/traffic-matching-lists/00000000-0000-4000-8000-000000000015" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "tml-1", "name": "BlockedIPs", "type": "IP",
+				"id": "00000000-0000-4000-8000-000000000015", "name": "BlockedIPs", "type": "IP",
 				"entries": []string{"10.0.0.1"},
 			})
 		})
-		list, err := client.GetTrafficMatchingList(context.Background(), "", "tml-1")
+		list, err := client.GetTrafficMatchingList(context.Background(), "", "00000000-0000-4000-8000-000000000015")
 		if err != nil {
 			t.Fatalf("GetTrafficMatchingList: %v", err)
 		}
-		if list.ID != "tml-1" {
-			t.Errorf("got ID %q, want tml-1", list.ID)
+		if list.ID != "00000000-0000-4000-8000-000000000015" {
+			t.Errorf("got ID %q, want 00000000-0000-4000-8000-000000000015", list.ID)
 		}
 		if list.Type != "IP" {
 			t.Errorf("got Type %q, want IP", list.Type)
@@ -420,7 +420,7 @@ func TestGetTrafficMatchingList(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.GetTrafficMatchingList(context.Background(), "", "tml-1")
+		_, err := client.GetTrafficMatchingList(context.Background(), "", "00000000-0000-4000-8000-000000000015")
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -430,7 +430,7 @@ func TestGetTrafficMatchingList(t *testing.T) {
 func TestListWANs(t *testing.T) {
 	t.Run("decodes WAN list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/wans" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/wans" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -461,7 +461,7 @@ func TestListWANs(t *testing.T) {
 func TestListVPNTunnels(t *testing.T) {
 	t.Run("decodes tunnel list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/vpn/site-to-site-tunnels" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/vpn/site-to-site-tunnels" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -489,7 +489,7 @@ func TestListVPNTunnels(t *testing.T) {
 func TestListVPNServers(t *testing.T) {
 	t.Run("decodes server list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/vpn/servers" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/vpn/servers" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -517,14 +517,14 @@ func TestListVPNServers(t *testing.T) {
 func TestListDNSPolicies(t *testing.T) {
 	t.Run("decodes policy list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/dns/policies" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "p-1", "type": "A_RECORD", "domain": "nas.home", "ipv4Address": "192.168.1.100", "enabled": true},
+					{"id": "00000000-0000-4000-8000-000000000014", "type": "A_RECORD", "domain": "nas.home", "ipv4Address": "192.168.1.100", "enabled": true},
 					{"id": "p-2", "type": "A_RECORD", "domain": "pi.home", "ipv4Address": "192.168.1.200", "enabled": false},
 				},
 				"totalCount": 2,
@@ -549,17 +549,17 @@ func TestListDNSPolicies(t *testing.T) {
 func TestGetDNSPolicy(t *testing.T) {
 	t.Run("decodes single policy", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/dns/policies/00000000-0000-4000-8000-000000000014" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "p-1", "type": "A_RECORD", "domain": "nas.home",
+				"id": "00000000-0000-4000-8000-000000000014", "type": "A_RECORD", "domain": "nas.home",
 				"ipv4Address": "192.168.1.100", "ttlSeconds": 300, "enabled": true,
 			})
 		})
-		policy, err := client.GetDNSPolicy(context.Background(), "", "p-1")
+		policy, err := client.GetDNSPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000014")
 		if err != nil {
 			t.Fatalf("GetDNSPolicy: %v", err)
 		}
@@ -586,7 +586,7 @@ func TestCreateDNSPolicy(t *testing.T) {
 	t.Run("posts and decodes created policy", func(t *testing.T) {
 		var gotBody DNSPolicyRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies" {
+			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/dns/policies" {
 				http.Error(w, "bad request", http.StatusBadRequest)
 				return
 			}
@@ -629,7 +629,7 @@ func TestUpdateDNSPolicy(t *testing.T) {
 	t.Run("puts and decodes updated policy", func(t *testing.T) {
 		var gotBody DNSPolicyRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/dns/policies/00000000-0000-4000-8000-000000000014" {
 				http.Error(w, "bad request", http.StatusBadRequest)
 				return
 			}
@@ -639,20 +639,20 @@ func TestUpdateDNSPolicy(t *testing.T) {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "p-1", "type": gotBody.Type, "domain": gotBody.Domain,
+				"id": "00000000-0000-4000-8000-000000000014", "type": gotBody.Type, "domain": gotBody.Domain,
 				"ipv4Address": gotBody.IPv4Address, "enabled": gotBody.Enabled,
 			})
 		})
 		req := DNSPolicyRequest{Type: "A_RECORD", Domain: "nas.home", IPv4Address: "192.168.1.99", Enabled: true}
-		policy, err := client.UpdateDNSPolicy(context.Background(), "", "p-1", req)
+		policy, err := client.UpdateDNSPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000014", req)
 		if err != nil {
 			t.Fatalf("UpdateDNSPolicy: %v", err)
 		}
 		if gotBody.IPv4Address != "192.168.1.99" {
 			t.Errorf("PUT body IPv4Address = %q, want 192.168.1.99", gotBody.IPv4Address)
 		}
-		if policy.ID != "p-1" {
-			t.Errorf("got ID %q, want p-1", policy.ID)
+		if policy.ID != "00000000-0000-4000-8000-000000000014" {
+			t.Errorf("got ID %q, want 00000000-0000-4000-8000-000000000014", policy.ID)
 		}
 	})
 
@@ -660,7 +660,7 @@ func TestUpdateDNSPolicy(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.UpdateDNSPolicy(context.Background(), "", "p-1", DNSPolicyRequest{Type: "A_RECORD", Domain: "nas.home"})
+		_, err := client.UpdateDNSPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000014", DNSPolicyRequest{Type: "A_RECORD", Domain: "nas.home"})
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -671,14 +671,14 @@ func TestDeleteDNSPolicy(t *testing.T) {
 	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/dns/policies/p-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/dns/policies/00000000-0000-4000-8000-000000000014" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			gotMethod = r.Method
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.DeleteDNSPolicy(context.Background(), "", "p-1"); err != nil {
+		if err := client.DeleteDNSPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000014"); err != nil {
 			t.Fatalf("DeleteDNSPolicy: %v", err)
 		}
 		if gotMethod != http.MethodDelete {
@@ -690,7 +690,7 @@ func TestDeleteDNSPolicy(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "forbidden", http.StatusForbidden)
 		})
-		if err := client.DeleteDNSPolicy(context.Background(), "", "p-1"); err == nil {
+		if err := client.DeleteDNSPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000014"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -699,13 +699,13 @@ func TestDeleteDNSPolicy(t *testing.T) {
 func TestGetFirewallPolicy(t *testing.T) {
 	t.Run("decodes single policy", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/policies/00000000-0000-4000-8000-000000000012" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "fp-1", "name": "Allow LAN", "enabled": true, "index": 100,
+				"id": "00000000-0000-4000-8000-000000000012", "name": "Allow LAN", "enabled": true, "index": 100,
 				"action":          map[string]any{"type": "ALLOW", "allowReturnTraffic": true},
 				"source":          map[string]any{"zoneId": "zone-a"},
 				"destination":     map[string]any{"zoneId": "zone-b"},
@@ -714,7 +714,7 @@ func TestGetFirewallPolicy(t *testing.T) {
 				"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": true},
 			})
 		})
-		policy, err := client.GetFirewallPolicy(context.Background(), "", "fp-1")
+		policy, err := client.GetFirewallPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000012")
 		if err != nil {
 			t.Fatalf("GetFirewallPolicy: %v", err)
 		}
@@ -731,13 +731,13 @@ func TestGetFirewallPolicy(t *testing.T) {
 
 	t.Run("decodes destination trafficFilter with IP and port scopes", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-2" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/policies/00000000-0000-4000-8000-000000000013" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "fp-2", "name": "Lab can reach PBS", "description": "scoped rule",
+				"id": "00000000-0000-4000-8000-000000000013", "name": "Lab can reach PBS", "description": "scoped rule",
 				"enabled": true, "index": 10001,
 				"action": map[string]any{"type": "ALLOW", "allowReturnTraffic": true},
 				"source": map[string]any{"zoneId": "zone-lab"},
@@ -764,7 +764,7 @@ func TestGetFirewallPolicy(t *testing.T) {
 				"metadata":        map[string]any{"origin": "USER_DEFINED", "configurable": false},
 			})
 		})
-		policy, err := client.GetFirewallPolicy(context.Background(), "", "fp-2")
+		policy, err := client.GetFirewallPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000013")
 		if err != nil {
 			t.Fatalf("GetFirewallPolicy: %v", err)
 		}
@@ -807,7 +807,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 	t.Run("gets then puts with enabled flag set", func(t *testing.T) {
 		var putBody map[string]any
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			path := "/integration/v1/sites/test-site-id/firewall/policies/fp-1"
+			path := "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/policies/00000000-0000-4000-8000-000000000012"
 			if r.URL.Path != path {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
@@ -815,7 +815,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			if r.Method == http.MethodGet {
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "fp-1", "enabled": false, "name": "Block All",
+					"id": "00000000-0000-4000-8000-000000000012", "enabled": false, "name": "Block All",
 					"action":          map[string]any{"type": "BLOCK"},
 					"source":          map[string]any{"zoneId": "zone-a"},
 					"destination":     map[string]any{"zoneId": "zone-b"},
@@ -831,7 +831,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 					return
 				}
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "fp-1", "enabled": true, "name": "Block All",
+					"id": "00000000-0000-4000-8000-000000000012", "enabled": true, "name": "Block All",
 					"action":          putBody["action"],
 					"source":          putBody["source"],
 					"destination":     putBody["destination"],
@@ -842,7 +842,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 			}
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		})
-		policy, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		policy, err := client.SetFirewallPolicyEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000012", true)
 		if err != nil {
 			t.Fatalf("SetFirewallPolicyEnabled: %v", err)
 		}
@@ -864,7 +864,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000012", true)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -880,7 +880,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 					t.Fatalf("first request method = %s, want GET", r.Method)
 				}
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "fp-1", "enabled": false, "name": "Block All",
+					"id": "00000000-0000-4000-8000-000000000012", "enabled": false, "name": "Block All",
 					"action":          map[string]any{"type": "BLOCK"},
 					"source":          map[string]any{"zoneId": "zone-a"},
 					"destination":     map[string]any{"zoneId": "zone-b"},
@@ -895,7 +895,7 @@ func TestSetFirewallPolicyEnabled(t *testing.T) {
 			}
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "fp-1", true)
+		_, err := client.SetFirewallPolicyEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000012", true)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -906,14 +906,14 @@ func TestDeleteFirewallPolicy(t *testing.T) {
 	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/policies/fp-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/policies/00000000-0000-4000-8000-000000000012" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			gotMethod = r.Method
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.DeleteFirewallPolicy(context.Background(), "", "fp-1"); err != nil {
+		if err := client.DeleteFirewallPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000012"); err != nil {
 			t.Fatalf("DeleteFirewallPolicy: %v", err)
 		}
 		if gotMethod != http.MethodDelete {
@@ -925,7 +925,7 @@ func TestDeleteFirewallPolicy(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "forbidden", http.StatusForbidden)
 		})
-		if err := client.DeleteFirewallPolicy(context.Background(), "", "fp-1"); err == nil {
+		if err := client.DeleteFirewallPolicy(context.Background(), "", "00000000-0000-4000-8000-000000000012"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -934,18 +934,18 @@ func TestDeleteFirewallPolicy(t *testing.T) {
 func TestGetFirewallZone(t *testing.T) {
 	t.Run("decodes single zone", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/zones/00000000-0000-4000-8000-000000000018" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "z-1", "name": "Internal",
+				"id": "00000000-0000-4000-8000-000000000018", "name": "Internal",
 				"networkIds": []string{"net-a", "net-b"},
 				"metadata":   map[string]any{"origin": "SYSTEM_DEFINED", "configurable": true},
 			})
 		})
-		zone, err := client.GetFirewallZone(context.Background(), "", "z-1")
+		zone, err := client.GetFirewallZone(context.Background(), "", "00000000-0000-4000-8000-000000000018")
 		if err != nil {
 			t.Fatalf("GetFirewallZone: %v", err)
 		}
@@ -972,7 +972,7 @@ func TestCreateFirewallZone(t *testing.T) {
 	t.Run("posts and decodes created zone", func(t *testing.T) {
 		var gotBody FirewallZoneRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones" {
+			if r.Method != http.MethodPost || r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/zones" {
 				http.Error(w, "bad request", http.StatusBadRequest)
 				return
 			}
@@ -1015,7 +1015,7 @@ func TestUpdateFirewallZone(t *testing.T) {
 	t.Run("puts and decodes updated zone", func(t *testing.T) {
 		var gotBody FirewallZoneRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+			if r.Method != http.MethodPut || r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/zones/00000000-0000-4000-8000-000000000018" {
 				http.Error(w, "bad request", http.StatusBadRequest)
 				return
 			}
@@ -1025,12 +1025,12 @@ func TestUpdateFirewallZone(t *testing.T) {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "z-1", "name": gotBody.Name, "networkIds": gotBody.NetworkIDs,
+				"id": "00000000-0000-4000-8000-000000000018", "name": gotBody.Name, "networkIds": gotBody.NetworkIDs,
 				"metadata": map[string]any{"origin": "USER_DEFINED", "configurable": true},
 			})
 		})
 		req := FirewallZoneRequest{Name: "UpdatedZone", NetworkIDs: []string{"net-a", "net-b"}}
-		zone, err := client.UpdateFirewallZone(context.Background(), "", "z-1", req)
+		zone, err := client.UpdateFirewallZone(context.Background(), "", "00000000-0000-4000-8000-000000000018", req)
 		if err != nil {
 			t.Fatalf("UpdateFirewallZone: %v", err)
 		}
@@ -1046,7 +1046,7 @@ func TestUpdateFirewallZone(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.UpdateFirewallZone(context.Background(), "", "z-1", FirewallZoneRequest{Name: "X", NetworkIDs: []string{}})
+		_, err := client.UpdateFirewallZone(context.Background(), "", "00000000-0000-4000-8000-000000000018", FirewallZoneRequest{Name: "X", NetworkIDs: []string{}})
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1057,14 +1057,14 @@ func TestDeleteFirewallZone(t *testing.T) {
 	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/firewall/zones/z-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/firewall/zones/00000000-0000-4000-8000-000000000018" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			gotMethod = r.Method
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.DeleteFirewallZone(context.Background(), "", "z-1"); err != nil {
+		if err := client.DeleteFirewallZone(context.Background(), "", "00000000-0000-4000-8000-000000000018"); err != nil {
 			t.Fatalf("DeleteFirewallZone: %v", err)
 		}
 		if gotMethod != http.MethodDelete {
@@ -1076,7 +1076,7 @@ func TestDeleteFirewallZone(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "forbidden", http.StatusForbidden)
 		})
-		if err := client.DeleteFirewallZone(context.Background(), "", "z-1"); err == nil {
+		if err := client.DeleteFirewallZone(context.Background(), "", "00000000-0000-4000-8000-000000000018"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -1085,18 +1085,18 @@ func TestDeleteFirewallZone(t *testing.T) {
 func TestGetACLRule(t *testing.T) {
 	t.Run("decodes single rule", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules/00000000-0000-4000-8000-000000000004" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "ar-1", "type": "IPV4", "name": "test-rule",
+				"id": "00000000-0000-4000-8000-000000000004", "type": "IPV4", "name": "test-rule",
 				"enabled": true, "action": "ALLOW", "index": 0,
 				"metadata": map[string]any{"origin": "USER_DEFINED"},
 			})
 		})
-		rule, err := client.GetACLRule(context.Background(), "", "ar-1")
+		rule, err := client.GetACLRule(context.Background(), "", "00000000-0000-4000-8000-000000000004")
 		if err != nil {
 			t.Fatalf("GetACLRule: %v", err)
 		}
@@ -1123,7 +1123,7 @@ func TestCreateACLRule(t *testing.T) {
 	t.Run("posts body and decodes response", func(t *testing.T) {
 		var gotBody ACLRuleRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules" || r.Method != http.MethodPost {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules" || r.Method != http.MethodPost {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -1166,7 +1166,7 @@ func TestUpdateACLRule(t *testing.T) {
 	t.Run("puts body and decodes response", func(t *testing.T) {
 		var gotBody ACLRuleRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" || r.Method != http.MethodPut {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules/00000000-0000-4000-8000-000000000004" || r.Method != http.MethodPut {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -1176,12 +1176,12 @@ func TestUpdateACLRule(t *testing.T) {
 				return
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "ar-1", "type": gotBody.Type, "name": gotBody.Name,
+				"id": "00000000-0000-4000-8000-000000000004", "type": gotBody.Type, "name": gotBody.Name,
 				"action": gotBody.Action, "enabled": gotBody.Enabled, "index": 0,
 			})
 		})
 		req := ACLRuleRequest{Type: "IPV4", Name: "renamed", Action: "ALLOW", Enabled: false}
-		rule, err := client.UpdateACLRule(context.Background(), "", "ar-1", req)
+		rule, err := client.UpdateACLRule(context.Background(), "", "00000000-0000-4000-8000-000000000004", req)
 		if err != nil {
 			t.Fatalf("UpdateACLRule: %v", err)
 		}
@@ -1194,7 +1194,7 @@ func TestUpdateACLRule(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.UpdateACLRule(context.Background(), "", "ar-1", ACLRuleRequest{Type: "IPV4", Name: "x", Action: "ALLOW"})
+		_, err := client.UpdateACLRule(context.Background(), "", "00000000-0000-4000-8000-000000000004", ACLRuleRequest{Type: "IPV4", Name: "x", Action: "ALLOW"})
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1205,14 +1205,14 @@ func TestDeleteACLRule(t *testing.T) {
 	t.Run("sends DELETE and succeeds on 200", func(t *testing.T) {
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ar-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules/00000000-0000-4000-8000-000000000004" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			gotMethod = r.Method
 			w.WriteHeader(http.StatusOK)
 		})
-		if err := client.DeleteACLRule(context.Background(), "", "ar-1"); err != nil {
+		if err := client.DeleteACLRule(context.Background(), "", "00000000-0000-4000-8000-000000000004"); err != nil {
 			t.Fatalf("DeleteACLRule: %v", err)
 		}
 		if gotMethod != http.MethodDelete {
@@ -1224,7 +1224,7 @@ func TestDeleteACLRule(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		if err := client.DeleteACLRule(context.Background(), "", "ar-1"); err == nil {
+		if err := client.DeleteACLRule(context.Background(), "", "00000000-0000-4000-8000-000000000004"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -1242,7 +1242,7 @@ func TestSetACLRuleEnabled(t *testing.T) {
 					return
 				}
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "ar-1", "type": "IPV4", "name": "my-rule",
+					"id": "00000000-0000-4000-8000-000000000004", "type": "IPV4", "name": "my-rule",
 					"action": "ALLOW", "enabled": false, "index": 0,
 				})
 				return
@@ -1257,11 +1257,11 @@ func TestSetACLRuleEnabled(t *testing.T) {
 				return
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "ar-1", "type": body.Type, "name": body.Name,
+				"id": "00000000-0000-4000-8000-000000000004", "type": body.Type, "name": body.Name,
 				"action": body.Action, "enabled": body.Enabled, "index": 0,
 			})
 		})
-		rule, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		rule, err := client.SetACLRuleEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000004", true)
 		if err != nil {
 			t.Fatalf("SetACLRuleEnabled: %v", err)
 		}
@@ -1274,7 +1274,7 @@ func TestSetACLRuleEnabled(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		_, err := client.SetACLRuleEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000004", true)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1290,7 +1290,7 @@ func TestSetACLRuleEnabled(t *testing.T) {
 					t.Fatalf("first request method = %s, want GET", r.Method)
 				}
 				_ = json.NewEncoder(w).Encode(map[string]any{
-					"id": "ar-1", "type": "IPV4", "name": "my-rule",
+					"id": "00000000-0000-4000-8000-000000000004", "type": "IPV4", "name": "my-rule",
 					"action": "ALLOW", "enabled": false, "index": 0,
 				})
 				return
@@ -1300,7 +1300,7 @@ func TestSetACLRuleEnabled(t *testing.T) {
 			}
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.SetACLRuleEnabled(context.Background(), "", "ar-1", true)
+		_, err := client.SetACLRuleEnabled(context.Background(), "", "00000000-0000-4000-8000-000000000004", true)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1310,21 +1310,21 @@ func TestSetACLRuleEnabled(t *testing.T) {
 func TestGetACLRuleOrdering(t *testing.T) {
 	t.Run("decodes ordering response", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ordering" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules/ordering" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"orderedAclRuleIds": []string{"ar-1", "ar-2"},
+				"orderedAclRuleIds": []string{"00000000-0000-4000-8000-000000000004", "00000000-0000-4000-8000-000000000005"},
 			})
 		})
 		ordering, err := client.GetACLRuleOrdering(context.Background(), "")
 		if err != nil {
 			t.Fatalf("GetACLRuleOrdering: %v", err)
 		}
-		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "ar-1" {
-			t.Errorf("got IDs %v, want [ar-1 ar-2]", ordering.OrderedACLRuleIDs)
+		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "00000000-0000-4000-8000-000000000004" {
+			t.Errorf("got IDs %v, want [00000000-0000-4000-8000-000000000004 00000000-0000-4000-8000-000000000005]", ordering.OrderedACLRuleIDs)
 		}
 	})
 
@@ -1343,7 +1343,7 @@ func TestReorderACLRules(t *testing.T) {
 	t.Run("puts ordered IDs and decodes response", func(t *testing.T) {
 		var gotBody ACLRuleOrdering
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/acl-rules/ordering" || r.Method != http.MethodPut {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/acl-rules/ordering" || r.Method != http.MethodPut {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -1356,15 +1356,15 @@ func TestReorderACLRules(t *testing.T) {
 				"orderedAclRuleIds": gotBody.OrderedACLRuleIDs,
 			})
 		})
-		ordering, err := client.ReorderACLRules(context.Background(), "", []string{"ar-2", "ar-1"})
+		ordering, err := client.ReorderACLRules(context.Background(), "", []string{"00000000-0000-4000-8000-000000000005", "00000000-0000-4000-8000-000000000004"})
 		if err != nil {
 			t.Fatalf("ReorderACLRules: %v", err)
 		}
-		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "ar-2" {
-			t.Errorf("got IDs %v, want [ar-2 ar-1]", ordering.OrderedACLRuleIDs)
+		if len(ordering.OrderedACLRuleIDs) != 2 || ordering.OrderedACLRuleIDs[0] != "00000000-0000-4000-8000-000000000005" {
+			t.Errorf("got IDs %v, want [00000000-0000-4000-8000-000000000005 00000000-0000-4000-8000-000000000004]", ordering.OrderedACLRuleIDs)
 		}
-		if gotBody.OrderedACLRuleIDs[0] != "ar-2" {
-			t.Errorf("sent IDs[0] %q, want ar-2", gotBody.OrderedACLRuleIDs[0])
+		if gotBody.OrderedACLRuleIDs[0] != "00000000-0000-4000-8000-000000000005" {
+			t.Errorf("sent IDs[0] %q, want 00000000-0000-4000-8000-000000000005", gotBody.OrderedACLRuleIDs[0])
 		}
 	})
 
@@ -1372,7 +1372,7 @@ func TestReorderACLRules(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "server error", http.StatusInternalServerError)
 		})
-		_, err := client.ReorderACLRules(context.Background(), "", []string{"ar-1"})
+		_, err := client.ReorderACLRules(context.Background(), "", []string{"00000000-0000-4000-8000-000000000004"})
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1382,14 +1382,14 @@ func TestReorderACLRules(t *testing.T) {
 func TestListVouchers(t *testing.T) {
 	t.Run("decodes voucher list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/hotspot/vouchers" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "v-1", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID"},
+					{"id": "00000000-0000-4000-8000-000000000016", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID"},
 				},
 				"totalCount": 1,
 			})
@@ -1398,8 +1398,8 @@ func TestListVouchers(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ListVouchers: %v", err)
 		}
-		if len(vouchers.Data) != 1 || vouchers.Data[0].ID != "v-1" || vouchers.Data[0].Code != "ABC123" {
-			t.Errorf("got %+v, want [{ID:v-1 Code:ABC123 ...}]", vouchers.Data)
+		if len(vouchers.Data) != 1 || vouchers.Data[0].ID != "00000000-0000-4000-8000-000000000016" || vouchers.Data[0].Code != "ABC123" {
+			t.Errorf("got %+v, want [{ID:00000000-0000-4000-8000-000000000016 Code:ABC123 ...}]", vouchers.Data)
 		}
 	})
 
@@ -1417,21 +1417,21 @@ func TestListVouchers(t *testing.T) {
 func TestGetVoucher(t *testing.T) {
 	t.Run("decodes single voucher", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers/v-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/hotspot/vouchers/00000000-0000-4000-8000-000000000016" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "v-1", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID",
+				"id": "00000000-0000-4000-8000-000000000016", "code": "ABC123", "name": "guest", "timeLimitMinutes": 60, "status": "VALID",
 			})
 		})
-		voucher, err := client.GetVoucher(context.Background(), "", "v-1")
+		voucher, err := client.GetVoucher(context.Background(), "", "00000000-0000-4000-8000-000000000016")
 		if err != nil {
 			t.Fatalf("GetVoucher: %v", err)
 		}
-		if voucher.ID != "v-1" || voucher.Code != "ABC123" {
-			t.Errorf("got %+v, want {ID:v-1 Code:ABC123}", voucher)
+		if voucher.ID != "00000000-0000-4000-8000-000000000016" || voucher.Code != "ABC123" {
+			t.Errorf("got %+v, want {ID:00000000-0000-4000-8000-000000000016 Code:ABC123}", voucher)
 		}
 	})
 
@@ -1439,7 +1439,7 @@ func TestGetVoucher(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "not found", http.StatusNotFound)
 		})
-		_, err := client.GetVoucher(context.Background(), "", "v-1")
+		_, err := client.GetVoucher(context.Background(), "", "00000000-0000-4000-8000-000000000016")
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -1450,7 +1450,7 @@ func TestCreateVouchers(t *testing.T) {
 	t.Run("sends count and returns vouchers", func(t *testing.T) {
 		var gotBody VoucherRequest
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/hotspot/vouchers" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -1461,7 +1461,7 @@ func TestCreateVouchers(t *testing.T) {
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"vouchers": []map[string]any{
-					{"id": "v-2", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes, "expired": false},
+					{"id": "00000000-0000-4000-8000-000000000017", "code": "XYZ789", "name": gotBody.Name, "timeLimitMinutes": gotBody.TimeLimitMinutes, "expired": false},
 				},
 			})
 		})
@@ -1470,8 +1470,8 @@ func TestCreateVouchers(t *testing.T) {
 		if err != nil {
 			t.Fatalf("CreateVouchers: %v", err)
 		}
-		if len(vouchers) != 1 || vouchers[0].ID != "v-2" {
-			t.Errorf("got %+v, want [{ID:v-2 ...}]", vouchers)
+		if len(vouchers) != 1 || vouchers[0].ID != "00000000-0000-4000-8000-000000000017" {
+			t.Errorf("got %+v, want [{ID:00000000-0000-4000-8000-000000000017 ...}]", vouchers)
 		}
 		if gotBody.Count != 1 || gotBody.Name != "test" || gotBody.TimeLimitMinutes != 120 {
 			t.Errorf("sent body %+v, want {Count:1 Name:test TimeLimitMinutes:120}", gotBody)
@@ -1493,14 +1493,14 @@ func TestDeleteVoucher(t *testing.T) {
 	t.Run("sends DELETE and succeeds on 204", func(t *testing.T) {
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/hotspot/vouchers/v-1" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/hotspot/vouchers/00000000-0000-4000-8000-000000000016" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			gotMethod = r.Method
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.DeleteVoucher(context.Background(), "", "v-1"); err != nil {
+		if err := client.DeleteVoucher(context.Background(), "", "00000000-0000-4000-8000-000000000016"); err != nil {
 			t.Fatalf("DeleteVoucher: %v", err)
 		}
 		if gotMethod != http.MethodDelete {
@@ -1512,7 +1512,7 @@ func TestDeleteVoucher(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "forbidden", http.StatusForbidden)
 		})
-		if err := client.DeleteVoucher(context.Background(), "", "v-1"); err == nil {
+		if err := client.DeleteVoucher(context.Background(), "", "00000000-0000-4000-8000-000000000016"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -1521,7 +1521,7 @@ func TestDeleteVoucher(t *testing.T) {
 func TestListDeviceTags(t *testing.T) {
 	t.Run("decodes tag list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/device-tags" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/device-tags" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -1629,7 +1629,7 @@ func TestListDPIApplications(t *testing.T) {
 func TestListRADIUSProfiles(t *testing.T) {
 	t.Run("decodes profile list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/radius/profiles" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/radius/profiles" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
