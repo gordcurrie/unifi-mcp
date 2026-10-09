@@ -3,6 +3,7 @@ package unifi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 )
@@ -10,14 +11,14 @@ import (
 func TestListDevices(t *testing.T) {
 	t.Run("decodes device list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/devices" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/devices" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "dev-1", "macAddress": "aa:bb:cc:dd:ee:01", "name": "switch1", "state": "ONLINE"},
+					{"id": "00000000-0000-4000-8000-000000000010", "macAddress": "aa:bb:cc:dd:ee:01", "name": "switch1", "state": "ONLINE"},
 					{"id": "dev-2", "macAddress": "aa:bb:cc:dd:ee:02", "name": "ap1", "state": "OFFLINE"},
 				},
 				"totalCount": 2,
@@ -30,8 +31,8 @@ func TestListDevices(t *testing.T) {
 		if len(devices.Data) != 2 {
 			t.Fatalf("got %d devices, want 2", len(devices.Data))
 		}
-		if devices.Data[0].ID != "dev-1" {
-			t.Errorf("got devices[0].ID %q, want dev-1", devices.Data[0].ID)
+		if devices.Data[0].ID != "00000000-0000-4000-8000-000000000010" {
+			t.Errorf("got devices[0].ID %q, want 00000000-0000-4000-8000-000000000010", devices.Data[0].ID)
 		}
 		if devices.Data[1].State != "OFFLINE" {
 			t.Errorf("got devices[1].State %q, want OFFLINE", devices.Data[1].State)
@@ -52,21 +53,21 @@ func TestListDevices(t *testing.T) {
 func TestGetDevice(t *testing.T) {
 	t.Run("decodes single device", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/devices/dev-99" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/devices/00000000-0000-4000-8000-000000000011" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "dev-99", "macAddress": "aa:bb:cc:00:00:99", "state": "ONLINE",
+				"id": "00000000-0000-4000-8000-000000000011", "macAddress": "aa:bb:cc:00:00:99", "state": "ONLINE",
 			})
 		})
-		dev, err := client.GetDevice(context.Background(), "", "dev-99")
+		dev, err := client.GetDevice(context.Background(), "", "00000000-0000-4000-8000-000000000011")
 		if err != nil {
 			t.Fatalf("GetDevice: %v", err)
 		}
-		if dev.ID != "dev-99" {
-			t.Errorf("got ID %q, want dev-99", dev.ID)
+		if dev.ID != "00000000-0000-4000-8000-000000000011" {
+			t.Errorf("got ID %q, want 00000000-0000-4000-8000-000000000011", dev.ID)
 		}
 	})
 
@@ -74,7 +75,7 @@ func TestGetDevice(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.GetDevice(context.Background(), "", "dev-99")
+		_, err := client.GetDevice(context.Background(), "", "00000000-0000-4000-8000-000000000011")
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
@@ -85,7 +86,7 @@ func TestRestartDevice(t *testing.T) {
 	t.Run("posts restart action", func(t *testing.T) {
 		var gotAction string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/devices/dev-1/actions" || r.Method != http.MethodPost {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/devices/00000000-0000-4000-8000-000000000010/actions" || r.Method != http.MethodPost {
 				http.Error(w, "unexpected", http.StatusBadRequest)
 				return
 			}
@@ -97,7 +98,7 @@ func TestRestartDevice(t *testing.T) {
 			gotAction = req.Action
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.RestartDevice(context.Background(), "", "dev-1"); err != nil {
+		if err := client.RestartDevice(context.Background(), "", "00000000-0000-4000-8000-000000000010"); err != nil {
 			t.Fatalf("RestartDevice: %v", err)
 		}
 		if gotAction != "RESTART" {
@@ -109,7 +110,7 @@ func TestRestartDevice(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		if err := client.RestartDevice(context.Background(), "", "dev-1"); err == nil {
+		if err := client.RestartDevice(context.Background(), "", "00000000-0000-4000-8000-000000000010"); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -118,7 +119,7 @@ func TestRestartDevice(t *testing.T) {
 func TestGetDeviceStats(t *testing.T) {
 	t.Run("decodes stats", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/devices/dev-1/statistics/latest" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/devices/00000000-0000-4000-8000-000000000010/statistics/latest" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -127,7 +128,7 @@ func TestGetDeviceStats(t *testing.T) {
 				"uptimeSec": 12345, "cpuUtilizationPct": 5.2, "memoryUtilizationPct": 42.0,
 			})
 		})
-		stats, err := client.GetDeviceStats(context.Background(), "", "dev-1")
+		stats, err := client.GetDeviceStats(context.Background(), "", "00000000-0000-4000-8000-000000000010")
 		if err != nil {
 			t.Fatalf("GetDeviceStats: %v", err)
 		}
@@ -195,10 +196,10 @@ func TestPowerCyclePort(t *testing.T) {
 			gotAction = req.Action
 			w.WriteHeader(http.StatusNoContent)
 		})
-		if err := client.PowerCyclePort(context.Background(), "", "dev-1", 3); err != nil {
+		if err := client.PowerCyclePort(context.Background(), "", "00000000-0000-4000-8000-000000000010", 3); err != nil {
 			t.Fatalf("PowerCyclePort: %v", err)
 		}
-		wantPath := "/integration/v1/sites/test-site-id/devices/dev-1/interfaces/ports/3/actions"
+		wantPath := "/integration/v1/sites/11111111-1111-4111-8111-111111111111/devices/00000000-0000-4000-8000-000000000010/interfaces/ports/3/actions"
 		if gotPath != wantPath {
 			t.Errorf("got path %q, want %q", gotPath, wantPath)
 		}
@@ -211,30 +212,29 @@ func TestPowerCyclePort(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		if err := client.PowerCyclePort(context.Background(), "", "dev-1", 3); err == nil {
+		if err := client.PowerCyclePort(context.Background(), "", "00000000-0000-4000-8000-000000000010", 3); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
 }
 
-func TestPathEscaping(t *testing.T) {
-	// Verify that reserved characters in user-supplied IDs are percent-encoded
-	// in the outgoing request path and do not break URL routing.
-	t.Run("device ID with reserved characters is encoded", func(t *testing.T) {
-		var gotPath string
-		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			gotPath = r.URL.EscapedPath()
-			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "dev/1", "macAddress": "aa:bb:cc:dd:ee:ff", "state": "ONLINE",
+func TestInvalidIDRejected(t *testing.T) {
+	// IDs that are not UUIDs, including ones with reserved characters or
+	// traversal sequences, must be rejected before any request is sent.
+	for _, deviceID := range []string{"dev/1", "../admin", "dev-1"} {
+		t.Run(deviceID, func(t *testing.T) {
+			called := false
+			client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+				called = true
+				w.WriteHeader(http.StatusOK)
 			})
+			_, err := client.GetDevice(context.Background(), "", deviceID)
+			if !errors.Is(err, ErrInvalidID) {
+				t.Errorf("GetDevice(%q) error = %v, want ErrInvalidID", deviceID, err)
+			}
+			if called {
+				t.Error("request was sent for an invalid ID")
+			}
 		})
-		if _, err := client.GetDevice(context.Background(), "", "dev/1"); err != nil {
-			t.Fatalf("GetDevice: %v", err)
-		}
-		want := "/integration/v1/sites/test-site-id/devices/dev%2F1"
-		if gotPath != want {
-			t.Errorf("path = %q, want %q", gotPath, want)
-		}
-	})
+	}
 }

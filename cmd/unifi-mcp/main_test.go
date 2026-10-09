@@ -14,8 +14,9 @@ const initializeBody = `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{
 
 func TestNewHTTPHandlerCrossOrigin(t *testing.T) {
 	s := mcp.NewServer(&mcp.Implementation{Name: "test", Version: "0"}, nil)
-	srv := httptest.NewServer(newHTTPHandler(s))
-	t.Cleanup(srv.Close)
+	srv := httptest.NewTestServer(t, newHTTPHandler(s))
+	// srv.Client sets srv.URL and routes requests over the in-memory network.
+	httpClient := srv.Client()
 
 	tests := []struct {
 		name       string
@@ -55,7 +56,7 @@ func TestNewHTTPHandlerCrossOrigin(t *testing.T) {
 				req.Header.Set(k, v)
 			}
 
-			resp, err := srv.Client().Do(req) /* #nosec G704 */ //nolint:gosec // G704: URL is the local httptest server
+			resp, err := httpClient.Do(req) /* #nosec G704 */ //nolint:gosec // G704: URL is the in-memory httptest server
 			if err != nil {
 				t.Fatalf("Do: %v", err)
 			}

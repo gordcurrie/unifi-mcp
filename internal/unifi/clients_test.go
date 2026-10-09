@@ -10,14 +10,14 @@ import (
 func TestListClients(t *testing.T) {
 	t.Run("decodes client list", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/clients" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/clients" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"data": []map[string]any{
-					{"id": "c-1", "macAddress": "aa:bb:cc:00:00:01", "type": "WIRED", "ipAddress": "192.168.1.100"},
+					{"id": "00000000-0000-4000-8000-000000000008", "macAddress": "aa:bb:cc:00:00:01", "type": "WIRED", "ipAddress": "192.168.1.100"},
 					{"id": "c-2", "macAddress": "aa:bb:cc:00:00:02", "type": "WIRELESS"},
 				},
 				"totalCount": 2,
@@ -54,7 +54,7 @@ func TestAuthorizeGuestClient(t *testing.T) {
 		var gotBody GuestAuthRequest
 		var gotMethod string
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/clients/c-1/actions" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/clients/00000000-0000-4000-8000-000000000008/actions" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
@@ -63,7 +63,7 @@ func TestAuthorizeGuestClient(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 		req := GuestAuthRequest{Action: "AUTHORIZE_GUEST_ACCESS", TimeLimitMinutes: 120}
-		if err := client.AuthorizeGuestClient(context.Background(), "", "c-1", req); err != nil {
+		if err := client.AuthorizeGuestClient(context.Background(), "", "00000000-0000-4000-8000-000000000008", req); err != nil {
 			t.Fatalf("AuthorizeGuestClient: %v", err)
 		}
 		if gotMethod != http.MethodPost {
@@ -78,7 +78,7 @@ func TestAuthorizeGuestClient(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		if err := client.AuthorizeGuestClient(context.Background(), "", "c-1", GuestAuthRequest{Action: "AUTHORIZE_GUEST_ACCESS"}); err == nil {
+		if err := client.AuthorizeGuestClient(context.Background(), "", "00000000-0000-4000-8000-000000000008", GuestAuthRequest{Action: "AUTHORIZE_GUEST_ACCESS"}); err == nil {
 			t.Error("expected error, got nil")
 		}
 	})
@@ -87,21 +87,21 @@ func TestAuthorizeGuestClient(t *testing.T) {
 func TestGetClient(t *testing.T) {
 	t.Run("decodes single client", func(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/integration/v1/sites/test-site-id/clients/c-99" {
+			if r.URL.Path != "/integration/v1/sites/11111111-1111-4111-8111-111111111111/clients/00000000-0000-4000-8000-000000000009" {
 				http.Error(w, "not found", http.StatusNotFound)
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id": "c-99", "macAddress": "aa:bb:cc:00:00:99", "type": "WIRELESS", "ipAddress": "10.0.0.5",
+				"id": "00000000-0000-4000-8000-000000000009", "macAddress": "aa:bb:cc:00:00:99", "type": "WIRELESS", "ipAddress": "10.0.0.5",
 			})
 		})
-		c, err := client.GetClient(context.Background(), "", "c-99")
+		c, err := client.GetClient(context.Background(), "", "00000000-0000-4000-8000-000000000009")
 		if err != nil {
 			t.Fatalf("GetClient: %v", err)
 		}
-		if c.ID != "c-99" {
-			t.Errorf("got ID %q, want c-99", c.ID)
+		if c.ID != "00000000-0000-4000-8000-000000000009" {
+			t.Errorf("got ID %q, want 00000000-0000-4000-8000-000000000009", c.ID)
 		}
 		if c.IP != "10.0.0.5" {
 			t.Errorf("got IP %q, want 10.0.0.5", c.IP)
@@ -112,7 +112,7 @@ func TestGetClient(t *testing.T) {
 		client := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 			http.Error(w, "error", http.StatusInternalServerError)
 		})
-		_, err := client.GetClient(context.Background(), "", "c-99")
+		_, err := client.GetClient(context.Background(), "", "00000000-0000-4000-8000-000000000009")
 		if err == nil {
 			t.Error("expected error, got nil")
 		}

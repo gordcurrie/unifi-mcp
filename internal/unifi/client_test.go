@@ -3,20 +3,24 @@ package unifi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 func newTestClient(t *testing.T, handler http.HandlerFunc) *Client {
 	t.Helper()
-	srv := httptest.NewServer(handler)
-	t.Cleanup(srv.Close)
-	client, err := NewClient(srv.URL, "test-api-key", "test-site-id", false)
+	srv := httptest.NewTestServer(t, handler)
+	// srv.Client sets srv.URL and routes requests over the in-memory network.
+	httpClient := srv.Client()
+	client, err := NewClient(srv.URL, "test-api-key", "11111111-1111-4111-8111-111111111111", false)
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
+	client.httpClient = httpClient
 	return client
 }
 
@@ -110,10 +114,11 @@ func TestNewClient(t *testing.T) {
 		siteID  string
 		wantErr bool
 	}{
-		{"valid", "https://192.168.1.1/proxy/network", "key", "site", false},
-		{"missing base url", "", "key", "site", true},
-		{"missing api key", "https://192.168.1.1/proxy/network", "", "site", true},
+		{"valid", "https://192.168.1.1/proxy/network", "key", "11111111-1111-4111-8111-111111111111", false},
+		{"missing base url", "", "key", "11111111-1111-4111-8111-111111111111", true},
+		{"missing api key", "https://192.168.1.1/proxy/network", "", "11111111-1111-4111-8111-111111111111", true},
 		{"missing site id", "https://192.168.1.1/proxy/network", "key", "", true},
+		{"site id not a uuid", "https://192.168.1.1/proxy/network", "key", "default", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,16 +130,49 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+func TestValidateIDs(t *testing.T) {
+	const valid = "5f4d0e88-1234-4678-abcd-ef0123456789"
+	tests := []struct {
+		name    string
+		ids     []string
+		wantErr bool
+	}{
+		{"no ids", nil, false},
+		{"canonical lowercase", []string{valid}, false},
+		{"canonical uppercase", []string{strings.ToUpper(valid)}, false},
+		{"multiple valid", []string{valid, valid}, false},
+		{"empty", []string{""}, true},
+		{"not a uuid", []string{"dev-1"}, true},
+		{"second id invalid", []string{valid, "dev-1"}, true},
+		{"braced form", []string{"{" + valid + "}"}, true},
+		{"urn form", []string{"urn:uuid:" + valid}, true},
+		{"no dashes", []string{strings.ReplaceAll(valid, "-", "")}, true},
+		{"path traversal", []string{"../admin"}, true},
+		{"reserved characters", []string{"dev/1"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateIDs(tt.ids...)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("validateIDs(%q) error = %v, wantErr %v", tt.ids, err, tt.wantErr)
+			}
+			if err != nil && !errors.Is(err, ErrInvalidID) {
+				t.Errorf("error %v does not wrap ErrInvalidID", err)
+			}
+		})
+	}
+}
+
 func TestSiteFallback(t *testing.T) {
-	client, err := NewClient("https://192.168.1.1/proxy/network", "key", "default-site", false)
+	client, err := NewClient("https://192.168.1.1/proxy/network", "key", "00000000-0000-4000-8000-000000000002", false)
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
-	if got := client.site(""); got != "default-site" {
-		t.Errorf(`site("") = %q, want %q`, got, "default-site")
+	if got := client.site(""); got != "00000000-0000-4000-8000-000000000002" {
+		t.Errorf(`site("") = %q, want %q`, got, "00000000-0000-4000-8000-000000000002")
 	}
-	if got := client.site("override"); got != "override" {
-		t.Errorf(`site("override") = %q, want %q`, got, "override")
+	if got := client.site("00000000-0000-4000-8000-000000000003"); got != "00000000-0000-4000-8000-000000000003" {
+		t.Errorf(`site("00000000-0000-4000-8000-000000000003") = %q, want %q`, got, "00000000-0000-4000-8000-000000000003")
 	}
 }
 
