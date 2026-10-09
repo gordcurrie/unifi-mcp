@@ -152,6 +152,8 @@ unifi-mcp
 ### HTTP (streamable — for remote/shared deployments)
 
 > The HTTP transport has no built-in authentication. Use a loopback address or place it behind a reverse proxy before exposing it on a shared network.
+>
+> Cross-origin browser requests (mismatched `Origin` or `Sec-Fetch-Site: cross-site`) are rejected with `403`; non-browser MCP clients are unaffected.
 
 ```bash
 unifi-mcp --transport http --addr 127.0.0.1:8080
