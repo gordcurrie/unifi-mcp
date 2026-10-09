@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -16,7 +17,10 @@ func TestNewHTTPHandlerCrossOrigin(t *testing.T) {
 	s := mcp.NewServer(&mcp.Implementation{Name: "test", Version: "0"}, nil)
 	srv := httptest.NewTestServer(t, newHTTPHandler(s))
 	// srv.Client sets srv.URL and routes requests over the in-memory network.
+	// It has no timeout by default, so set one to keep a hung handler from
+	// stalling the test run.
 	httpClient := srv.Client()
+	httpClient.Timeout = 10 * time.Second
 
 	tests := []struct {
 		name       string

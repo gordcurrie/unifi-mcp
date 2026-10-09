@@ -14,13 +14,14 @@ import (
 func newTestClient(t *testing.T, handler http.HandlerFunc) *Client {
 	t.Helper()
 	srv := httptest.NewTestServer(t, handler)
-	// srv.Client sets srv.URL and routes requests over the in-memory network.
-	httpClient := srv.Client()
+	// srv.Client sets srv.URL; its transport dials the in-memory network.
+	transport := srv.Client().Transport
 	client, err := NewClient(srv.URL, "test-api-key", "11111111-1111-4111-8111-111111111111", false)
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
-	client.httpClient = httpClient
+	// Swap only the transport so the production client's timeout still applies.
+	client.httpClient.Transport = transport
 	return client
 }
 

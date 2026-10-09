@@ -103,8 +103,10 @@ func NewClient(baseURL, apiKey, siteID string, insecure bool) (*Client, error) {
 }
 
 // ErrInvalidID is returned when a resource ID is not a canonical UUID.
-// Every ID path parameter in the UniFi v1 API is a UUID.
-var ErrInvalidID = errors.New("invalid ID: must be a UUID")
+// Every ID path parameter in the UniFi v1 API is a UUID. Other UUID
+// representations (braced, URN, no dashes) are rejected so only the
+// path-safe canonical form reaches a URL.
+var ErrInvalidID = errors.New("invalid ID: must be a UUID in canonical form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
 
 // validateIDs reports an error wrapping ErrInvalidID for the first id that is
 // not a UUID in canonical hex-and-dash form. Rejecting anything else before a

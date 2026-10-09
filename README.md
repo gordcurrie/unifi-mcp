@@ -111,7 +111,7 @@ mv <binary-name> /usr/local/bin/unifi-mcp
 
 ### Build from source
 
-Requires Go 1.27+. You will also need a UniFi OS console (UCG-Max, UDM-Pro, etc.) with an API key generated under *UniFi OS → Settings → API*.
+Requires Go 1.27.2+. You will also need a UniFi OS console (UCG-Max, UDM-Pro, etc.) with an API key generated under *UniFi OS → Settings → API*.
 
 ```bash
 git clone https://github.com/gordcurrie/unifi-mcp
