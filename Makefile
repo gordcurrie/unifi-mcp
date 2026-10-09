@@ -2,10 +2,12 @@ BINARY := bin/unifi-mcp
 CMD     := ./cmd/unifi-mcp
 
 # Pinned tool versions — update these intentionally when upgrading
-GOFUMPT_VERSION       := v0.7.0
-GOSEC_VERSION         := v2.22.8
-GOVULNCHECK_VERSION   := v1.1.4
-GOLANGCILINT_VERSION  := v2.10.1
+GOFUMPT_VERSION       := v0.12.0
+# gosec: pinned to master (7b1b5ce) for Go 1.27.2 support; v2.29.0 cannot read
+# Go 1.27.2 export data (securego/gosec#1771). Switch to v2.29.1+ once tagged.
+GOSEC_VERSION         := v2.29.1-0.20261009120814-7b1b5cebe007
+GOVULNCHECK_VERSION   := v1.8.0
+GOLANGCILINT_VERSION  := v2.14.0
 
 .PHONY: all install-tools fix fmt vet lint sec vulncheck test build check clean
 
