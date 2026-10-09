@@ -68,7 +68,7 @@ func run() error {
 	case "http":
 		httpServer := &http.Server{
 			Addr:              addr,
-			Handler:           http.MaxBytesHandler(mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server { return s }, nil), 4<<20),
+			Handler:           newHTTPHandler(s),
 			ReadHeaderTimeout: 10 * time.Second,
 			ReadTimeout:       30 * time.Second,
 			WriteTimeout:      30 * time.Second,
@@ -92,4 +92,13 @@ func run() error {
 		return fmt.Errorf("unknown transport %q (use stdio or http)", transport)
 	}
 	return nil
+}
+
+// newHTTPHandler builds the streamable HTTP handler for s, limiting request
+// bodies to 4 MiB and rejecting cross-origin browser requests. The MCP SDK no
+// longer applies cross-origin protection by default, so it is added here as
+// middleware.
+func newHTTPHandler(s *mcp.Server) http.Handler {
+	mcpHandler := mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server { return s }, nil)
+	return http.NewCrossOriginProtection().Handler(http.MaxBytesHandler(mcpHandler, 4<<20))
 }
