@@ -196,9 +196,10 @@ claude mcp add unifi --scope user \
   -e UNIFI_BASE_URL=https://192.168.1.1/proxy/network \
   -e UNIFI_API_KEY=your-api-key \
   -e UNIFI_SITE_ID=your-site-uuid \
-  -e UNIFI_INSECURE=true \
   -- /path/to/unifi-mcp
 ```
+
+If your console uses its default self-signed certificate, add `-e UNIFI_INSECURE=true`. This disables TLS certificate and hostname verification, so only use it on a trusted network.
 
 Run `/mcp` inside Claude Code to confirm the server is connected. Install the [agent skills](#agent-skills) too, so Claude knows when and how to use the tools.
 
