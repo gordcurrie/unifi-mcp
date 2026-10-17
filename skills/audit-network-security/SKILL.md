@@ -138,8 +138,10 @@ boundaries (LAN, IoT, guest, management).
 **Check for:**
 - All traffic in a single flat network (no VLANs) — flag `[MEDIUM]`; recommend
   at minimum: LAN, IoT, Guest
-- Firewall zones defined but no policies between them — flag `[MEDIUM]`
-  (zones without policies provide no actual isolation)
+- Firewall zones whose effective policy between them is allow-all — flag
+  `[MEDIUM]` (zones provide no actual isolation). Judge this from the full
+  policy set in Section 5, including system-defined policies; a zone pair with
+  no user-defined policy may still be blocked by a system default.
 - IoT devices sharing a zone with trusted LAN devices — flag `[MEDIUM]`
 
 **Findings to raise:**
@@ -157,10 +159,20 @@ rules that undermine segmentation.
    Section 4. All firewall policies reference zones by UUID only — you must resolve
    IDs to names before any analysis is meaningful.
 
-2. Call `list_firewall_policies` (paginate per the Pagination guidance above). For
-   each policy resolve the source and destination zone IDs to names using the map
-   built above, then note: `name`, `enabled`, `action` (ALLOW/BLOCK), source zone
-   name, destination zone name.
+2. Call `list_firewall_policies` with `user_only: false` (paginate per the
+   Pagination guidance above). The default (`user_only: true`) returns only
+   user-defined policies and hides the system-defined and derived policies that
+   set the default behaviour between zones; auditing without them gives a
+   misleading picture. For each policy resolve the source and destination zone
+   IDs to names using the map built above, then note: `name`, `enabled`,
+   `action` (ALLOW/BLOCK), source zone name, destination zone name, and
+   `metadata.origin` (`USER_DEFINED`, `SYSTEM_DEFINED`, or `DERIVED`).
+
+   Use the `SYSTEM_DEFINED` and `DERIVED` policies to work out the effective
+   default for each zone pair (e.g. is IoT → Internal allowed or blocked by
+   default?). Then review the `USER_DEFINED` policies as changes to those
+   defaults. Raise findings about system policies only when the effective
+   result is unsafe; do not flag them individually as clutter.
 
 3. Call `list_acl_rules` and `get_acl_rule_ordering`. Note the evaluation order
    — rules are evaluated top-down and the first match wins.
