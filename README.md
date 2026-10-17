@@ -100,6 +100,17 @@ Download the latest release for your platform from the [Releases](https://github
 | macOS (arm64) | `unifi-mcp_darwin_arm64` |
 | Windows (amd64) | `unifi-mcp_windows_amd64.exe` |
 
+Each release also includes `checksums.txt` with SHA-256 hashes of every binary. Download it into the same directory and verify before running:
+
+```bash
+# Linux
+sha256sum --check --ignore-missing checksums.txt
+# macOS
+shasum -a 256 --check --ignore-missing checksums.txt
+```
+
+Windows users can compare the output of `Get-FileHash unifi-mcp_windows_amd64.exe` (PowerShell) against the matching line.
+
 Make it executable and place it on your `PATH` (substitute the filename for your platform):
 
 ```bash
