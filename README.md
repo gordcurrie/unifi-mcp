@@ -109,6 +109,16 @@ mv <binary-name> /usr/local/bin/unifi-mcp
 
 > Windows users: rename `unifi-mcp_windows_amd64.exe` to `unifi-mcp.exe` and place it in a directory on your `%PATH%`.
 
+> macOS users: if Gatekeeper blocks the downloaded binary, clear the quarantine flag with `xattr -d com.apple.quarantine /usr/local/bin/unifi-mcp`.
+
+### Install with Go
+
+Requires Go 1.27.2+. Installs `unifi-mcp` into `$(go env GOPATH)/bin`:
+
+```bash
+go install github.com/gordcurrie/unifi-mcp/cmd/unifi-mcp@latest
+```
+
 ### Build from source
 
 Requires Go 1.27.2+. You will also need a UniFi OS console (UCG-Max, UDM-Pro, etc.) with an API key generated under *UniFi OS → Settings → API*.
@@ -129,9 +139,18 @@ All configuration is via environment variables:
 |---|---|---|
 | `UNIFI_BASE_URL` | yes | e.g. `https://192.168.1.1/proxy/network` |
 | `UNIFI_API_KEY` | yes | API key from *UniFi OS → Settings → API* |
-| `UNIFI_SITE_ID` | yes | Default site UUID — find it with `list_sites` |
+| `UNIFI_SITE_ID` | yes | Default site UUID — see below |
 | `UNIFI_INSECURE` | no | `true` to skip TLS verification (self-signed certs) |
 | `UNIFI_ALLOW_DESTRUCTIVE` | no | `true` to register ACL write, delete, and revoke tools (default: disabled) |
+
+The server needs `UNIFI_SITE_ID` before it will start. To find it, set `UNIFI_BASE_URL` and `UNIFI_API_KEY` in `.env`, load it, then query the API directly (`-k` skips verification of the console's self-signed certificate):
+
+```bash
+set -a && source .env && set +a
+curl -sk -H "X-API-Key: $UNIFI_API_KEY" "$UNIFI_BASE_URL/integration/v1/sites"
+```
+
+Single-site setups have one entry; use its `id`.
 
 Source your `.env` file before running:
 
@@ -158,6 +177,19 @@ unifi-mcp
 ```bash
 unifi-mcp --transport http --addr 127.0.0.1:8080
 ```
+
+## Claude Code configuration
+
+```bash
+claude mcp add unifi --scope user \
+  -e UNIFI_BASE_URL=https://192.168.1.1/proxy/network \
+  -e UNIFI_API_KEY=your-api-key \
+  -e UNIFI_SITE_ID=your-site-uuid \
+  -e UNIFI_INSECURE=true \
+  -- /path/to/unifi-mcp
+```
+
+Run `/mcp` inside Claude Code to confirm the server is connected. Install the [agent skills](#agent-skills) too, so Claude knows when and how to use the tools.
 
 ## VS Code Copilot configuration
 
@@ -223,6 +255,25 @@ Add the server to `opencode.json` in your project root (or `~/.config/opencode/o
   }
 }
 ```
+
+## Agent skills
+
+The [`skills/`](skills/) directory contains [Agent Skills](https://agentskills.io) (`SKILL.md` format) that teach an agent how to use these tools well:
+
+| Skill | Use it for |
+|---|---|
+| [`unifi-network`](skills/unifi-network/SKILL.md) | Everyday tasks: connected clients, device health, WiFi, DNS records, firewall, guest access — with safe confirmation rules |
+| [`audit-network-security`](skills/audit-network-security/SKILL.md) | A structured security audit that produces a prioritised findings report |
+
+Install them for all your projects in Claude Code:
+
+```bash
+git clone https://github.com/gordcurrie/unifi-mcp
+mkdir -p ~/.claude/skills
+cp -R unifi-mcp/skills/* ~/.claude/skills/
+```
+
+Other agents that support Agent Skills (GitHub Copilot, Cursor, Codex CLI, Gemini CLI, …) read the same folders; copy them to that agent's skills directory. Inside this repo they are already available to Claude Code and Copilot via `.claude/skills` and `.github/skills`, which link to `skills/`.
 
 ## Development
 

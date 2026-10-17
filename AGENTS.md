@@ -33,3 +33,9 @@ make check   # fix → fmt → vet → lint → sec → vulncheck → test → b
 
 Use the `audit-network-security` skill. Ask to audit, review, or assess the
 network security posture and the skill will be loaded automatically.
+
+## Everyday network tasks
+
+Use the `unifi-network` skill for questions about clients, devices, WiFi, DNS,
+firewall, or guest access. Skills live in `skills/`; `.claude/skills` and
+`.github/skills` are symlinks to it.
