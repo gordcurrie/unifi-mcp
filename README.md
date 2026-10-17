@@ -143,9 +143,10 @@ All configuration is via environment variables:
 | `UNIFI_INSECURE` | no | `true` to skip TLS verification (self-signed certs) |
 | `UNIFI_ALLOW_DESTRUCTIVE` | no | `true` to register ACL write, delete, and revoke tools (default: disabled) |
 
-The server needs `UNIFI_SITE_ID` before it will start. To find it, query the API directly (`-k` skips verification of the console's self-signed certificate):
+The server needs `UNIFI_SITE_ID` before it will start. To find it, set `UNIFI_BASE_URL` and `UNIFI_API_KEY` in `.env`, load it, then query the API directly (`-k` skips verification of the console's self-signed certificate):
 
 ```bash
+set -a && source .env && set +a
 curl -sk -H "X-API-Key: $UNIFI_API_KEY" "$UNIFI_BASE_URL/integration/v1/sites"
 ```
 

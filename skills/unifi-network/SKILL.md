@@ -37,13 +37,17 @@ If it fails with `401`/`403`, the API key is wrong or was revoked.
 
 1. **Read before you write.** Look up the current state with a `list_*` or
    `get_*` tool before changing anything, and show the user what will change.
-2. **IDs, not names.** Every `get_*` and mutating tool takes a UUID (`device_id`,
-   `client_id`, `broadcast_id`, `policy_id`, …). Resolve names to IDs from the
-   matching `list_*` result first. Never guess or construct an ID.
-3. **`confirmed: true` means the user said yes.** Mutating tools require
-   `confirmed: true`. Only set it after the user has explicitly approved that
-   specific change in this conversation. A previous approval does not carry
-   over to a different change.
+2. **IDs, not names.** Tools that act on an existing resource take its UUID
+   (`device_id`, `client_id`, `broadcast_id`, `policy_id`, …). Resolve the name
+   to an ID from the matching `list_*` result first. Never guess or construct an
+   ID. Create tools such as `create_dns_policy` and `create_firewall_zone` need
+   no existing ID.
+3. **Every change needs the user's approval.** Get explicit approval for each
+   mutation (create, update, enable/disable, restart, delete) before calling
+   the tool. A previous approval does not carry over to a different change.
+   Many mutating tools also declare a `confirmed` parameter: set it to `true`
+   only after that approval. Do not send `confirmed` to tools that do not
+   declare it.
 4. **Paginate fully.** `list_*` tools return `data`, `totalCount`, `offset` and
    `limit`. If `totalCount` is larger than the number of items you have, call
    again with `offset` increased by the number of items returned until you have
