@@ -124,7 +124,7 @@ mv <binary-name> /usr/local/bin/unifi-mcp
 
 ### Install with Go
 
-Requires Go 1.27.2+. Installs `unifi-mcp` into `$(go env GOPATH)/bin`:
+Requires Go 1.27.3+. Installs `unifi-mcp` into `$(go env GOPATH)/bin`:
 
 ```bash
 go install github.com/gordcurrie/unifi-mcp/cmd/unifi-mcp@latest
@@ -132,7 +132,7 @@ go install github.com/gordcurrie/unifi-mcp/cmd/unifi-mcp@latest
 
 ### Build from source
 
-Requires Go 1.27.2+. You will also need a UniFi OS console (UCG-Max, UDM-Pro, etc.) with an API key generated under *UniFi OS → Settings → API*.
+Requires Go 1.27.3+. You will also need a UniFi OS console (UCG-Max, UDM-Pro, etc.) with an API key generated under *UniFi OS → Settings → API*.
 
 ```bash
 git clone https://github.com/gordcurrie/unifi-mcp
