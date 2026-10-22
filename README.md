@@ -120,6 +120,12 @@ mv <binary-name> /usr/local/bin/unifi-mcp
 
 > Windows users: rename `unifi-mcp_windows_amd64.exe` to `unifi-mcp.exe` and place it in a directory on your `%PATH%`.
 
+Confirm the installed version:
+
+```bash
+unifi-mcp --version
+```
+
 > macOS users: if Gatekeeper blocks the downloaded binary, clear the quarantine flag with `xattr -d com.apple.quarantine /usr/local/bin/unifi-mcp`.
 
 ### Install with Go
